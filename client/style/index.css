@@ -1,0 +1,15 @@
+@import "./paypal-bolt.css";
+@import "./MainView.css";
+
+.draggable{
+	-webkit-app-region: drag;
+}
+
+img, button{
+	-webkit-app-region: no-drag;
+}
+
+.blue_gradient_background{
+	background: linear-gradient(90deg,#687cde 0,#91a3ce 40%,rgba(164, 193, 247, 0.33));
+	padding: 3em;
+}

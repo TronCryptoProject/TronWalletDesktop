@@ -1,0 +1,13 @@
+.button_left{
+	border-top-right-radius: 2em !important;
+	border-bottom-right-radius: 2em !important;
+	color: #2226dc !important;
+	font-size: medium !important;
+	
+}
+.button_right{
+	border-top-left-radius: 2em !important;
+	border-bottom-left-radius: 2em !important;
+	color: #2226dc !important;
+	font-size: medium !important;
+}
