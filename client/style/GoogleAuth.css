@@ -32,6 +32,7 @@
 #generate_qr_side{
 	width: 250px !important;
 	margin: 0 auto !important;
+	left: inherit !important;
 }
 
 @media (min-width: 30px) and (max-width: 850px){

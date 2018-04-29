@@ -152,7 +152,7 @@ export default class GoogleAuth extends React.Component{
 						</div>
 					</div>
 				</div>
-				<div className="one wide column"></div>
+				<div className="one wide column"/>
 			</div>
 		);
 	}
@@ -283,7 +283,22 @@ export default class GoogleAuth extends React.Component{
 			<div className="draggable blue_gradient_background" id="googleauthview">
 				<div className="ui grid">
 					{this.renderMainHeader()}
-					<div className="row"/>
+
+					<div className="row">
+						<div className="ui one column page centered padded grid">
+							<div className="three column row">
+								<div className="two wide column"/>
+								<div className="thirteen wide center aligned column">
+									<p>
+										Enable mobile authentication to better security for your wallet.
+										You will be asked to verify transaction through mobile before
+										broadcasting them. 
+									</p>
+								</div>
+								<div className="one wide column"/>
+							</div>
+						</div>
+					</div>
 
 					<div className="two column row">
 						<div className="center aligned column">

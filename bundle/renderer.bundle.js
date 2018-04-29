@@ -507,7 +507,29 @@ var GoogleAuth = function (_React$Component) {
 					"div",
 					{ className: "ui grid" },
 					this.renderMainHeader(),
-					_react2.default.createElement("div", { className: "row" }),
+					_react2.default.createElement(
+						"div",
+						{ className: "row" },
+						_react2.default.createElement(
+							"div",
+							{ className: "ui one column page centered padded grid" },
+							_react2.default.createElement(
+								"div",
+								{ className: "three column row" },
+								_react2.default.createElement("div", { className: "two wide column" }),
+								_react2.default.createElement(
+									"div",
+									{ className: "thirteen wide center aligned column" },
+									_react2.default.createElement(
+										"p",
+										null,
+										"Enable mobile authentication to better security for your wallet. You will be asked to verify transaction through mobile before broadcasting them."
+									)
+								),
+								_react2.default.createElement("div", { className: "one wide column" })
+							)
+						)
+					),
 					_react2.default.createElement(
 						"div",
 						{ className: "two column row" },
@@ -627,9 +649,9 @@ var _GoogleAuth = __webpack_require__(/*! ./GoogleAuth.js */ "./client/js/Google
 
 var _GoogleAuth2 = _interopRequireDefault(_GoogleAuth);
 
-var _fsJetpack = __webpack_require__(/*! fs-jetpack */ "./node_modules/fs-jetpack/main.js");
+var _StatusBar = __webpack_require__(/*! ./StatusBar.js */ "./client/js/StatusBar.js");
 
-var _fsJetpack2 = _interopRequireDefault(_fsJetpack);
+var _StatusBar2 = _interopRequireDefault(_StatusBar);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -661,7 +683,7 @@ var MainView = function (_React$Component) {
 		_this.handleMobileAuthClick = _this.handleMobileAuthClick.bind(_this);
 		_this.getMainViewComponent = _this.getMainViewComponent.bind(_this);
 		_this.handleAuthBackButtonClick = _this.handleAuthBackButtonClick.bind(_this);
-		_this.renderStatuses = _this.renderStatuses.bind(_this);
+
 		return _this;
 	}
 
@@ -735,38 +757,6 @@ var MainView = function (_React$Component) {
 			this.setState({ currView: _config2.default.views.MAINVIEW });
 		}
 	}, {
-		key: "renderStatuses",
-		value: function renderStatuses() {
-			var status_divs = [];
-			//is mobile auth set up 
-			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
-			if (read_data && "mobileAuthCode" in read_data) {
-				status_divs.push(_react2.default.createElement("i", { className: "mobile mobileauth_icon_green big icon status_icon", key: "status_mobileauth",
-					"data-title": "Mobile 2FA is on!",
-					"data-variation": "tiny",
-					"data-position": "top center" }));
-			}
-
-			// is wifi connected
-			if (this.state.networkStatus == this.ONLINE) {
-				status_divs.push(_react2.default.createElement("i", { className: "wifi wifi_icon_blue big icon status_icon", key: "status_wifi_connected",
-					"data-title": "Online",
-					"data-variation": "tiny",
-					"data-position": "top right" }));
-			} else {
-				status_divs.push(_react2.default.createElement("i", { className: "plane big icon", key: "status_wifi_disconnected",
-					"data-title": "Offline",
-					"data-variation": "tiny",
-					"data-position": "top right" }));
-			}
-
-			return _react2.default.createElement(
-				"div",
-				{ className: "ui bottom right attached label status_label" },
-				status_divs
-			);
-		}
-	}, {
 		key: "getMainViewComponent",
 		value: function getMainViewComponent() {
 			var _this4 = this;
@@ -835,7 +825,6 @@ var MainView = function (_React$Component) {
 						)
 					)
 				),
-				this.renderStatuses(),
 				_react2.default.createElement(_NetworkConfirmationModal2.default, { networkStatus: this.state.networkStatus })
 			);
 		}
@@ -849,10 +838,15 @@ var MainView = function (_React$Component) {
 				view_component = _react2.default.createElement(_GoogleAuth2.default, { handleBackButtonClick: this.handleAuthBackButtonClick });
 			}
 
+			var status_data = {
+				networkStatus: this.state.networkStatus
+			};
+
 			return _react2.default.createElement(
 				"div",
 				null,
-				view_component
+				view_component,
+				_react2.default.createElement(_StatusBar2.default, { data: status_data })
 			);
 		}
 	}]);
@@ -956,6 +950,113 @@ var NetworkConfirmationModal = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = NetworkConfirmationModal;
+
+/***/ }),
+
+/***/ "./client/js/StatusBar.js":
+/*!********************************!*\
+  !*** ./client/js/StatusBar.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _fsJetpack = __webpack_require__(/*! fs-jetpack */ "./node_modules/fs-jetpack/main.js");
+
+var _fsJetpack2 = _interopRequireDefault(_fsJetpack);
+
+var _deepEqual = __webpack_require__(/*! deep-equal */ "./node_modules/deep-equal/index.js");
+
+var _deepEqual2 = _interopRequireDefault(_deepEqual);
+
+var _config = __webpack_require__(/*! ../config/config.js */ "./client/config/config.js");
+
+var _config2 = _interopRequireDefault(_config);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var StatusBar = function (_React$Component) {
+	_inherits(StatusBar, _React$Component);
+
+	function StatusBar(props) {
+		_classCallCheck(this, StatusBar);
+
+		var _this = _possibleConstructorReturn(this, (StatusBar.__proto__ || Object.getPrototypeOf(StatusBar)).call(this, props));
+
+		_this.state = {
+			networkStatus: _this.props.data.networkStatus
+		};
+		return _this;
+	}
+
+	_createClass(StatusBar, [{
+		key: "componentWillReceiveProps",
+		value: function componentWillReceiveProps(nextProps) {
+			if (!(0, _deepEqual2.default)(nextProps.data, this.props.data)) {
+				this.setState({ networkStatus: nextProps.data.networkStatus });
+			}
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			var status_divs = [];
+			//is mobile auth set up 
+			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
+			if (read_data && "mobileAuthCode" in read_data) {
+				status_divs.push(_react2.default.createElement("i", { className: "mobile mobileauth_icon_green big icon status_icon", key: "status_mobileauth",
+					"data-title": "Mobile 2FA is on!",
+					"data-variation": "tiny",
+					"data-position": "top center" }));
+			}
+
+			// is wifi connected
+			if (this.state.networkStatus == "online") {
+				status_divs.push(_react2.default.createElement("i", { className: "wifi wifi_icon_blue big icon status_icon", key: "status_wifi_connected",
+					"data-title": "Online",
+					"data-variation": "tiny",
+					"data-position": "top right" }));
+			} else {
+				status_divs.push(_react2.default.createElement("i", { className: "plane big icon", key: "status_wifi_disconnected",
+					"data-title": "Offline",
+					"data-variation": "tiny",
+					"data-position": "top right" }));
+			}
+
+			return _react2.default.createElement(
+				"div",
+				{ className: "ui bottom right attached label status_label" },
+				status_divs
+			);
+		}
+	}]);
+
+	return StatusBar;
+}(_react2.default.Component);
+
+exports.default = StatusBar;
+
+
+StatusBar.defaultProps = {
+	networkStatus: navigator.onLine ? "online" : "offline"
+};
 
 /***/ }),
 
@@ -1774,6 +1875,162 @@ function copy(text, options) {
 }
 
 module.exports = copy;
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/index.js":
+/*!******************************************!*\
+  !*** ./node_modules/deep-equal/index.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var pSlice = Array.prototype.slice;
+var objectKeys = __webpack_require__(/*! ./lib/keys.js */ "./node_modules/deep-equal/lib/keys.js");
+var isArguments = __webpack_require__(/*! ./lib/is_arguments.js */ "./node_modules/deep-equal/lib/is_arguments.js");
+
+var deepEqual = module.exports = function (actual, expected, opts) {
+  if (!opts) opts = {};
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+
+  } else if (actual instanceof Date && expected instanceof Date) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if (!actual || !expected || typeof actual != 'object' && typeof expected != 'object') {
+    return opts.strict ? actual === expected : actual == expected;
+
+  // 7.4. For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected, opts);
+  }
+}
+
+function isUndefinedOrNull(value) {
+  return value === null || value === undefined;
+}
+
+function isBuffer (x) {
+  if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
+  if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
+    return false;
+  }
+  if (x.length > 0 && typeof x[0] !== 'number') return false;
+  return true;
+}
+
+function objEquiv(a, b, opts) {
+  var i, key;
+  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
+    return false;
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (isArguments(a)) {
+    if (!isArguments(b)) {
+      return false;
+    }
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return deepEqual(a, b, opts);
+  }
+  if (isBuffer(a)) {
+    if (!isBuffer(b)) {
+      return false;
+    }
+    if (a.length !== b.length) return false;
+    for (i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+  try {
+    var ka = objectKeys(a),
+        kb = objectKeys(b);
+  } catch (e) {//happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!deepEqual(a[key], b[key], opts)) return false;
+  }
+  return typeof a === typeof b;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/lib/is_arguments.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/deep-equal/lib/is_arguments.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var supportsArgumentsClass = (function(){
+  return Object.prototype.toString.call(arguments)
+})() == '[object Arguments]';
+
+exports = module.exports = supportsArgumentsClass ? supported : unsupported;
+
+exports.supported = supported;
+function supported(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+};
+
+exports.unsupported = unsupported;
+function unsupported(object){
+  return object &&
+    typeof object == 'object' &&
+    typeof object.length == 'number' &&
+    Object.prototype.hasOwnProperty.call(object, 'callee') &&
+    !Object.prototype.propertyIsEnumerable.call(object, 'callee') ||
+    false;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/lib/keys.js":
+/*!*********************************************!*\
+  !*** ./node_modules/deep-equal/lib/keys.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+exports = module.exports = typeof Object.keys === 'function'
+  ? Object.keys : shim;
+
+exports.shim = shim;
+function shim (obj) {
+  var keys = [];
+  for (var key in obj) keys.push(key);
+  return keys;
+}
 
 
 /***/ }),

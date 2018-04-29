@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import config from "../config/config.js";
 import NetworkConfirmationModal from "./NetworkConfirmationModal.js";
 import GoogleAuth from "./GoogleAuth.js";
-import jetpack from "fs-jetpack";
+import StatusBar from "./StatusBar.js";
 
 export default class MainView extends React.Component {
 	constructor(props){
@@ -22,7 +22,7 @@ export default class MainView extends React.Component {
 		this.handleMobileAuthClick = this.handleMobileAuthClick.bind(this);
 		this.getMainViewComponent = this.getMainViewComponent.bind(this);
 		this.handleAuthBackButtonClick = this.handleAuthBackButtonClick.bind(this);
-		this.renderStatuses = this.renderStatuses.bind(this);
+
 	}
 
 	componentDidMount(){
@@ -88,42 +88,6 @@ export default class MainView extends React.Component {
 		this.setState({currView: config.views.MAINVIEW});	
 	}
 
-	renderStatuses(){
-		let status_divs = [];
-		//is mobile auth set up 
-		let read_data = jetpack.read(config.walletConfigFile, "json");
-		if (read_data && ("mobileAuthCode" in read_data)){
-			status_divs.push(
-				<i className="mobile mobileauth_icon_green big icon status_icon" key="status_mobileauth"
-					data-title="Mobile 2FA is on!"
-			  		data-variation="tiny"
-			  		data-position="top center"/>
-			  	);
-		}
-
-		// is wifi connected
-		if (this.state.networkStatus == this.ONLINE){
-			status_divs.push(
-				<i className="wifi wifi_icon_blue big icon status_icon" key="status_wifi_connected"
-					data-title="Online"
-			  		data-variation="tiny"
-			  		data-position="top right"/>
-			  	);
-		}else{
-			status_divs.push(
-				<i className="plane big icon" key="status_wifi_disconnected"
-					data-title="Offline"
-			  		data-variation="tiny"
-			  		data-position="top right"/>
-			  	);
-		}
-
-		return(
-			<div className="ui bottom right attached label status_label">
-				{status_divs}
-			</div>
-		);
-	}
 
 	getMainViewComponent(){
 		return (
@@ -162,7 +126,6 @@ export default class MainView extends React.Component {
 					</div>
 					
 				</div>
-				{this.renderStatuses()}
 				<NetworkConfirmationModal networkStatus={this.state.networkStatus}/>
 			</div>
 		);
@@ -178,9 +141,14 @@ export default class MainView extends React.Component {
 			);
 		}
 
+		let status_data = {
+			networkStatus: this.state.networkStatus
+		}
+		
 		return(
 			<div>
 				{view_component}
+				<StatusBar data={status_data}/>
 			</div>
 		);
 	}
