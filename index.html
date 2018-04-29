@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
-	<meta charset="UTF-8">
-	<title>Tron Wallet</title>
-	<link rel="stylesheet" href="bundle/styles.css">
-	<link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
-  </head>
-  <body>
-  	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-	<script src="semantic/dist/semantic.min.js"></script>
-	
-	<div id="root_renderer"></div>
-	<script src="bundle/renderer.bundle.js"></script>
-  </body>
+  	<head>
+		<meta charset="UTF-8">
+		<title>Tron Wallet</title>
+		<link rel="stylesheet" href="bundle/styles.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css">
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<script>
+		    try {
+		        $ = jQuery = module.exports;
+		        // If you want module.exports to be empty, uncomment:
+		        // module.exports = {};
+		    } catch(e) {}
+		</script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
+  	</head>
+  	<body>
+		<div id="root_renderer"></div>
+		<script src="bundle/renderer.bundle.js"></script>
+  	</body>
 </html>

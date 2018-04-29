@@ -5,9 +5,25 @@
 	font-size: medium !important;
 	
 }
+.button_left:hover{
+	background-color: #9ac543 !important;
+}
+
 .button_right{
 	border-top-left-radius: 2em !important;
 	border-bottom-left-radius: 2em !important;
 	color: #2226dc !important;
 	font-size: medium !important;
+}
+.button_right:hover{
+	background-color: #9ac543 !important;
+}
+
+#network_modal{
+	height: fit-content;
+}
+
+.network_modal_buttons{
+	display: table !important;
+	position: absolute !important;
 }

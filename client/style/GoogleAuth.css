@@ -1,0 +1,16 @@
+.test_button{
+	background-color: #3d53bb !important;
+	color: white !important;
+}
+.test_button:hover{
+	background-color: rgba(34, 69, 226, 0.49) !important;
+}
+
+.generate_button{
+	background-color: #3d53bb !important;
+	color: white !important;
+}
+.generate_button:hover{
+	background-color: rgba(34, 69, 226, 0.49) !important;
+}
+

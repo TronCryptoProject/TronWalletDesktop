@@ -1,5 +1,6 @@
 @import "./paypal-bolt.css";
 @import "./MainView.css";
+@import "./GoogleAuth.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -10,6 +11,18 @@ img, button{
 }
 
 .blue_gradient_background{
-	background: linear-gradient(90deg,#687cde 0,#91a3ce 40%,rgba(164, 193, 247, 0.33));
+	background: linear-gradient(10deg,#687cde 0,#91a3ce 40%,rgba(164, 193, 247, 0.33));
 	padding: 3em;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
+
+textarea:focus, input:focus{
+    outline: none;
 }

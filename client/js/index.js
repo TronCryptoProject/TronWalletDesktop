@@ -7,4 +7,17 @@ const ReactDOM = require('react-dom');
 
 import MainView from './MainView.js';
 
-ReactDOM.render(<MainView />, document.getElementById('root_renderer'));
+class IndexPage extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    render(){
+    	return(
+    		<div>
+    			<MainView/>
+    		</div>
+    	);
+    }
+}
+ReactDOM.render(<IndexPage />, document.getElementById('root_renderer'));

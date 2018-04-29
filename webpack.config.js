@@ -5,6 +5,7 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const config = {
+  devtool: "source-map",
   watch: true,
   context: __dirname,
   entry: [
@@ -51,7 +52,7 @@ const config = {
   plugins: [
 	  	new ExtractTextPlugin("styles.css"),
 	  	new webpack.DefinePlugin({
-			'process.env.NODE_ENV': '"production"'
+			'process.env.NODE_ENV': '"development"'
 		}),
 	  	new OptimizeCssAssetsPlugin({
 			cssProcessor: require('cssnano'),
