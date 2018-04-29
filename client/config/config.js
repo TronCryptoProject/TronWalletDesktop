@@ -5,6 +5,5 @@ module.exports = {
 		"COLDOFFLINE": "COLDOFFLINE",
 		"COLDONLINE": "COLDONLINE"
 	},
-	"configFile": "wallet.config.json"
-
+	"walletConfigFile": "wallet.config.json"
 }

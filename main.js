@@ -9,12 +9,12 @@ const url = require('url')
 const isDev = require('electron-is-dev');
 
 if (isDev){
-  console.log("isdev");
-  require('electron-reload')(__dirname,
+  console.log("isdev: " + process.defaultApp);
+  /*require('electron-reload')(__dirname,
     {
       electron: require('${__dirname}/../../node_modules/electron')
     }
-  );
+  );*/
 }else{
    console.log("no isdev");
 }

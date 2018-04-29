@@ -14,3 +14,53 @@
 	background-color: rgba(34, 69, 226, 0.49) !important;
 }
 
+.qrcard_qr_label{
+	overflow-x: scroll;
+}
+.qrcard_qr_label:::-webkit-scrollbar{
+	 width: 0px;  /* remove scrollbar space */
+    background: transparent;  /* optional: just make scrollbar invisible */
+    -ms-overflow-style: none;  
+    overflow: -moz-scrollbars-none;
+}
+
+.qrcode_image{
+	width: 250px !important;
+	height: 250px !important;
+}
+
+#generate_qr_side{
+	width: 250px !important;
+	margin: 0 auto !important;
+}
+
+@media (min-width: 30px) and (max-width: 850px){
+	#generate_qr_side{
+		width: 180px !important;
+		margin: 0 auto !important;
+		transition: width 1s;
+		-webkit-transition: width 1s;
+		transition-timing-function: linear;
+	}
+	.qrcode_image{
+		width: 180px !important;
+		height: 180px !important;
+		transition: width 1s;
+		-webkit-transition: width 1s;
+		transition-timing-function: linear;
+	}
+}
+.raised_qr_card{
+	box-shadow: 0 0 0 4px #d4d4d5,
+				0 12px 14px 0 rgba(34,36,38,.12),
+				0 12px 50px 0 rgba(34,36,38,.15) !important;
+}
+
+#qrcheck_modal{
+	height: fit-content;
+}
+
+
+.ui.button {
+    transition: none !important;
+}

@@ -88,8 +88,7 @@ module.exports = {
 		"COLDOFFLINE": "COLDOFFLINE",
 		"COLDONLINE": "COLDONLINE"
 	},
-	"configFile": "wallet.config.json"
-
+	"walletConfigFile": "wallet.config.json"
 };
 
 /***/ }),
@@ -136,6 +135,10 @@ var _fsJetpack = __webpack_require__(/*! fs-jetpack */ "./node_modules/fs-jetpac
 
 var _fsJetpack2 = _interopRequireDefault(_fsJetpack);
 
+var _copyToClipboard = __webpack_require__(/*! copy-to-clipboard */ "./node_modules/copy-to-clipboard/index.js");
+
+var _copyToClipboard2 = _interopRequireDefault(_copyToClipboard);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -152,25 +155,113 @@ var GoogleAuth = function (_React$Component) {
 
 		var _this = _possibleConstructorReturn(this, (GoogleAuth.__proto__ || Object.getPrototypeOf(GoogleAuth)).call(this, props));
 
+		_this.state = {
+			qrcodeData: "",
+			qrcode: "",
+			qrcodeCopied: false,
+			token: "",
+			tokenVerified: ""
+		};
 		_this.handleBackButtonClick = _this.handleBackButtonClick.bind(_this);
 		_this.generateCode = _this.generateCode.bind(_this);
+		_this.handleGenerateDismissCick = _this.handleGenerateDismissCick.bind(_this);
+		_this.renderMainHeader = _this.renderMainHeader.bind(_this);
+		_this.renderQRCheck = _this.renderQRCheck.bind(_this);
+		_this.renderQRShapeSideMain = _this.renderQRShapeSideMain.bind(_this);
+		_this.renderQRShapeSideFlip = _this.renderQRShapeSideFlip.bind(_this);
+		_this.handleQRCodeCopy = _this.handleQRCodeCopy.bind(_this);
+		_this.handleCheckCode = _this.handleCheckCode.bind(_this);
+		_this.onChangeHandler = _this.onChangeHandler.bind(_this);
 		return _this;
 	}
 
 	_createClass(GoogleAuth, [{
+		key: "onChangeHandler",
+		value: function onChangeHandler(val) {
+			var _this2 = this;
+
+			if (val.length >= 6) {
+				val = val.substring(0, 6);
+				this.setState({ token: val }, function () {
+					_this2.handleCheckCode();
+				});
+			}
+		}
+	}, {
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			$("#qr_shape").shape();
+		}
+	}, {
 		key: "handleBackButtonClick",
 		value: function handleBackButtonClick() {
 			this.props.handleBackButtonClick();
 		}
 	}, {
+		key: "handleGenerateDismissCick",
+		value: function handleGenerateDismissCick() {
+			$("#qr_shape").shape("flip back");
+		}
+	}, {
+		key: "handleCheckCode",
+		value: function handleCheckCode() {
+			var _this3 = this;
+
+			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
+			if (!read_data || !("mobileAuthCode" in read_data)) {
+				$("#qrcheck_modal").modal({
+					blurring: true,
+					closable: true
+				}).modal("show");
+			} else {
+				var token_status = _speakeasy2.default.totp.verify({
+					secret: read_data.mobileAuthCode,
+					encoding: "base32",
+					token: this.state.token
+				});
+
+				if (token_status) {
+					this.setState({ tokenVerified: "success" }, function () {
+						$("#token_check_btn").transition('pulse');
+						setTimeout(function () {
+							_this3.setState({ tokenVerified: "" });
+						}, 1000);
+					});
+				} else {
+					this.setState({ tokenVerified: "failed" }, function () {
+						$("#token_check_btn").transition('shake');
+						setTimeout(function () {
+							_this3.setState({ tokenVerified: "" });
+						}, 1000);
+					});
+				}
+			}
+		}
+	}, {
+		key: "handleQRCodeCopy",
+		value: function handleQRCodeCopy() {
+			var _this4 = this;
+
+			(0, _copyToClipboard2.default)(this.state.qrcode);
+			this.setState({ qrcodeCopied: true }, function () {
+				setTimeout(function () {
+					_this4.setState({ qrcodeCopied: false });
+				}, 700);
+			});
+		}
+	}, {
 		key: "generateCode",
 		value: function generateCode() {
+			var _this5 = this;
+
+			$("#generate_button").addClass("loading");
+
 			var mobilecode = _speakeasy2.default.generateSecret({ length: 20 });
 
-			if (_fsJetpack2.default.file(_config2.default.walletConfigFile)) {
+			if (_fsJetpack2.default.exists(_config2.default.walletConfigFile) == "file") {
 				var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
 				read_data.mobileAuthCode = mobilecode.base32;
-				_fsJetpack2.default.write(_config2.default.walletConfigFile, read_data, { atomic: true });
+				_fsJetpack2.default.write(_config2.default.walletConfigFile, read_data);
 			} else {
 				var data = {
 					mobileAuthCode: mobilecode.base32
@@ -178,13 +269,76 @@ var GoogleAuth = function (_React$Component) {
 				_fsJetpack2.default.write(_config2.default.walletConfigFile, data, { atomic: true });
 			}
 
-			_qrcode2.default.toDataURL(mobilecode.otpauth_url, function (error, img_data) {});
+			_qrcode2.default.toDataURL(mobilecode.otpauth_url, function (error, img_data) {
+				if (!error) {
+					setTimeout(function () {
+						$("#generate_button").removeClass("loading");
+
+						_this5.setState({ qrcodeData: img_data, qrcode: mobilecode.base32 }, function () {
+							$("#qr_shape").shape("flip over");
+							/*$("#generate_main_side").addClass("active");
+       $("#generate_qr_side").addClass("active");
+       $("#generate_qr_side").transition("zoom", "2000s");*/
+						});
+					}, 1000);
+				}
+			});
 		}
 	}, {
-		key: "render",
-		value: function render() {
-			var code_input_props = {
+		key: "renderMainHeader",
+		value: function renderMainHeader() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "three column row" },
+				_react2.default.createElement(
+					"div",
+					{ className: "two wide column" },
+					_react2.default.createElement(
+						"button",
+						{ className: "circular medium ui icon button", onClick: this.handleBackButtonClick },
+						_react2.default.createElement("i", { className: "arrow left icon" })
+					)
+				),
+				_react2.default.createElement(
+					"div",
+					{ className: "thirteen wide column" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui grid" },
+						_react2.default.createElement(
+							"div",
+							{ className: "ui one column page centered padded grid" },
+							_react2.default.createElement(
+								"div",
+								{ className: "row m-0 p-0" },
+								_react2.default.createElement("img", { className: "ui icon", src: "client/images/securityauth.png", width: "90", height: "90" })
+							),
+							_react2.default.createElement(
+								"div",
+								{ className: "row m-0 p-0" },
+								_react2.default.createElement(
+									"h2",
+									{ className: "ui header" },
+									"Two Factor Authentication",
+									_react2.default.createElement(
+										"div",
+										{ className: "sub header" },
+										"with Google Authenticator"
+									)
+								)
+							)
+						)
+					)
+				),
+				_react2.default.createElement("div", { className: "one wide column" })
+			);
+		}
+	}, {
+		key: "renderQRCheck",
+		value: function renderQRCheck() {
+			var _this6 = this;
 
+			var code_input_props = {
 				inputStyle: {
 					fontFamily: "monospace",
 					borderRadius: "50px",
@@ -201,135 +355,180 @@ var GoogleAuth = function (_React$Component) {
 					backgroundColor: "transparent"
 				}
 			};
+
+			var getTokenVerifyButton = function getTokenVerifyButton() {
+				if (_this6.state.tokenVerified == "success") {
+					return _react2.default.createElement(
+						"button",
+						{ className: "ui icon green button", id: "token_check_btn" },
+						_react2.default.createElement("i", { className: "check icon" })
+					);
+				} else if (_this6.state.tokenVerified == "failed") {
+					return _react2.default.createElement(
+						"button",
+						{ className: "ui icon red button", id: "token_check_btn" },
+						_react2.default.createElement("i", { className: "icon-clear" })
+					);
+				} else {
+					return _react2.default.createElement(
+						"button",
+						{ className: "ui right labeled icon button test_button",
+							onClick: _this6.handleCheckCode, id: "token_check_btn" },
+						"Check",
+						_react2.default.createElement("i", { className: "chevron right icon" })
+					);
+				}
+			};
+
+			return _react2.default.createElement(
+				"div",
+				{ className: "column" },
+				_react2.default.createElement(
+					"div",
+					{ className: "ui grid" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui one column page centered padded grid" },
+						_react2.default.createElement(
+							"div",
+							{ className: "row" },
+							_react2.default.createElement(
+								"h2",
+								{ className: "ui header" },
+								"Test Code"
+							)
+						),
+						_react2.default.createElement(
+							"div",
+							{ className: "row" },
+							_react2.default.createElement(_reactCodeInput2.default, _extends({ type: "number", fields: 6 }, code_input_props, {
+								onChange: this.onChangeHandler }))
+						),
+						_react2.default.createElement(
+							"div",
+							{ className: "row" },
+							getTokenVerifyButton()
+						)
+					)
+				)
+			);
+		}
+	}, {
+		key: "renderQRShapeSideMain",
+		value: function renderQRShapeSideMain() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "side active", id: "generate_main_side" },
+				_react2.default.createElement(
+					"div",
+					{ className: "ui one column page centered padded grid" },
+					_react2.default.createElement(
+						"div",
+						{ className: "row" },
+						_react2.default.createElement(
+							"h2",
+							{ className: "ui header" },
+							"Generate Code"
+						)
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "row" },
+						_react2.default.createElement("img", { src: "client/images/mobileauthplain.png", width: "170", height: "155" })
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "row" },
+						_react2.default.createElement(
+							"button",
+							{ className: "ui labeled icon button generate_button", onClick: this.generateCode,
+								id: "generate_button" },
+							_react2.default.createElement("i", { className: "qrcode icon" }),
+							"Generate"
+						)
+					)
+				)
+			);
+		}
+	}, {
+		key: "renderQRShapeSideFlip",
+		value: function renderQRShapeSideFlip() {
+			var _this7 = this;
+
+			var getCopyIcon = function getCopyIcon() {
+				if (_this7.state.qrcodeCopied) {
+					return _react2.default.createElement("i", { className: "clipboard check green icon" });
+				} else {
+					return _react2.default.createElement("i", { className: "clipboard outline icon" });
+				}
+			};
+
+			return _react2.default.createElement(
+				"div",
+				{ className: "side", id: "generate_qr_side" },
+				_react2.default.createElement(
+					"div",
+					{ className: "ui raised_qr_card card" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui left labeled button", tabIndex: "0" },
+						_react2.default.createElement(
+							"a",
+							{ className: "ui basic label qrcard_qr_label" },
+							this.state.qrcode
+						),
+						_react2.default.createElement(
+							"div",
+							{ className: "ui icon button", onClick: this.handleQRCodeCopy },
+							getCopyIcon()
+						)
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "image" },
+						_react2.default.createElement("img", { src: this.state.qrcodeData, className: "qrcode_image" })
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "ui bottom attached button", onClick: this.handleGenerateDismissCick },
+						"Dismiss"
+					)
+				)
+			);
+		}
+	}, {
+		key: "render",
+		value: function render() {
+
 			return _react2.default.createElement(
 				"div",
 				{ className: "draggable blue_gradient_background", id: "googleauthview" },
 				_react2.default.createElement(
 					"div",
 					{ className: "ui grid" },
-					_react2.default.createElement(
-						"div",
-						{ className: "three column row" },
-						_react2.default.createElement(
-							"div",
-							{ className: "two wide column" },
-							_react2.default.createElement(
-								"button",
-								{ className: "circular medium ui icon button", onClick: this.handleBackButtonClick },
-								_react2.default.createElement("i", { className: "arrow left icon" })
-							)
-						),
-						_react2.default.createElement(
-							"div",
-							{ className: "thirteen wide column" },
-							_react2.default.createElement(
-								"div",
-								{ className: "ui grid" },
-								_react2.default.createElement(
-									"div",
-									{ className: "ui one column page centered padded grid" },
-									_react2.default.createElement(
-										"div",
-										{ className: "row m-0 p-0" },
-										_react2.default.createElement("img", { className: "ui icon", src: "client/images/securityauth.png", width: "90", height: "90" })
-									),
-									_react2.default.createElement(
-										"div",
-										{ className: "row m-0 p-0" },
-										_react2.default.createElement(
-											"h2",
-											{ className: "ui header" },
-											"Two Factor Authentication",
-											_react2.default.createElement(
-												"div",
-												{ className: "sub header" },
-												"with Google Authenticator"
-											)
-										)
-									)
-								)
-							)
-						),
-						_react2.default.createElement("div", { className: "one wide column" })
-					),
+					this.renderMainHeader(),
 					_react2.default.createElement("div", { className: "row" }),
 					_react2.default.createElement(
 						"div",
 						{ className: "two column row" },
 						_react2.default.createElement(
 							"div",
-							{ className: "column" },
+							{ className: "center aligned column" },
 							_react2.default.createElement(
 								"div",
-								{ className: "ui grid" },
+								{ className: "ui shape", id: "qr_shape" },
 								_react2.default.createElement(
 									"div",
-									{ className: "ui one column page centered padded grid" },
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement(
-											"h2",
-											{ className: "ui header" },
-											"Generate Code"
-										)
-									),
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement("img", { src: "client/images/mobileauthplain.png", width: "120", height: "110" })
-									),
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement(
-											"button",
-											{ className: "ui labeled icon button generate_button", onClick: this.generateCode },
-											_react2.default.createElement("i", { className: "qrcode icon" }),
-											"Generate"
-										)
-									)
+									{ className: "centered sides" },
+									this.renderQRShapeSideMain(),
+									this.renderQRShapeSideFlip()
 								)
 							)
 						),
-						_react2.default.createElement(
-							"div",
-							{ className: "column" },
-							_react2.default.createElement(
-								"div",
-								{ className: "ui grid" },
-								_react2.default.createElement(
-									"div",
-									{ className: "ui one column page centered padded grid" },
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement(
-											"h2",
-											{ className: "ui header" },
-											"Test Code"
-										)
-									),
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement(_reactCodeInput2.default, _extends({ type: "number", fields: 6 }, code_input_props))
-									),
-									_react2.default.createElement(
-										"div",
-										{ className: "row" },
-										_react2.default.createElement(
-											"button",
-											{ className: "ui right labeled icon button test_button" },
-											"Check",
-											_react2.default.createElement("i", { className: "chevron right icon" })
-										)
-									)
-								)
-							)
-						)
+						this.renderQRCheck()
 					)
-				)
+				),
+				_react2.default.createElement(QRCheckModal, null)
 			);
 		}
 	}]);
@@ -339,6 +538,52 @@ var GoogleAuth = function (_React$Component) {
 
 exports.default = GoogleAuth;
 
+var QRCheckModal = function (_React$Component2) {
+	_inherits(QRCheckModal, _React$Component2);
+
+	function QRCheckModal(props) {
+		_classCallCheck(this, QRCheckModal);
+
+		return _possibleConstructorReturn(this, (QRCheckModal.__proto__ || Object.getPrototypeOf(QRCheckModal)).call(this, props));
+	}
+
+	_createClass(QRCheckModal, [{
+		key: "render",
+		value: function render() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "ui basic modal", id: "qrcheck_modal" },
+				_react2.default.createElement(
+					"div",
+					{ className: "ui icon header" },
+					_react2.default.createElement("i", { className: "exclamation circle icon" }),
+					"No Registration"
+				),
+				_react2.default.createElement(
+					"div",
+					{ className: "p-5" },
+					_react2.default.createElement(
+						"p",
+						null,
+						"QR Code is not registered with Google Auth. Please first generate QR Code and then test to confirm registeration."
+					)
+				),
+				_react2.default.createElement(
+					"div",
+					{ className: "actions" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui green ok button" },
+						_react2.default.createElement("i", { className: "remove icon" }),
+						"Okay"
+					)
+				)
+			);
+		}
+	}]);
+
+	return QRCheckModal;
+}(_react2.default.Component);
 
 GoogleAuth.defaultProps = {
 	handleBackButtonClick: function handleBackButtonClick() {}
@@ -382,6 +627,10 @@ var _GoogleAuth = __webpack_require__(/*! ./GoogleAuth.js */ "./client/js/Google
 
 var _GoogleAuth2 = _interopRequireDefault(_GoogleAuth);
 
+var _fsJetpack = __webpack_require__(/*! fs-jetpack */ "./node_modules/fs-jetpack/main.js");
+
+var _fsJetpack2 = _interopRequireDefault(_fsJetpack);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -412,6 +661,7 @@ var MainView = function (_React$Component) {
 		_this.handleMobileAuthClick = _this.handleMobileAuthClick.bind(_this);
 		_this.getMainViewComponent = _this.getMainViewComponent.bind(_this);
 		_this.handleAuthBackButtonClick = _this.handleAuthBackButtonClick.bind(_this);
+		_this.renderStatuses = _this.renderStatuses.bind(_this);
 		return _this;
 	}
 
@@ -420,6 +670,11 @@ var MainView = function (_React$Component) {
 		value: function componentDidMount() {
 			window.addEventListener(this.ONLINE, this.networkStatusUpdate);
 			window.addEventListener(this.OFFLINE, this.networkStatusUpdate);
+
+			$('.status_icon').popup({
+				on: 'hover',
+				closable: true
+			});
 		}
 	}, {
 		key: "componentWillUnmount",
@@ -478,6 +733,38 @@ var MainView = function (_React$Component) {
 		key: "handleAuthBackButtonClick",
 		value: function handleAuthBackButtonClick() {
 			this.setState({ currView: _config2.default.views.MAINVIEW });
+		}
+	}, {
+		key: "renderStatuses",
+		value: function renderStatuses() {
+			var status_divs = [];
+			//is mobile auth set up 
+			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
+			if (read_data && "mobileAuthCode" in read_data) {
+				status_divs.push(_react2.default.createElement("i", { className: "mobile mobileauth_icon_green big icon status_icon", key: "status_mobileauth",
+					"data-title": "Mobile 2FA is on!",
+					"data-variation": "tiny",
+					"data-position": "top center" }));
+			}
+
+			// is wifi connected
+			if (this.state.networkStatus == this.ONLINE) {
+				status_divs.push(_react2.default.createElement("i", { className: "wifi wifi_icon_blue big icon status_icon", key: "status_wifi_connected",
+					"data-title": "Online",
+					"data-variation": "tiny",
+					"data-position": "top right" }));
+			} else {
+				status_divs.push(_react2.default.createElement("i", { className: "plane big icon", key: "status_wifi_disconnected",
+					"data-title": "Offline",
+					"data-variation": "tiny",
+					"data-position": "top right" }));
+			}
+
+			return _react2.default.createElement(
+				"div",
+				{ className: "ui bottom right attached label status_label" },
+				status_divs
+			);
 		}
 	}, {
 		key: "getMainViewComponent",
@@ -548,6 +835,7 @@ var MainView = function (_React$Component) {
 						)
 					)
 				),
+				this.renderStatuses(),
 				_react2.default.createElement(_NetworkConfirmationModal2.default, { networkStatus: this.state.networkStatus })
 			);
 		}
@@ -1396,6 +1684,96 @@ module.exports = function (xs, fn) {
 var isArray = Array.isArray || function (xs) {
     return Object.prototype.toString.call(xs) === '[object Array]';
 };
+
+
+/***/ }),
+
+/***/ "./node_modules/copy-to-clipboard/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/copy-to-clipboard/index.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var deselectCurrent = __webpack_require__(/*! toggle-selection */ "./node_modules/toggle-selection/index.js");
+
+var defaultMessage = 'Copy to clipboard: #{key}, Enter';
+
+function format(message) {
+  var copyKey = (/mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl') + '+C';
+  return message.replace(/#{\s*key\s*}/g, copyKey);
+}
+
+function copy(text, options) {
+  var debug, message, reselectPrevious, range, selection, mark, success = false;
+  if (!options) { options = {}; }
+  debug = options.debug || false;
+  try {
+    reselectPrevious = deselectCurrent();
+
+    range = document.createRange();
+    selection = document.getSelection();
+
+    mark = document.createElement('span');
+    mark.textContent = text;
+    // reset user styles for span element
+    mark.style.all = 'unset';
+    // prevents scrolling to the end of the page
+    mark.style.position = 'fixed';
+    mark.style.top = 0;
+    mark.style.clip = 'rect(0, 0, 0, 0)';
+    // used to preserve spaces and line breaks
+    mark.style.whiteSpace = 'pre';
+    // do not inherit user-select (it may be `none`)
+    mark.style.webkitUserSelect = 'text';
+    mark.style.MozUserSelect = 'text';
+    mark.style.msUserSelect = 'text';
+    mark.style.userSelect = 'text';
+
+    document.body.appendChild(mark);
+
+    range.selectNode(mark);
+    selection.addRange(range);
+
+    var successful = document.execCommand('copy');
+    if (!successful) {
+      throw new Error('copy command was unsuccessful');
+    }
+    success = true;
+  } catch (err) {
+    debug && console.error('unable to copy using execCommand: ', err);
+    debug && console.warn('trying IE specific stuff');
+    try {
+      window.clipboardData.setData('text', text);
+      success = true;
+    } catch (err) {
+      debug && console.error('unable to copy using clipboardData: ', err);
+      debug && console.error('falling back to prompt');
+      message = format('message' in options ? options.message : defaultMessage);
+      window.prompt(message, text);
+    }
+  } finally {
+    if (selection) {
+      if (typeof selection.removeRange == 'function') {
+        selection.removeRange(range);
+      } else {
+        selection.removeAllRanges();
+      }
+    }
+
+    if (mark) {
+      document.body.removeChild(mark);
+    }
+    reselectPrevious();
+  }
+
+  return success;
+}
+
+module.exports = copy;
 
 
 /***/ }),
@@ -32524,6 +32902,56 @@ exports.otpauthURL = function otpauthURL (options) {
     pathname: label,
     query: query
   });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/toggle-selection/index.js":
+/*!************************************************!*\
+  !*** ./node_modules/toggle-selection/index.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+module.exports = function () {
+  var selection = document.getSelection();
+  if (!selection.rangeCount) {
+    return function () {};
+  }
+  var active = document.activeElement;
+
+  var ranges = [];
+  for (var i = 0; i < selection.rangeCount; i++) {
+    ranges.push(selection.getRangeAt(i));
+  }
+
+  switch (active.tagName.toUpperCase()) { // .toUpperCase handles XHTML
+    case 'INPUT':
+    case 'TEXTAREA':
+      active.blur();
+      break;
+
+    default:
+      active = null;
+      break;
+  }
+
+  selection.removeAllRanges();
+  return function () {
+    selection.type === 'Caret' &&
+    selection.removeAllRanges();
+
+    if (!selection.rangeCount) {
+      ranges.forEach(function(range) {
+        selection.addRange(range);
+      });
+    }
+
+    active &&
+    active.focus();
+  };
 };
 
 
