@@ -290,8 +290,8 @@ export default class GoogleAuth extends React.Component{
 								<div className="two wide column"/>
 								<div className="thirteen wide center aligned column">
 									<p>
-										Enable mobile authentication to better security for your wallet.
-										You will be asked to verify transaction through mobile before
+										Enable mobile authentication for better security of your wallet.
+										You will be asked to verify transactions through mobile before
 										broadcasting them. 
 									</p>
 								</div>

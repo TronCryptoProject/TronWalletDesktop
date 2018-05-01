@@ -1,0 +1,80 @@
+.cold_offline_header_title{
+	font-family: Avenir!important;
+    font-size: 50px!important;
+    color: rgba(0, 0, 0, 0.2);
+    background: linear-gradient(to right, #3e4ff3 0%,#3e6ee0 40%,#53afe7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0);
+    position: relative;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.header_label_div{
+	height: 100% !important;
+    background: transparent !important;
+    font-weight: 400 !important;
+}
+
+.borderless_tabular_menu{
+	border:none !important;
+}
+
+.right_border_tabular_menu{
+	border-right: 1px solid #d4d4d5 !important;
+}
+
+.menu_item_active {
+    color: rgba(255, 255, 255, 0.95) !important;
+    border-color: #d4d4e0 !important;
+    margin: 0 -1px 0 0 !important;
+    border-radius: 1rem 0 0 1rem!important;
+    font-family: Avenir!important;
+    border-right: none !important;
+    background: linear-gradient(90deg,#7d86e0 0,#789bec 40%,rgba(173, 188, 222, 0)) !important;
+    font-weight: inherit !important;
+}
+
+.violet_label{
+	background-color: #7551ca!important;
+    border-color: #7551ca!important;
+    color: #fff!important;
+}
+
+.light_blue_label{
+	background-color: #58b0f1!important;
+    border-color: #58b0f1!important;
+    color: #fff!important;
+}
+
+.gray_purple_label{
+	background-color: #748bd0!important;
+    border-color: #748bd0!important;
+    color: #fff!important;
+}
+
+.magenta_label{
+	background-color: #9f66ca!important;
+    border-color: #9f66ca!important;
+    color: #fff!important;
+}
+
+.cold_offline_import_btn{
+	background-color: #475db1 !important;
+    font-family: Avenir!important;
+    font-weight: 400 !important;
+    color: white !important;
+    margin-bottom: -1px !important;
+}
+.cold_offline_import_btn:hover{
+	background-color: #657cd4 !important;
+}
+
+.cold_offline_import_card{
+	box-shadow: 0 0 0 1px #d4d4d5,
+				0 1px 14px 0 rgba(34,36,38,.12),
+				0 12px 50px 0 rgba(34,36,38,.15) !important;
+    border-radius: 1em !important;
+}

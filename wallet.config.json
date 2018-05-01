@@ -1,3 +1,13 @@
 {
-  "mobileAuthCode": "PJOXUV2OLJ2F43RSIV5H24Z2IA6HCLSG"
+  "mobileAuthCode": "EMUWSUBSOZWE2UDSKEQTSL2DIRJCSYRQ",
+  "accounts": [
+    {
+      "accName": "Billy",
+      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySRNNDjdyqH"
+    },
+    {
+      "accName": "Carl",
+      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySRNN2jdyqH"
+    }
+  ]
 }

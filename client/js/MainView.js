@@ -4,6 +4,7 @@ import config from "../config/config.js";
 import NetworkConfirmationModal from "./NetworkConfirmationModal.js";
 import GoogleAuth from "./GoogleAuth.js";
 import StatusBar from "./StatusBar.js";
+import ColdOfflineMainView from "./ColdOfflineMainView.js";
 
 export default class MainView extends React.Component {
 	constructor(props){
@@ -21,7 +22,7 @@ export default class MainView extends React.Component {
 		this.handleColdOnlineClick = this.handleColdOnlineClick.bind(this);
 		this.handleMobileAuthClick = this.handleMobileAuthClick.bind(this);
 		this.getMainViewComponent = this.getMainViewComponent.bind(this);
-		this.handleAuthBackButtonClick = this.handleAuthBackButtonClick.bind(this);
+		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 
 	}
 
@@ -44,13 +45,14 @@ export default class MainView extends React.Component {
 		this.setState({networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE},()=>{
 			if (!this.state.modalHidden){
 				$("#network_modal").modal("hide");
+				this.setState({currView: config.views.COLDOFFLINE});
 			}
 		});
 	}
 
 	handleColdOfflineClick(e){
 		if (this.state.networkStatus == this.ONLINE){
-			$("#network_modal").modal({
+			/*$("#network_modal").modal({
 				blurring: true,
 				centered: false,
 				transition: "scale",
@@ -67,12 +69,14 @@ export default class MainView extends React.Component {
 					if (navigator.onLine){
 						$("#network_modal_approve_btn").transition('shake');
 						return false;
+					}else{
+						this.setState({currView: config.views.COLDOFFLINE});
 					}
 				}
 			})
-			.modal("show");
-			
-
+			.modal("show");*/
+			//remove the following line and uncomment the above line to get the dialog back; that's all
+			this.setState({currView: config.views.COLDOFFLINE});
 		}
 	}
 
@@ -84,7 +88,7 @@ export default class MainView extends React.Component {
 		this.setState({currView: config.views.MOBILEAUTH});
 	}
 
-	handleAuthBackButtonClick(){
+	handleBackButtonClick(){
 		this.setState({currView: config.views.MAINVIEW});	
 	}
 
@@ -137,14 +141,18 @@ export default class MainView extends React.Component {
 			view_component = this.getMainViewComponent();
 		}else if (this.state.currView == config.views.MOBILEAUTH){
 			view_component = (
-				<GoogleAuth handleBackButtonClick={this.handleAuthBackButtonClick}/>
+				<GoogleAuth handleBackButtonClick={this.handleBackButtonClick}/>
+			);
+		}else if (this.state.currView == config.views.COLDOFFLINE){
+			view_component = (
+				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}/>
 			);
 		}
 
 		let status_data = {
 			networkStatus: this.state.networkStatus
 		}
-		
+
 		return(
 			<div>
 				{view_component}

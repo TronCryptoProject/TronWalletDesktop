@@ -88,7 +88,403 @@ module.exports = {
 		"COLDOFFLINE": "COLDOFFLINE",
 		"COLDONLINE": "COLDONLINE"
 	},
-	"walletConfigFile": "wallet.config.json"
+	"walletConfigFile": "wallet.config.json",
+	"coldOfflineMenuItems": {
+		"IMPORT": "IMPORT",
+		"REGISTER": "REGISTER",
+		"PAPERWALLET": "PAPERWALLET"
+	}
+};
+
+/***/ }),
+
+/***/ "./client/js/ColdOfflineMainView.js":
+/*!******************************************!*\
+  !*** ./client/js/ColdOfflineMainView.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _config = __webpack_require__(/*! ../config/config.js */ "./client/config/config.js");
+
+var _config2 = _interopRequireDefault(_config);
+
+var _fsJetpack = __webpack_require__(/*! fs-jetpack */ "./node_modules/fs-jetpack/main.js");
+
+var _fsJetpack2 = _interopRequireDefault(_fsJetpack);
+
+var _reactCodeInput = __webpack_require__(/*! react-code-input */ "./node_modules/react-code-input/lib/ReactCodeInput.js");
+
+var _reactCodeInput2 = _interopRequireDefault(_reactCodeInput);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ColdOfflineMainView = function (_React$Component) {
+	_inherits(ColdOfflineMainView, _React$Component);
+
+	function ColdOfflineMainView(props) {
+		_classCallCheck(this, ColdOfflineMainView);
+
+		var _this = _possibleConstructorReturn(this, (ColdOfflineMainView.__proto__ || Object.getPrototypeOf(ColdOfflineMainView)).call(this, props));
+
+		_this.state = {};
+		_this.handleBackButtonClick = _this.handleBackButtonClick.bind(_this);
+		_this.renderHeader = _this.renderHeader.bind(_this);
+		_this.renderMenu = _this.renderMenu.bind(_this);
+		_this.handleMenuItemClick = _this.handleMenuItemClick.bind(_this);
+		_this.getAllAccounts = _this.getAllAccounts.bind(_this);
+		_this.onCodeChangeHandler = _this.onCodeChangeHandler.bind(_this);
+		return _this;
+	}
+
+	_createClass(ColdOfflineMainView, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			$("#" + _config2.default.coldOfflineMenuItems.IMPORT).addClass("menu_item_active");
+			$("#" + _config2.default.coldOfflineMenuItems.REGISTER).addClass("right_border_tabular_menu");
+			$("#" + _config2.default.coldOfflineMenuItems.PAPERWALLET).addClass("right_border_tabular_menu");
+		}
+	}, {
+		key: "handleBackButtonClick",
+		value: function handleBackButtonClick() {
+			this.props.handleBackButtonClick();
+		}
+	}, {
+		key: "handleMenuItemClick",
+		value: function handleMenuItemClick(e) {
+			for (var id in _config2.default.coldOfflineMenuItems) {
+				if (id == e.target.id) {
+					$("#" + id).addClass("menu_item_active");
+					$("#" + id).removeClass("right_border_tabular_menu");
+				} else {
+					$("#" + id).removeClass("menu_item_active");
+					$("#" + id).addClass("right_border_tabular_menu");
+				}
+			}
+		}
+	}, {
+		key: "onCodeChangeHandler",
+		value: function onCodeChangeHandler() {}
+	}, {
+		key: "getAllAccounts",
+		value: function getAllAccounts() {
+			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
+			if (!read_data || !("accounts" in read_data) || read_data.accounts.length == 0) {
+				return _react2.default.createElement(
+					"div",
+					{ className: "item" },
+					_react2.default.createElement(
+						"div",
+						{ className: "content" },
+						_react2.default.createElement(
+							"div",
+							{ className: "header" },
+							"No Accounts Found"
+						)
+					)
+				);
+			} else {
+				var _ret = function () {
+					var res_list = [];
+					var color_ptr = "";
+
+					var _iteratorNormalCompletion = true;
+					var _didIteratorError = false;
+					var _iteratorError = undefined;
+
+					try {
+						for (var _iterator = read_data.accounts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+							var acc_dict = _step.value;
+
+							var acc_name = acc_dict.accName;
+							var pub_address = acc_dict.accPubAddress;
+
+							var getAccountInit = function getAccountInit(name) {
+								if (name == "") {
+									return "NA";
+								} else {
+									return name[0].toUpperCase();
+								}
+							};
+
+							var getAccountLabelColor = function getAccountLabelColor() {
+								var colors = ["violet_label", "light_blue_label", "gray_purple_label", "magenta_label"];
+								var color_picked = colors[Math.floor(Math.random() * colors.length)];
+								while (color_picked == color_ptr) {
+									color_picked = colors[Math.floor(Math.random() * colors.length)];
+								}
+								color_ptr = color_picked;
+								return color_picked;
+							};
+
+							var classname = "ui left floated circular large label " + getAccountLabelColor();
+
+							res_list.push(_react2.default.createElement(
+								"div",
+								{ className: "item", key: pub_address },
+								_react2.default.createElement(
+									"span",
+									{ className: classname },
+									getAccountInit(acc_name)
+								),
+								_react2.default.createElement(
+									"div",
+									{ className: "left floated content" },
+									_react2.default.createElement(
+										"div",
+										{ className: "left aligned header" },
+										acc_name == "" ? "no name found" : acc_name
+									),
+									_react2.default.createElement(
+										"div",
+										{ className: "meta" },
+										pub_address
+									)
+								)
+							));
+						}
+					} catch (err) {
+						_didIteratorError = true;
+						_iteratorError = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
+							}
+						} finally {
+							if (_didIteratorError) {
+								throw _iteratorError;
+							}
+						}
+					}
+
+					return {
+						v: res_list
+					};
+				}();
+
+				if ((typeof _ret === "undefined" ? "undefined" : _typeof(_ret)) === "object") return _ret.v;
+			}
+		}
+	}, {
+		key: "renderHeader",
+		value: function renderHeader() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "three column row" },
+				_react2.default.createElement(
+					"div",
+					{ className: "two wide column" },
+					_react2.default.createElement(
+						"button",
+						{ className: "circular medium ui icon button", onClick: this.handleBackButtonClick },
+						_react2.default.createElement("i", { className: "arrow left icon" })
+					)
+				),
+				_react2.default.createElement(
+					"div",
+					{ className: "thirteen wide column" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui one column page centered padded grid" },
+						_react2.default.createElement(
+							"div",
+							{ className: "two column row" },
+							_react2.default.createElement(
+								"div",
+								{ className: "four wide column" },
+								_react2.default.createElement("img", { className: "ui right floated image", src: "client/images/tronbluefat.png",
+									width: "80", height: "80" })
+							),
+							_react2.default.createElement(
+								"div",
+								{ className: "twelve wide column" },
+								_react2.default.createElement(
+									"div",
+									{ className: "ui label header_label_div" },
+									_react2.default.createElement(
+										"div",
+										{ className: "cold_offline_header_title" },
+										"COLD OFFLINE"
+									)
+								)
+							)
+						)
+					)
+				),
+				_react2.default.createElement("div", { className: "one wide column" })
+			);
+		}
+	}, {
+		key: "renderMenu",
+		value: function renderMenu() {
+			var _this2 = this;
+
+			var code_input_props = {
+				inputStyle: {
+					fontFamily: "monospace",
+					borderRadius: "50px",
+					border: "3px solid rgba(53, 86, 212, 0.74)",
+					boxShadow: "rgba(0, 0, 0, 0.1) 0px 0px 10px 0px",
+					margin: "4px",
+					width: "50px",
+					height: "50px",
+					fontSize: "32px",
+					boxSizing: "border-box",
+					color: "#3316c5",
+					fontWeight: "bolder",
+					textAlign: "center",
+					backgroundColor: "transparent"
+				}
+			};
+
+			return _react2.default.createElement(
+				"div",
+				{ className: "ui one column page centered padded grid" },
+				_react2.default.createElement(
+					"div",
+					{ className: "two column row m-0" },
+					_react2.default.createElement(
+						"div",
+						{ className: "four wide column" },
+						_react2.default.createElement(
+							"div",
+							{ className: "ui vertical fluid tabular stackable menu borderless_tabular_menu" },
+							_react2.default.createElement(
+								"a",
+								{ className: "item", id: _config2.default.coldOfflineMenuItems.IMPORT,
+									onClick: function onClick(e) {
+										_this2.handleMenuItemClick(e);
+									} },
+								"Import"
+							),
+							_react2.default.createElement(
+								"a",
+								{ className: "item", id: _config2.default.coldOfflineMenuItems.REGISTER,
+									onClick: function onClick(e) {
+										_this2.handleMenuItemClick(e);
+									} },
+								"Register"
+							),
+							_react2.default.createElement(
+								"a",
+								{ className: "item", id: _config2.default.coldOfflineMenuItems.PAPERWALLET,
+									onClick: function onClick(e) {
+										_this2.handleMenuItemClick(e);
+									} },
+								"Paper Wallet"
+							)
+						)
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "twelve wide stretched column" },
+						_react2.default.createElement(
+							"div",
+							{ className: "ui m-auto shape" },
+							_react2.default.createElement(
+								"div",
+								{ className: "centered sides" },
+								_react2.default.createElement(
+									"div",
+									{ className: "side active" },
+									_react2.default.createElement(
+										"div",
+										{ className: "ui raised card width_height_fit_content cold_offline_import_card" },
+										_react2.default.createElement(
+											"div",
+											{ className: "center aligned content" },
+											_react2.default.createElement(
+												"div",
+												{ className: "ui header" },
+												"Accounts"
+											),
+											_react2.default.createElement(
+												"div",
+												{ className: "description" },
+												"Please select one"
+											),
+											_react2.default.createElement(
+												"div",
+												{ className: "ui middle aligned selection animated list" },
+												this.getAllAccounts()
+											),
+											_react2.default.createElement(
+												"div",
+												{ className: "ui header" },
+												"Wallet Passcode"
+											),
+											_react2.default.createElement(
+												"div",
+												{ className: "py-3" },
+												_react2.default.createElement(_reactCodeInput2.default, _extends({ type: "number", fields: 6 }, code_input_props, {
+													onChange: this.onCodeChangeHandler }))
+											)
+										),
+										_react2.default.createElement(
+											"div",
+											{ className: "ui bottom attached button cold_offline_import_btn" },
+											"IMPORT"
+										)
+									)
+								)
+							)
+						)
+					)
+				)
+			);
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "draggable blue_gradient_background", id: "coldofflinemainview" },
+				_react2.default.createElement(
+					"div",
+					{ className: "ui grid" },
+					this.renderHeader(),
+					_react2.default.createElement(
+						"div",
+						{ className: "row px-5" },
+						this.renderMenu()
+					)
+				)
+			);
+		}
+	}]);
+
+	return ColdOfflineMainView;
+}(_react2.default.Component);
+
+exports.default = ColdOfflineMainView;
+
+
+ColdOfflineMainView.defaultProps = {
+	handleBackButtonClick: function handleBackButtonClick() {}
 };
 
 /***/ }),
@@ -523,7 +919,7 @@ var GoogleAuth = function (_React$Component) {
 									_react2.default.createElement(
 										"p",
 										null,
-										"Enable mobile authentication to better security for your wallet. You will be asked to verify transaction through mobile before broadcasting them."
+										"Enable mobile authentication for better security of your wallet. You will be asked to verify transactions through mobile before broadcasting them."
 									)
 								),
 								_react2.default.createElement("div", { className: "one wide column" })
@@ -653,6 +1049,10 @@ var _StatusBar = __webpack_require__(/*! ./StatusBar.js */ "./client/js/StatusBa
 
 var _StatusBar2 = _interopRequireDefault(_StatusBar);
 
+var _ColdOfflineMainView = __webpack_require__(/*! ./ColdOfflineMainView.js */ "./client/js/ColdOfflineMainView.js");
+
+var _ColdOfflineMainView2 = _interopRequireDefault(_ColdOfflineMainView);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -682,7 +1082,7 @@ var MainView = function (_React$Component) {
 		_this.handleColdOnlineClick = _this.handleColdOnlineClick.bind(_this);
 		_this.handleMobileAuthClick = _this.handleMobileAuthClick.bind(_this);
 		_this.getMainViewComponent = _this.getMainViewComponent.bind(_this);
-		_this.handleAuthBackButtonClick = _this.handleAuthBackButtonClick.bind(_this);
+		_this.handleBackButtonClick = _this.handleBackButtonClick.bind(_this);
 
 		return _this;
 	}
@@ -712,35 +1112,39 @@ var MainView = function (_React$Component) {
 			this.setState({ networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE }, function () {
 				if (!_this2.state.modalHidden) {
 					$("#network_modal").modal("hide");
+					_this2.setState({ currView: _config2.default.views.COLDOFFLINE });
 				}
 			});
 		}
 	}, {
 		key: "handleColdOfflineClick",
 		value: function handleColdOfflineClick(e) {
-			var _this3 = this;
-
 			if (this.state.networkStatus == this.ONLINE) {
-				$("#network_modal").modal({
-					blurring: true,
-					centered: false,
-					transition: "scale",
-					closable: false,
-					onVisible: function onVisible() {
-						_this3.setState({ modalHidden: false });
-					},
-					onHidden: function onHidden() {
-						_this3.setState({ modalHidden: true });
-					},
-					onDeny: function onDeny() {},
-					onApprove: function onApprove() {
-						//we are forcing the check
-						if (navigator.onLine) {
-							$("#network_modal_approve_btn").transition('shake');
-							return false;
-						}
-					}
-				}).modal("show");
+				/*$("#network_modal").modal({
+    	blurring: true,
+    	centered: false,
+    	transition: "scale",
+    	closable: false,
+    	onVisible: () =>{
+    		this.setState({modalHidden: false});
+    	},
+    	onHidden: ()=>{
+    		this.setState({modalHidden: true});
+    	},
+    	onDeny: () => {},
+    	onApprove:()=>{
+    		//we are forcing the check
+    		if (navigator.onLine){
+    			$("#network_modal_approve_btn").transition('shake');
+    			return false;
+    		}else{
+    			this.setState({currView: config.views.COLDOFFLINE});
+    		}
+    	}
+    })
+    .modal("show");*/
+				//remove the following line and uncomment the above line to get the dialog back; that's all
+				this.setState({ currView: _config2.default.views.COLDOFFLINE });
 			}
 		}
 	}, {
@@ -752,14 +1156,14 @@ var MainView = function (_React$Component) {
 			this.setState({ currView: _config2.default.views.MOBILEAUTH });
 		}
 	}, {
-		key: "handleAuthBackButtonClick",
-		value: function handleAuthBackButtonClick() {
+		key: "handleBackButtonClick",
+		value: function handleBackButtonClick() {
 			this.setState({ currView: _config2.default.views.MAINVIEW });
 		}
 	}, {
 		key: "getMainViewComponent",
 		value: function getMainViewComponent() {
-			var _this4 = this;
+			var _this3 = this;
 
 			return _react2.default.createElement(
 				"div",
@@ -792,7 +1196,7 @@ var MainView = function (_React$Component) {
 									"div",
 									{ className: "ui labeled icon olive inverted button button_left",
 										onClick: function onClick(e) {
-											_this4.handleColdOfflineClick(e);
+											_this3.handleColdOfflineClick(e);
 										} },
 									"Cold Offline",
 									_react2.default.createElement("i", { className: "plane icon" })
@@ -802,7 +1206,7 @@ var MainView = function (_React$Component) {
 									"div",
 									{ className: "ui right labeled icon olive inverted button button_right",
 										onClick: function onClick(e) {
-											_this4.handleColdOnlineClick(e);
+											_this3.handleColdOnlineClick(e);
 										} },
 									"Cold Online",
 									_react2.default.createElement("i", { className: "wifi icon" })
@@ -817,7 +1221,7 @@ var MainView = function (_React$Component) {
 								"div",
 								{ className: "ui labeled icon button",
 									onClick: function onClick(e) {
-										_this4.handleMobileAuthClick(e);
+										_this3.handleMobileAuthClick(e);
 									} },
 								"Mobile 2FA",
 								_react2.default.createElement("i", { className: "mobile alternate icon" })
@@ -835,7 +1239,9 @@ var MainView = function (_React$Component) {
 			if (this.state.currView == _config2.default.views.MAINVIEW) {
 				view_component = this.getMainViewComponent();
 			} else if (this.state.currView == _config2.default.views.MOBILEAUTH) {
-				view_component = _react2.default.createElement(_GoogleAuth2.default, { handleBackButtonClick: this.handleAuthBackButtonClick });
+				view_component = _react2.default.createElement(_GoogleAuth2.default, { handleBackButtonClick: this.handleBackButtonClick });
+			} else if (this.state.currView == _config2.default.views.COLDOFFLINE) {
+				view_component = _react2.default.createElement(_ColdOfflineMainView2.default, { handleBackButtonClick: this.handleBackButtonClick });
 			}
 
 			var status_data = {

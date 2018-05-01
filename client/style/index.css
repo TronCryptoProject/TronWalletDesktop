@@ -1,6 +1,7 @@
-@import "./paypal-bolt.css";
 @import "./MainView.css";
 @import "./GoogleAuth.css";
+@import "./ColdOfflineMainView.css";
+@import "./Spacing.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -41,4 +42,17 @@ textarea:focus, input:focus{
 }
 .status_label{
 	background: rgba(0,0,0,0) !important;
+}
+
+.width_fit_content{
+	width: fit-content !important;
+}
+
+.height_fit_content{
+	height: fit-content !important;
+}
+
+.width_height_fit_content{
+	width: fit-content !important;
+	height: fit-content !important;
 }

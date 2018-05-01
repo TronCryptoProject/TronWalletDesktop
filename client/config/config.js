@@ -5,5 +5,10 @@ module.exports = {
 		"COLDOFFLINE": "COLDOFFLINE",
 		"COLDONLINE": "COLDONLINE"
 	},
-	"walletConfigFile": "wallet.config.json"
+	"walletConfigFile": "wallet.config.json",
+	"coldOfflineMenuItems": {
+		"IMPORT": "IMPORT",
+		"REGISTER": "REGISTER",
+		"PAPERWALLET": "PAPERWALLET"
+	}
 }
