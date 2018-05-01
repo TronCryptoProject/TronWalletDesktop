@@ -15,6 +15,7 @@ export default class ColdOfflineMainView extends React.Component {
 		this.handleMenuItemClick = this.handleMenuItemClick.bind(this);
 		this.getAllAccounts = this.getAllAccounts.bind(this);
 		this.onCodeChangeHandler = this.onCodeChangeHandler.bind(this);
+		this.renderImportCard = this.renderImportCard.bind(this);
 	}
 
 	componentDidMount(){
@@ -132,7 +133,7 @@ export default class ColdOfflineMainView extends React.Component {
 		);
 	}
 
-	renderMenu(){
+	renderImportCard(){
 		let code_input_props = {
 			inputStyle: {
 				fontFamily: "monospace",
@@ -150,7 +151,30 @@ export default class ColdOfflineMainView extends React.Component {
 			    backgroundColor: "transparent"
 			}
 		};
+		return(
+			<div className="ui raised card width_height_fit_content
+											cold_offline_import_card">
+				<div className="center aligned content">
+					<div className="ui header">Accounts</div>
+					<div className="description">Please select one</div>
+					<div className="ui middle aligned selection animated list">
+						{this.getAllAccounts()}
+					</div>
+					
+					<div className="ui header">Wallet Passcode</div>
+					<div className="py-3">
+						<ReactCodeInput type="number" fields={6} {...code_input_props}
+							onChange={this.onCodeChangeHandler}/>
+					</div>
+				</div>
+				<div className="ui bottom attached button cold_offline_import_btn">
+			    	IMPORT
+			    </div>
+			</div>
+		);
+	}
 
+	renderMenu(){
 		return(
 			<div className="ui one column page centered padded grid">
 				<div className="two column row m-0">
@@ -174,26 +198,7 @@ export default class ColdOfflineMainView extends React.Component {
 							<div className="ui m-auto shape">
 								<div className="centered sides">
 									<div className="side active">
-										<div className="ui raised card width_height_fit_content
-											cold_offline_import_card">
-
-											<div className="center aligned content">
-												<div className="ui header">Accounts</div>
-												<div className="description">Please select one</div>
-												<div className="ui middle aligned selection animated list">
-													{this.getAllAccounts()}
-												</div>
-												
-												<div className="ui header">Wallet Passcode</div>
-												<div className="py-3">
-													<ReactCodeInput type="number" fields={6} {...code_input_props}
-														onChange={this.onCodeChangeHandler}/>
-												</div>
-											</div>
-											<div className="ui bottom attached button cold_offline_import_btn">
-										    	IMPORT
-										    </div>
-										</div>
+										{this.renderImportCard()}
 									</div>
 
 								</div>

@@ -157,6 +157,7 @@ var ColdOfflineMainView = function (_React$Component) {
 		_this.handleMenuItemClick = _this.handleMenuItemClick.bind(_this);
 		_this.getAllAccounts = _this.getAllAccounts.bind(_this);
 		_this.onCodeChangeHandler = _this.onCodeChangeHandler.bind(_this);
+		_this.renderImportCard = _this.renderImportCard.bind(_this);
 		return _this;
 	}
 
@@ -339,10 +340,8 @@ var ColdOfflineMainView = function (_React$Component) {
 			);
 		}
 	}, {
-		key: "renderMenu",
-		value: function renderMenu() {
-			var _this2 = this;
-
+		key: "renderImportCard",
+		value: function renderImportCard() {
 			var code_input_props = {
 				inputStyle: {
 					fontFamily: "monospace",
@@ -360,6 +359,50 @@ var ColdOfflineMainView = function (_React$Component) {
 					backgroundColor: "transparent"
 				}
 			};
+			return _react2.default.createElement(
+				"div",
+				{ className: "ui raised card width_height_fit_content cold_offline_import_card" },
+				_react2.default.createElement(
+					"div",
+					{ className: "center aligned content" },
+					_react2.default.createElement(
+						"div",
+						{ className: "ui header" },
+						"Accounts"
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "description" },
+						"Please select one"
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "ui middle aligned selection animated list" },
+						this.getAllAccounts()
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "ui header" },
+						"Wallet Passcode"
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "py-3" },
+						_react2.default.createElement(_reactCodeInput2.default, _extends({ type: "number", fields: 6 }, code_input_props, {
+							onChange: this.onCodeChangeHandler }))
+					)
+				),
+				_react2.default.createElement(
+					"div",
+					{ className: "ui bottom attached button cold_offline_import_btn" },
+					"IMPORT"
+				)
+			);
+		}
+	}, {
+		key: "renderMenu",
+		value: function renderMenu() {
+			var _this2 = this;
 
 			return _react2.default.createElement(
 				"div",
@@ -411,45 +454,7 @@ var ColdOfflineMainView = function (_React$Component) {
 								_react2.default.createElement(
 									"div",
 									{ className: "side active" },
-									_react2.default.createElement(
-										"div",
-										{ className: "ui raised card width_height_fit_content cold_offline_import_card" },
-										_react2.default.createElement(
-											"div",
-											{ className: "center aligned content" },
-											_react2.default.createElement(
-												"div",
-												{ className: "ui header" },
-												"Accounts"
-											),
-											_react2.default.createElement(
-												"div",
-												{ className: "description" },
-												"Please select one"
-											),
-											_react2.default.createElement(
-												"div",
-												{ className: "ui middle aligned selection animated list" },
-												this.getAllAccounts()
-											),
-											_react2.default.createElement(
-												"div",
-												{ className: "ui header" },
-												"Wallet Passcode"
-											),
-											_react2.default.createElement(
-												"div",
-												{ className: "py-3" },
-												_react2.default.createElement(_reactCodeInput2.default, _extends({ type: "number", fields: 6 }, code_input_props, {
-													onChange: this.onCodeChangeHandler }))
-											)
-										),
-										_react2.default.createElement(
-											"div",
-											{ className: "ui bottom attached button cold_offline_import_btn" },
-											"IMPORT"
-										)
-									)
+									this.renderImportCard()
 								)
 							)
 						)
