@@ -110,12 +110,16 @@ export default class MainView extends React.Component {
 						<div className="row">
 							<div className="ui buttons">
 								<div className="ui labeled icon olive inverted button button_left"
-									onClick={(e)=>{this.handleColdOfflineClick(e)}}>Cold Offline
+									onClick={(e)=>{this.handleColdOfflineClick(e)}}>Cold Wallet
 									<i className="plane icon"></i>
 								</div>
 								<div className="or"></div>
+								<div className="ui olive inverted button button_middle"
+									onClick={(e)=>{this.handleColdOnlineClick(e)}}>Watch Only Wallet
+								</div>
+								<div className="or"></div>
 								<div className="ui right labeled icon olive inverted button button_right"
-									onClick={(e)=>{this.handleColdOnlineClick(e)}}>Cold Online
+									onClick={(e)=>{this.handleColdOnlineClick(e)}}>Hot Wallet
 									 <i className="wifi icon"></i>
 								</div>
 							</div>

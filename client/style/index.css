@@ -2,14 +2,26 @@
 @import "./GoogleAuth.css";
 @import "./ColdOfflineMainView.css";
 @import "./Spacing.css";
+@import "./QRScanModal.css";
 
 .draggable{
 	-webkit-app-region: drag;
 }
- html, body {
-            height: 100% !important;
-            margin: 0 !important;
-        }
+
+
+html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    overflow: scroll;
+	overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+}
+
 img, button{
 	-webkit-app-region: no-drag;
 }
@@ -20,6 +32,7 @@ img, button{
 	position: fixed;
 	height: 100%;
 	width: 100%;
+	overflow: auto;
 }
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -32,6 +45,10 @@ input[type=number]::-webkit-outer-spin-button {
 
 textarea:focus, input:focus{
     outline: none;
+}
+
+.text_align_center{
+	text-align: center !important;
 }
 
 .wifi_icon_blue{
@@ -55,4 +72,80 @@ textarea:focus, input:focus{
 .width_height_fit_content{
 	width: fit-content !important;
 	height: fit-content !important;
+}
+
+.vertical_center{
+	position: relative;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.border_radius_0{
+	border-radius: 0 !important;
+}
+
+.top_left_border{
+	border-top-left-radius: 1em !important;
+}
+.top_right_border{
+	border-top-right-radius: 1em !important;
+}
+.bottom_left_border{
+	border-bottom-left-radius: 1em !important;
+}
+.bottom_right_border{
+	border-bottom-right-radius: 1em !important;
+}
+
+.top_left_border_0{
+	border-top-left-radius: 0em !important;
+}
+.top_right_border_0{
+	border-top-right-radius: 0em !important;
+}
+.bottom_left_border_0{
+	border-bottom-left-radius: 0em !important;
+}
+.bottom_right_border_0{
+	border-bottom-right-radius: 0em !important;
+}
+
+
+.all_borders{
+	border: 1em !important;
+}
+
+.boxless{
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.border-0 {
+  border: 0 !important;
+}
+
+.border-top-0 {
+  border-top: 0 !important;
+}
+
+.border-right-0 {
+  border-right: 0 !important;
+}
+
+.border-bottom-0 {
+  border-bottom: 0 !important;
+}
+
+.border-left-0 {
+  border-left: 0 !important;
+}
+
+.over_margins{
+	margin: -1px !important;
+}
+
+.hide {
+  display: none !important;
 }

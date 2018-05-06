@@ -18,23 +18,16 @@
     font-weight: 400 !important;
 }
 
-.borderless_tabular_menu{
-	border:none !important;
-}
-
-.right_border_tabular_menu{
-	border-right: 1px solid #d4d4d5 !important;
-}
 
 .menu_item_active {
     color: rgba(255, 255, 255, 0.95) !important;
     border-color: #d4d4e0 !important;
     margin: 0 -1px 0 0 !important;
-    border-radius: 1rem 0 0 1rem!important;
     font-family: Avenir!important;
     border-right: none !important;
-    background: linear-gradient(90deg,#7d86e0 0,#789bec 40%,rgba(173, 188, 222, 0)) !important;
+    background: linear-gradient(90deg,#7d86e0,#789bec 40%,rgb(146, 175, 243))!important;
     font-weight: inherit !important;
+    border: none !important;
 }
 
 .violet_label{
@@ -67,6 +60,7 @@
     font-weight: 400 !important;
     color: white !important;
     margin-bottom: -1px !important;
+    width: 100%;
 }
 .cold_offline_import_btn:hover{
 	background-color: #657cd4 !important;
@@ -77,4 +71,72 @@
 				0 1px 14px 0 rgba(34,36,38,.12),
 				0 12px 50px 0 rgba(34,36,38,.15) !important;
     border-radius: 1em !important;
+    background: rgb(229, 236, 251)!important;
+    width: 380px !important;
+}
+
+.cold_offline_paper_wallet_card{
+	box-shadow: 0 0 0 0px #d4d4d5,
+				0 1px 14px 0 rgba(34,36,38,.12),
+				0 12px 50px 0 rgba(34,36,38,.15) !important;
+    border-radius: 1em !important;
+	background: linear-gradient(90deg,#bbbfe4,#adbfe8 40%,#aec4f7)!important;
+	width: 380px !important;
+	margin: -1px !important;
+}
+.ui.card.cold_offline_import_card>:last-child{
+	border-radius: 0em 0em 1em 1em !important;
+}
+
+.ui.card.cold_offline_import_card>:first-child{
+	border-radius: 1em 1em 0em 0em !important;
+}
+
+.cold_offline_import_list{
+	max-height: 185px !important;
+    overflow: scroll;
+}
+
+::-webkit-input-placeholder {
+   text-align: center;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+   text-align: center;  
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+   text-align: center;  
+}
+
+:-ms-input-placeholder {  
+   text-align: center; 
+}
+
+.account_name_input{
+    text-align: center !important; 
+}
+
+.title_column{
+	width: fit-content !important;
+    display: inline-flex !important;
+}
+
+.paperwalletcanvas{
+	width: 380px !important;
+	background: linear-gradient(90deg,#bbbfe4,#adbfe8 40%,#aec4f7)!important;
+	border-radius: 1em !important;
+}
+
+.register_wallet_labels{
+	border-radius: 0px !important;
+}
+
+.ui.animated.button.qrcode_scan_btn {
+	padding-right: inherit !important;
+}
+
+.qrcode_scan_btn{
+	background-color: white !important;
+	color: #475db1 !important;
 }

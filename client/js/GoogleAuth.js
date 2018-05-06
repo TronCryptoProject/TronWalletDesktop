@@ -115,9 +115,6 @@ export default class GoogleAuth extends React.Component{
 					
 					this.setState({qrcodeData: img_data, qrcode:mobilecode.base32},()=>{
 						$("#qr_shape").shape("flip over");
-						/*$("#generate_main_side").addClass("active");
-						$("#generate_qr_side").addClass("active");
-						$("#generate_qr_side").transition("zoom", "2000s");*/
 					});
 				}, 1000);
 				

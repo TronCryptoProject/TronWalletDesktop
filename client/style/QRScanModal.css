@@ -1,0 +1,32 @@
+.qrscan_video{
+	height: 32em !important;
+	margin-left: -10em !important;
+	margin-top: -2em !important;
+	position: relative !important;
+	z-index: 0 !important;
+}
+
+.qrvideo_div{
+	overflow: hidden !important;
+	display: block !important;
+	width: 30em !important;
+	height: 30em !important;
+	margin: 0 auto !important;
+	margin-top: 1em !important;
+	border-radius: 1em !important;
+	position: relative !important;
+}
+
+.qrcheckoverlay {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+.qr_check_icon{
+	color: #5fc355 !important;
+}

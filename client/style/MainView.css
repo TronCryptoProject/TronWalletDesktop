@@ -19,6 +19,15 @@
 	background-color: #9ac543 !important;
 }
 
+.button_middle{
+	border-radius: 2em !important;
+	color: #2226dc !important;
+	font-size: medium !important;
+}
+.button_middle:hover{
+	background-color: #9ac543 !important;
+}
+
 #network_modal{
 	height: fit-content;
 }
