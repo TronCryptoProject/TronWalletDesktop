@@ -1,7 +1,7 @@
 .button_left{
 	border-top-right-radius: 2em !important;
 	border-bottom-right-radius: 2em !important;
-	color: #2226dc !important;
+	color: #ffffff!important;
 	font-size: medium !important;
 	
 }
@@ -12,7 +12,7 @@
 .button_right{
 	border-top-left-radius: 2em !important;
 	border-bottom-left-radius: 2em !important;
-	color: #2226dc !important;
+	color: #ffffff!important;
 	font-size: medium !important;
 }
 .button_right:hover{
@@ -21,7 +21,7 @@
 
 .button_middle{
 	border-radius: 2em !important;
-	color: #2226dc !important;
+	color: #ffffff!important;
 	font-size: medium !important;
 }
 .button_middle:hover{
@@ -35,4 +35,9 @@
 .network_modal_buttons{
 	display: table !important;
 	position: absolute !important;
+}
+
+.custom_or:before{
+	background-color: #e7ebff!important;
+    color: #284ca5!important;
 }

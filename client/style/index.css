@@ -3,6 +3,8 @@
 @import "./ColdOfflineMainView.css";
 @import "./Spacing.css";
 @import "./QRScanModal.css";
+@import "./HotWalletMainView.css";
+@import "./odometer-theme-minimal.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -50,7 +52,12 @@ textarea:focus, input:focus{
 .text_align_center{
 	text-align: center !important;
 }
-
+.text_align_right{
+	text-align: right !important;
+}
+.text_align_left{
+	text-align: left !important;
+}
 .wifi_icon_blue{
 	color: #1e66da !important;
 }
@@ -74,6 +81,32 @@ textarea:focus, input:focus{
 	height: fit-content !important;
 }
 
+.height_0{
+	height: 0 !important;
+}
+.width_0{
+	width: 0 !important;
+}
+
+.width_100{
+	width: 100% !important;
+}
+.height_100{
+	height:100% !important;
+}
+.width_50{
+	width: 50% !important;
+}
+.height_50{
+	height:50% !important;
+}
+
+.width_auto{
+	width: auto !important;
+}
+.height_auto{
+	height: auto !important;
+}
 .vertical_center{
 	position: relative;
     float: left;
@@ -142,10 +175,52 @@ textarea:focus, input:focus{
   border-left: 0 !important;
 }
 
+.m-auto {
+  margin: auto !important;
+}
+
+.mt-auto {
+  margin-top: auto !important;
+}
+
+.mr-auto {
+  margin-right: auto !important;
+}
+
+.mb-auto {
+  margin-bottom: auto !important;
+}
+
+.ml-auto {
+  margin-left: auto !important;
+}
+
+.mx-auto {
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+.my-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
 .over_margins{
 	margin: -1px !important;
 }
 
 .hide {
   display: none !important;
+}
+.clearfix {
+    overflow: auto !important;
+}
+.clearfix::after {
+    content: "" !important;
+    clear: both !important;
+    display: table !important;
+}
+
+i.icon.paperplane:before {
+    content: "\f1d8";
 }

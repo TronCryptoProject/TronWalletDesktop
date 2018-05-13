@@ -259,7 +259,7 @@ export default class ColdOfflineMainView extends React.Component {
 					<div className="ui one column page centered padded grid">
 						<div className="two column title_column">
 							<div>
-								<img className="uivertical_center image" src="client/images/tronbluefat.png"
+								<img className="ui vertical_center image" src="client/images/tronbluefat.png"
 									width="80" height="80"/>
 							</div>
 							<div className="column">

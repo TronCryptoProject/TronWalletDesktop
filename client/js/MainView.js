@@ -5,6 +5,7 @@ import NetworkConfirmationModal from "./NetworkConfirmationModal.js";
 import GoogleAuth from "./GoogleAuth.js";
 import StatusBar from "./StatusBar.js";
 import ColdOfflineMainView from "./ColdOfflineMainView.js";
+import HotWalletMainView from "./HotWalletMainView.js";
 
 export default class MainView extends React.Component {
 	constructor(props){
@@ -14,15 +15,18 @@ export default class MainView extends React.Component {
 		this.state = {
 			networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE,
 			modalHidden: true,
-			currView: config.views.MAINVIEW
+			currView: config.views.MAINVIEW,
+			showHotWalletStatusBar: false
 		}
 
 		this.networkStatusUpdate = this.networkStatusUpdate.bind(this);
 		this.handleColdOfflineClick = this.handleColdOfflineClick.bind(this);
-		this.handleColdOnlineClick = this.handleColdOnlineClick.bind(this);
+		this.handleWatchOnlyWalletClick = this.handleWatchOnlyWalletClick.bind(this);
 		this.handleMobileAuthClick = this.handleMobileAuthClick.bind(this);
 		this.getMainViewComponent = this.getMainViewComponent.bind(this);
 		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+		this.handleHotWalletClick = this.handleHotWalletClick.bind(this);
+		this.handleHotWalletStatusBar = this.handleHotWalletStatusBar.bind(this);
 
 	}
 
@@ -33,6 +37,24 @@ export default class MainView extends React.Component {
 	  	$('.status_icon').popup({
 		    on: 'hover',
 		    closable: true
+		});
+		$("#cold_wallet_btn").popup({
+			delay: {
+				show: 500,
+				hide: 0
+			}
+		});
+		$("#hot_wallet_btn").popup({
+			delay: {
+				show: 500,
+				hide: 0
+			}
+		});
+		$("#watch_only_btn").popup({
+			delay: {
+				show: 500,
+				hide: 0
+			}
 		});
 	}
 
@@ -45,7 +67,7 @@ export default class MainView extends React.Component {
 		this.setState({networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE},()=>{
 			if (!this.state.modalHidden){
 				$("#network_modal").modal("hide");
-				this.setState({currView: config.views.COLDOFFLINE});
+				this.setState({currView: config.views.COLDWALLET});
 			}
 		});
 	}
@@ -70,17 +92,17 @@ export default class MainView extends React.Component {
 						$("#network_modal_approve_btn").transition('shake');
 						return false;
 					}else{
-						this.setState({currView: config.views.COLDOFFLINE});
+						this.setState({currView: config.views.COLDWALLET});
 					}
 				}
 			})
 			.modal("show");*/
 			//remove the following line and uncomment the above line to get the dialog back; that's all
-			this.setState({currView: config.views.COLDOFFLINE});
+			this.setState({currView: config.views.COLDWALLET});
 		}
 	}
 
-	handleColdOnlineClick(e){
+	handleWatchOnlyWalletClick(e){
 
 	}
 
@@ -92,6 +114,13 @@ export default class MainView extends React.Component {
 		this.setState({currView: config.views.MAINVIEW});	
 	}
 
+	handleHotWalletClick(){
+		this.setState({currView: config.views.HOTWALLET});
+	}
+
+	handleHotWalletStatusBar(toshow){
+		this.setState({showHotWalletStatusBar: toshow});
+	}
 
 	getMainViewComponent(){
 		return (
@@ -109,17 +138,24 @@ export default class MainView extends React.Component {
 						</div>
 						<div className="row">
 							<div className="ui buttons">
-								<div className="ui labeled icon olive inverted button button_left"
-									onClick={(e)=>{this.handleColdOfflineClick(e)}}>Cold Wallet
+								<div className="ui labeled icon olive inverted button button_left mainview_btn"
+									onClick={(e)=>{this.handleColdOfflineClick(e)}}
+									data-content="Network connection not allowed" 
+							  		data-position="bottom left" data-variation="mini" id="cold_wallet_btn">Cold Wallet
 									<i className="plane icon"></i>
 								</div>
-								<div className="or"></div>
-								<div className="ui olive inverted button button_middle"
-									onClick={(e)=>{this.handleColdOnlineClick(e)}}>Watch Only Wallet
+								<div className="or custom_or"></div>
+								<div className="ui olive inverted button button_middle mainview_btn"
+									onClick={(e)=>{this.handleWatchOnlyWalletClick(e)}}
+									data-content="Used with cold wallet to broadcast transactions. Requires
+									no private key" data-position="bottom center" data-variation="mini" id="watch_only_btn">
+									Watch Only Wallet
 								</div>
-								<div className="or"></div>
-								<div className="ui right labeled icon olive inverted button button_right"
-									onClick={(e)=>{this.handleColdOnlineClick(e)}}>Hot Wallet
+								<div className="or custom_or"></div>
+								<div className="ui right labeled icon olive inverted button button_right mainview_btn"
+									onClick={(e)=>{this.handleHotWalletClick(e)}}
+									data-content="Network connected -- Signs transactions automatically"
+			  						data-position="bottom right" data-variation="mini" id="hot_wallet_btn">Hot Wallet
 									 <i className="wifi icon"></i>
 								</div>
 							</div>
@@ -147,9 +183,13 @@ export default class MainView extends React.Component {
 			view_component = (
 				<GoogleAuth handleBackButtonClick={this.handleBackButtonClick}/>
 			);
-		}else if (this.state.currView == config.views.COLDOFFLINE){
+		}else if (this.state.currView == config.views.COLDWALLET){
 			view_component = (
 				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}/>
+			);
+		}else if (this.state.currView == config.views.HOTWALLET){
+			view_component = (
+				<HotWalletMainView showStatusBar={this.handleHotWalletStatusBar}/>
 			);
 		}
 
@@ -157,10 +197,13 @@ export default class MainView extends React.Component {
 			networkStatus: this.state.networkStatus
 		}
 
+		let hot_wallet_data = {
+			showOnlineFeatures: this.state.showHotWalletStatusBar
+		}
 		return(
 			<div>
 				{view_component}
-				<StatusBar data={status_data}/>
+				<StatusBar globalIconData={status_data} hotWalletData={hot_wallet_data}/>
 			</div>
 		);
 	}

@@ -28,9 +28,9 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 850, 
-    height: 600,
-    minWidth: 650,
-    minHeight: 460,
+    height: 700,
+    minWidth: 850,
+    minHeight: 600,
     titleBarStyle: 'hiddenInset',
     icon: __dirname + '/client/images/tronlogolight.ico'
   })

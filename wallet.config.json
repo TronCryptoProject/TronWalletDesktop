@@ -1,29 +1,5 @@
 {
-  "mobileAuthCode": "ORNDYNB7FZNHWUJ4PVDWC2CIFBJFGO3J",
-  "accounts": [
-    {
-      "accName": "Billy",
-      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySRNNDjdyqH"
-    },
-    {
-      "accName": "Carl",
-      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySaNN2jdyqH"
-    },
-    {
-      "accName": "Billy",
-      "accPubAddress": "27TkooQ63LTnLgprMAv1MHYxySRNNDjdyqH"
-    },
-    {
-      "accName": "Carl",
-      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySReN2jdyqH"
-    },
-    {
-      "accName": "Billy",
-      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxynRNNDjdyqH"
-    },
-    {
-      "accName": "Carl",
-      "accPubAddress": "27TkooQ63LTnLjprMAv1MHYxySReN5jdyqH"
-    }
-  ]
+  "contacts": {
+    "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy": ""
+  }
 }
