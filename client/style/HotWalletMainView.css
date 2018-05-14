@@ -183,13 +183,13 @@
 }
 
 .hotwalletreceivecanvas{
-	width: 18vw !important;
-	height: 18vw !important;
+	width: 12em !important;
+	height: 12em !important;
 	border-radius: 1em !important;
 }
 .hotwallet_canvas_div{
-	width: 18vw !important;
-	height: 18vw !important;
+	width: 12em !important;
+	height: 12em !important;
 	background: linear-gradient(90deg,#6268b1,#6388dc 40%,#aec4f7)!important;
 	border-radius: 1em !important;
 }

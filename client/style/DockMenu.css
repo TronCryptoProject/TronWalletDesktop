@@ -1,0 +1,37 @@
+.fixed_footer{
+	position: fixed !important;
+	bottom: 10px !important;
+	width: 100% !important;
+}
+
+.dock_btn{
+	padding: 0.6em !important;
+	-webkit-box-reflect: below 2px -webkit-gradient(linear,left top, left bottom, from(transparent), 
+  		color-stop(0.7, transparent), to(rgba(255, 255, 255, 0.5)));
+  	transition: all 0.3s !important;
+  	transform-origin: 50% 100% !important;
+}
+.dock_btn:hover{
+	transform: scale(1.5) !important;
+  	margin: 0 2em !important;
+}
+.circular.button.dock_btn{
+	transition: all 0.3s !important;
+}
+
+.nodes_btn{
+	background-color: #7870c1 !important;
+	color: white !important;
+}
+.witnesses_btn{
+	background-color: #6eb152 !important;
+	color: white !important;
+}
+.freeze_btn{
+	background-color: rgba(34, 141, 204, 0.71) !important;
+	color: white !important;
+}
+.backup_btn{
+	background-color: #f1c880!important;
+	color: white !important;
+}

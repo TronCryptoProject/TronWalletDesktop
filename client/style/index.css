@@ -5,6 +5,12 @@
 @import "./QRScanModal.css";
 @import "./HotWalletMainView.css";
 @import "./odometer-theme-minimal.css";
+@import "./DockMenu.css";
+@import "./Nodes.css";
+@import "./WorldMap.css";
+@import "./BackupKeys.css";
+@import "./ConfModal.css";
+@import "./Witnesses.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -223,4 +229,19 @@ textarea:focus, input:focus{
 
 i.icon.paperplane:before {
     content: "\f1d8";
+}
+
+.color_white{
+	color: white !important;
+}
+
+.center_button{
+	display: flex !important;
+    justify-content: center !important;
+}
+
+.ellipse_text{
+	text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
 }

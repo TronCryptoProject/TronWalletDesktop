@@ -1,0 +1,17 @@
+.map_tooltip{
+	position: absolute !important;
+	background: rgba(0, 0, 0, 0.48);
+    color: white;
+    width: 13em;
+    height: 2.3em;
+    line-height: 2.3em;
+    text-align: center;
+    border-radius: 1em;
+    font-family: Avenir !important;
+}
+.map_div{
+	  width: 80%;
+  	max-width: 980px;
+  	margin: 0 auto;
+  	font-family: Roboto, sans-serif;
+}

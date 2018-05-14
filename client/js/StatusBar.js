@@ -3,6 +3,7 @@ import jetpack from "fs-jetpack";
 import Equal from "deep-equal";
 import config from "../config/config.js";
 
+
 export default class StatusBar extends React.Component{
 	constructor(props){
 		super(props);
@@ -103,7 +104,6 @@ export default class StatusBar extends React.Component{
 		return(
 			<div>
 				{getHotWalletData()}
-
 				<div className="ui bottom right attached label status_label">
 					{this.renderGlobalDataIcons()}
 				</div>

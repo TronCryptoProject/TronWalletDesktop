@@ -1,0 +1,9 @@
+.ui.modal.conf_modal>.icon:first-child+*, .ui.modal.conf_modal>:first-child:not(.icon){
+	border-top-left-radius: 1em !important;
+    border-top-right-radius: 1em !important;
+}
+
+.ui.modal.conf_modal>:last-child{
+	border-bottom-left-radius: 1em !important;
+    border-bottom-right-radius: 1em !important;
+}

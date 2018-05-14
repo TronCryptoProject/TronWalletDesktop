@@ -12,5 +12,9 @@ module.exports = {
 		"REGISTER": "REGISTER",
 		"PAPERWALLET": "PAPERWALLET"
 	}, 
+	"dockbar": {
+		"nodes": "nodes",
+		"backup": "backup"
+	},
 	"API_URL": "http://localhost:8088"
 }

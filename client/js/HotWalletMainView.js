@@ -1,8 +1,6 @@
 import React from "react";
 import Odometer from "./odometer.js";
-import axios from "axios";
 import config from "../config/config.js";
-import Stomp from "stompjs";
 import Equal from "deep-equal";
 import QRCode from "qrcode";
 import domtoimage from 'dom-to-image';
@@ -10,6 +8,11 @@ import FileSaver from "file-saver";
 import copy from 'copy-to-clipboard';
 import QRScanModal from "./QRScanModal.js";
 import jetpack from "fs-jetpack";
+import DockMenu from "./DockMenu.js";
+import Nodes from "./Nodes.js";
+import stomp from "./Socket.js";
+import BackupKeys from "./BackupKeys.js";
+import Witnesses from "./Witnesses.js";
 
 export default class HotWalletMainView extends React.Component {
 	constructor(props){
@@ -17,6 +20,7 @@ export default class HotWalletMainView extends React.Component {
 		this.state = {
 			startCamera: false,
 			contacts: [],
+			dockModalOpened: false,
 
 			accInfo:{
 				accountName : "",
@@ -63,6 +67,9 @@ export default class HotWalletMainView extends React.Component {
 		this.handleQRCallback = this.handleQRCallback.bind(this);
 		this.addContact = this.addContact.bind(this);
 		this.loadContacts = this.loadContacts.bind(this);
+
+		//modals
+		this.handleDockClick = this.handleDockClick.bind(this);
 
 		this.block_odometer = null;
 		this.trxprice_odometer = null;
@@ -153,6 +160,28 @@ export default class HotWalletMainView extends React.Component {
 		}
 	}
 
+	handleDockClick(toOpen, modal_id){
+		if(toOpen){
+			this.setState({dockModalOpened: true},()=>{
+				$(modal_id).modal({
+					blurring: true,
+					centered: false,
+					transition: "slide up",
+					closable: false,
+					allowMultiple: true,
+					onShow: () =>{
+						$(modal_id).parent().addClass("fullscreen_modal_background");
+					}
+				})
+				.modal("show");
+			});
+		}else{
+			this.setState({dockModalOpened: false},()=>{
+				$(modal_id).modal("hide");
+			})
+		}
+	}
+
 	loadContacts(){
 		let contacts = [];
 		if (jetpack.exists(config.walletConfigFile) == "file"){
@@ -161,7 +190,6 @@ export default class HotWalletMainView extends React.Component {
 				for (let c in read_data.contacts){
 					let name = read_data.contacts[c];
 					contacts.push({
-						category: name,
 						title: c
 					});
 				}
@@ -170,12 +198,9 @@ export default class HotWalletMainView extends React.Component {
 		this.setState({contacts: contacts},()=>{
 			console.log(JSON.stringify(this.state.contacts));
 			$("#send_search_div").search({
-				type: "category",
-				source: this.state.contacts,
-				searchFields   : [
-			    	"category", "title"
-			    ],
+				source: this.state.contacts
 			});
+
 		});
 	}
 
@@ -383,11 +408,9 @@ export default class HotWalletMainView extends React.Component {
 	}
 
 	fetchData(props){
-		let socket = new SockJS(`${config.API_URL}/walletws`);
-		this.stomp = Stomp.over(socket);
-		this.stomp.debug = null
-		this.stomp.connect({},(frame)=>{
-			this.stomp.subscribe("/persist/trxPrice",(data)=>{
+		console.log("stomp: " + stomp);
+		stomp.connect({},(frame)=>{
+			stomp.subscribe("/persist/trxPrice",(data)=>{
 				let body = data.body.trim();
 				if (body != ""){
 					let res_json = JSON.parse(data.body.trim());
@@ -397,14 +420,14 @@ export default class HotWalletMainView extends React.Component {
 						},()=>{
 							this.updateTrxPriceOdometer();
 							setTimeout(()=>{
-								this.stomp.send("/persist/trxPrice");
+								stomp.send("/persist/trxPrice");
 							},1500);
 						});
 					}
 				}
 			});
 
-			this.stomp.subscribe("/persist/block",(data)=>{
+			stomp.subscribe("/persist/block",(data)=>{
 				let body = data.body.trim();
 				if (body != ""){
 					let res_json = JSON.parse(data.body.trim());
@@ -418,12 +441,14 @@ export default class HotWalletMainView extends React.Component {
 							this.updateBlockNumOdometer();
 							this.updateDataNodeOdometer();
 							setTimeout(()=>{
-								this.stomp.send("/persist/block");
+								stomp.send("/persist/block");
 							},2500);
 						});
 					}
 				}
 			});
+			stomp.send("/persist/block");
+			stomp.send("/persist/trxPrice");
 		})
 
 	
@@ -703,16 +728,26 @@ export default class HotWalletMainView extends React.Component {
 	renderSendCard(){
 		return(
 			<div className="ui one column centered padded grid">
-				<div className="row">
-					<div className="ui medium header">
-						To
+				<div className="three column row">
+					<div className="four wide column"/>
+					<div className="eight wide center middle aligned column">
+						<div className="ui medium header">
+							To
+						</div>
+					</div>
+					<div className="four wide column right aligned px-3">
+						<button className="ui icon button cornblue_button" data-content="scan qrcode"
+							data-variation="tiny" data-inverted="" id="hotwallet_qrscan_btn"
+							onClick={this.handleQRScanClick}>
+							<i className="qrcode icon"/>
+						</button>
 					</div>
 				</div>
 				<div className="row">
 					<div className="ui grid width_100">
-						<div className="three centered column row">
-							<div className="twelve wide column">
-								<div className="ui fluid category search" id="send_search_div">
+						<div className="centered row">
+							<div className="column">
+								<div className="ui fluid search" id="send_search_div">
 									<div className="ui icon input width_100">
 										<input className="prompt send_receive_card_input placeholder_left_align"
 											id="send_address_input" type="text" placeholder="address"/>
@@ -721,13 +756,7 @@ export default class HotWalletMainView extends React.Component {
 									<div className="results"></div>
 								</div>
 							</div>
-							<div className="four wide column px-3">
-								<button className="ui icon button cornblue_button" data-content="scan qrcode"
-									data-variation="tiny" data-inverted="" id="hotwallet_qrscan_btn"
-									onClick={this.handleQRScanClick}>
-									<i className="qrcode icon"/>
-								</button>
-							</div>
+							
 						</div>
 							
 					</div>
@@ -828,6 +857,21 @@ export default class HotWalletMainView extends React.Component {
 
 
 	render(){
+		let firstnode = this.state.dataNodeFirstHalf;
+		if (this.state.dataNodeFirstHalf == 0){
+			firstnode = firstnode.toFixed(1);
+		}else{
+			firstnode = firstnode.toString();
+		}
+
+		let secnode = this.state.dataNodeSecHalf;
+		if (this.state.dataNodeSecHalf == 0){
+			secnode = secnode.toFixed(1);
+		}else{
+			secnode = secnode.toString();
+		}
+		let node_str = `${firstnode}.${secnode}`;
+
 		return(
 			<div>
 				<div className="draggable hot_wallet_main_background">
@@ -842,7 +886,7 @@ export default class HotWalletMainView extends React.Component {
 									<div className="row">
 										{this.renderAccountBalances()}
 									</div>
-									<div className="row">
+									<div className="row pt-0">
 										{this.renderRecentTransaction()}
 									</div>
 								</div>
@@ -852,8 +896,15 @@ export default class HotWalletMainView extends React.Component {
 							</div>
 						</div>
 					</div>
+					<DockMenu handleDockClick={this.handleDockClick}/>
+					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
+						currNode={node_str}/>
+					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
+						/>
+					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}/>
 				</div>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
+				
 			</div>
 		);
 	}
