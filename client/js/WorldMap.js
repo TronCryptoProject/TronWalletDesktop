@@ -33,13 +33,19 @@ export default class WorldMap extends Component {
 			x: 0,
 			y: 0,
 			text: "",
-			nodes: []
+			nodes: [],
+			selectListItem: ""
 		}
 	}
 	componentWillReceiveProps(nextProps){
-			if (!Equal(nextProps.nodes, this.props.nodes)){
-					this.setState({nodes: nextProps.nodes});
-			}
+		let tmp_dict = {};
+		if (!Equal(nextProps.nodes, this.props.nodes)){
+			tmp_dict.nodes = nextProps.nodes;
+		}
+		if (!Equal(nextProps.selectListItem, this.props.selectListItem)){
+			tmp_dict.selectListItem = nextProps.selectListItem;
+		}
+		this.setState(tmp_dict);
 	}
 	handleHoverEnter(ipinfo, evt) {
 			this.setState({x: evt.clientX, y: evt.clientY, text: `${ipinfo.host} (${ipinfo.port})`});
@@ -49,30 +55,62 @@ export default class WorldMap extends Component {
 	}
 
 	renderNodes(){
-			let nodes = this.state.nodes.map((marker, i) => (
-				<Marker onMouseMove={this.handleHoverEnter} onMouseLeave={this.handleHoverLeave}
-					key={i} marker={marker}
-					style={{
-						default: { fill: "#FF5722" },
-						hover: { fill: "#FFFFFF" },
-						pressed: { fill: "#FF5722" },
-					}}
-					>
-					<circle cx={0} cy={0} r={5} style={{
-							stroke: "#FF5722",
-							strokeWidth: 2,
-							opacity: 0.9,
+		let nodes = [];
+
+		for (let i = 0; i < this.state.nodes.length; i++){
+			let node_dict = this.state.nodes[i];
+			if (node_dict.host == this.state.selectListItem){
+				nodes.push(
+					<Marker onMouseMove={this.handleHoverEnter} onMouseLeave={this.handleHoverLeave}
+						key={i} marker={node_dict}
+						style={{
+							default: { fill: "#75c156" },
+							hover: { fill: "#75c156" },
+							pressed: { fill: "#75c156" },
 						}}
-					/>
-				</Marker>
-			));
-			return nodes;
+						>
+						<circle cx={0} cy={0} r={20} style={{
+								stroke: "#75c156",
+								strokeWidth: 2,
+								opacity: 0.9,
+								zIndex: 100000
+							}}
+						/>
+					</Marker>
+				);
+			}else{
+				nodes.push(
+					<Marker onMouseMove={this.handleHoverEnter} onMouseLeave={this.handleHoverLeave}
+						key={i} marker={node_dict}
+						style={{
+							default: { fill: "#FF5722" },
+							hover: { fill: "#FFFFFF" },
+							pressed: { fill: "#FF5722" },
+						}}
+						>
+						<circle cx={0} cy={0} r={5} style={{
+								stroke: "#FF5722",
+								strokeWidth: 2,
+								opacity: 0.9,
+							}}
+						/>
+					</Marker>
+				);
+			}
+			
+		}
+		
+		return nodes;
 	}
 
 	render() {
 		return (
-			<div className="map_div">
-				<ComposableMap>
+			<div className="left floated map_div">
+				<ComposableMap
+			          style={{
+			            width: "80vw",
+			            height: "60vh"
+			          }}>
 					<ZoomableGroup>
 						<Geographies geography="client/config/world-50m.json">
 							{(geos, proj) =>
@@ -114,4 +152,7 @@ export default class WorldMap extends Component {
 			</div>
 		)
 	}
+}
+WorldMap.defaultProps = {
+	selectListItem: ""
 }

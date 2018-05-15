@@ -14,6 +14,9 @@ export default class BackupKeys extends React.Component {
 		this.handleAcceptConfModal = this.handleAcceptConfModal.bind(this);
 		this.getCodeInputConfig = this.getCodeInputConfig.bind(this);
 		this.onCodeChangeHandler = this.onCodeChangeHandler.bind(this);
+		this.state={
+			modalId: "backup_conf_modal"
+		}
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -76,7 +79,7 @@ export default class BackupKeys extends React.Component {
 	}
 
 	confModal(){
-		$("#conf_modal").modal({
+		$("#"+this.state.modalId).modal({
 			blurring: true,
 			centered: true,
 			inverted: true,
@@ -123,7 +126,7 @@ export default class BackupKeys extends React.Component {
 				</div>
 				<ConfModal headerText="Do you want to begin backup?"
 					message="Your backup will be saved to your computer in an encrypted file"
-					actions={["deny", "accept"]}
+					actions={["deny", "accept"]} id={this.state.modalId}
 					handleAcceptConfModal={this.handleAcceptConfModal}>
 
 					<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}

@@ -171,6 +171,7 @@ export default class HotWalletMainView extends React.Component {
 					allowMultiple: true,
 					onShow: () =>{
 						$(modal_id).parent().addClass("fullscreen_modal_background");
+						$(modal_id).parent().addClass("overflow_hidden");
 					}
 				})
 				.modal("show");

@@ -5,6 +5,7 @@ import config from "../config/config.js";
 import axios from "axios";
 import WorldMap from "./WorldMap.js";
 import NodesList from "./NodesList.js";
+import ConfModal from "./ConfModal.js";
 
 export default class Nodes extends React.Component {
 	constructor(props){
@@ -12,14 +13,19 @@ export default class Nodes extends React.Component {
 		this.state = {
 			nodeList: [],
 			modalOpened: false,
-			currNode: this.props.currNode
+			currNode: this.props.currNode,
+			selectListItem: "",
+			confModalParams: {},
+			modalId: "nodes_conf_modal"
 		};
 		this.handleCloseButtonClick = this.handleCloseButtonClick.bind(this);
 		this.getMapLineLayers = this.getMapLineLayers.bind(this);
 		this.getNodeData = this.getNodeData.bind(this);
 		this.subscribeToSocket = this.subscribeToSocket.bind(this);
 		this.unsubscribeToSocket = this.unsubscribeToSocket.bind(this);
-		
+		this.handleNodeItemClick = this.handleNodeItemClick.bind(this);
+		this.handleConfModalParams = this.handleConfModalParams.bind(this);
+		this.handleConfModalOpen = this.handleConfModalOpen.bind(this);
 		this.node_stomp = null;
 		this.SUCCESS = "success";
 	}
@@ -33,6 +39,7 @@ export default class Nodes extends React.Component {
 			if (nextProps.modalOpened){
 				this.setState({modalOpened: nextProps.modalOpened},()=>{
 					this.subscribeToSocket();
+					
 				});
 			}else{
 				this.unsubscribeToSocket();
@@ -41,6 +48,25 @@ export default class Nodes extends React.Component {
 		if (this.props.currNode != nextProps.currNode){
 			this.setState({currNode: nextProps.currNode});
 		}
+	}
+
+	handleConfModalParams(params_dict, isSuccess){
+		params_dict.id = this.state.modalId;
+		params_dict.headerClass = (isSuccess) ? "color_green": "color_red";
+		this.setState({confModalParams: params_dict},()=>{
+			this.handleConfModalOpen();
+		});
+	}
+
+	handleConfModalOpen(){
+		$("#" + this.state.modalId).modal({
+			blurring: true,
+			centered: true,
+			inverted: true,
+			transition: "scale",
+			allowMultiple: true
+		})
+		.modal("show");
 	}
 
 	subscribeToSocket(){
@@ -72,6 +98,10 @@ export default class Nodes extends React.Component {
 
 	handleCloseButtonClick(){
 		this.props.handleDockClick(false, "#nodes_modal");
+	}
+
+	handleNodeItemClick(node_item){
+		this.setState({selectListItem: node_item});
 	}
 
 	getNodeData(node_list){
@@ -204,11 +234,14 @@ export default class Nodes extends React.Component {
 							
 						</div>
 					</div>
-					<div className="content pt-4">
-						<WorldMap nodes={this.state.nodeList}/>
-						<NodesList nodes={this.state.nodeList}/>
+					<div className="content pt-4 clearfix display_inline_flex width_100">
+						<WorldMap nodes={this.state.nodeList} selectListItem={this.state.selectListItem}/>
+						<NodesList nodes={this.state.nodeList} handleNodeItemClick={this.handleNodeItemClick}
+							handleConfModalParams={this.handleConfModalParams}/>
 					</div>
 				</div>
+				<ConfModal {...this.state.confModalParams}>
+				</ConfModal>
 			</div>
 		);
 	}

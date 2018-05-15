@@ -11,6 +11,7 @@
 @import "./BackupKeys.css";
 @import "./ConfModal.css";
 @import "./Witnesses.css";
+@import "./NodesList.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -244,4 +245,19 @@ i.icon.paperplane:before {
 	text-overflow: ellipsis !important;
     white-space: nowrap !important;
     overflow: hidden !important;
+}
+
+.display_inline_flex{
+	display: inline-flex !important;
+}
+
+.overflow_hidden{
+	overflow: hidden !important;
+}
+
+.color_red{
+	color: red !important;
+}
+.color_green{
+	color: green !important;
 }

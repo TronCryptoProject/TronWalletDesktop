@@ -1,5 +1,29 @@
 {
   "nodes": {
+    "47.144.128.229": {
+      "lat": "34.045200",
+      "long": "-118.283997",
+      "location": "Los Angeles, CA, United States",
+      "port": "18888"
+    },
+    "31.215.160.38": {
+      "lat": "44.432999",
+      "long": "26.100000",
+      "location": "Bucharest, BU, Romania",
+      "port": "18888"
+    },
+    "34.201.91.138": {
+      "lat": "40.748798",
+      "long": "-73.984596",
+      "location": "New York, NY, United States",
+      "port": "18888"
+    },
+    "114.249.255.189": {
+      "lat": "39.900002",
+      "long": "116.413002",
+      "location": "Beijing, BJ, China",
+      "port": "18888"
+    },
     "37.228.253.55": {
       "lat": "50.432999",
       "long": "30.517000",
