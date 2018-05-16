@@ -1,11 +1,11 @@
 import React from "react";
 import jetpack from "fs-jetpack";
-import stomp from "./Socket.js";
 import config from "../config/config.js";
 import axios from "axios";
 import WorldMap from "./WorldMap.js";
 import NodesList from "./NodesList.js";
 import ConfModal from "./ConfModal.js";
+import Equal from "deep-equal";
 
 export default class Nodes extends React.Component {
 	constructor(props){
@@ -21,32 +21,51 @@ export default class Nodes extends React.Component {
 		this.handleCloseButtonClick = this.handleCloseButtonClick.bind(this);
 		this.getMapLineLayers = this.getMapLineLayers.bind(this);
 		this.getNodeData = this.getNodeData.bind(this);
-		this.subscribeToSocket = this.subscribeToSocket.bind(this);
-		this.unsubscribeToSocket = this.unsubscribeToSocket.bind(this);
 		this.handleNodeItemClick = this.handleNodeItemClick.bind(this);
 		this.handleConfModalParams = this.handleConfModalParams.bind(this);
 		this.handleConfModalOpen = this.handleConfModalOpen.bind(this);
-		this.node_stomp = null;
-		this.SUCCESS = "success";
+		this.controlledFetch = this.controlledFetch.bind(this);
+
+		this.fetchlock = false;
 	}
 
-	componentDidMount(){
-		
+	componentWillUnmount(){
+		this.props.unsubscribe();
 	}
 
 	componentWillReceiveProps(nextProps){
+		let tmp_dict = {};
+
 		if(this.props.modalOpened != nextProps.modalOpened){
+			tmp_dict.modalOpened = nextProps.modalOpened;
+
 			if (nextProps.modalOpened){
-				this.setState({modalOpened: nextProps.modalOpened},()=>{
-					this.subscribeToSocket();
-					
-				});
+				this.props.subscribe();
 			}else{
-				this.unsubscribeToSocket();
+				this.props.unsubscribe();
 			}
 		}
 		if (this.props.currNode != nextProps.currNode){
-			this.setState({currNode: nextProps.currNode});
+			tmp_dict.currNode = nextProps.currNode;
+		}
+		if (!Equal(nextProps.nodeData, this.props.nodeData) && nextProps.modalOpened){
+			this.getNodeData(nextProps.nodeData);
+		}else{
+			//same so continue fetching
+			this.controlledFetch();
+		}
+		this.setState(tmp_dict);
+	}
+
+	controlledFetch(){
+		if (!this.fetchlock && this.state. modalOpened){
+			this.fetchlock = true;
+			setTimeout(()=>{
+				this.fetchlock = false;
+				if (this.state. modalOpened){
+					this.props.getNodeData();
+				}
+			},10000);
 		}
 	}
 
@@ -69,33 +88,6 @@ export default class Nodes extends React.Component {
 		.modal("show");
 	}
 
-	subscribeToSocket(){
-		this.node_stomp = stomp.subscribe("/persist/nodes",(data)=>{
-			let body = data.body.trim();
-			if (body != ""){
-				let res_json = JSON.parse(data.body.trim());
-				if (res_json.result == this.SUCCESS){
-					let node_list = [];
-					let node_set = new Set([]);
-					for (let node of res_json.nodes){
-						if (!node_set.has(node.host)){
-							node_set.add(node.host);
-							node_list.push(node);
-						}
-					}
-					this.getNodeData(node_list);
-				}
-			}
-		});
-
-	}
-
-	unsubscribeToSocket(){
-		if (this.node_stomp){
-			this.node_stomp.unsubscribe();
-		}
-	}
-
 	handleCloseButtonClick(){
 		this.props.handleDockClick(false, "#nodes_modal");
 	}
@@ -110,15 +102,23 @@ export default class Nodes extends React.Component {
 
 		if (jetpack.exists(config.walletConfigFile) == "file"){
 			let in_data = jetpack.read(config.walletConfigFile, "json");
-			if (in_data && "nodes" in in_data){
-				read_data = in_data;
-				for (let r_node_dict of node_list){
-					if (!(r_node_dict.host in in_data.nodes)){
-						nodes_fetch_list.push(r_node_dict);
+			if (in_data){
+				if("nodes" in in_data){
+					read_data = in_data;
+					for (let r_node_dict of node_list){
+						if (!(r_node_dict.host in in_data.nodes)){
+							nodes_fetch_list.push(r_node_dict);
+						}
 					}
+				}else{
+					read_data = Object.assign(in_data, read_data);
+					nodes_fetch_list = node_list;
 				}
-
-			}
+			}else{
+				nodes_fetch_list = node_list;
+			} 
+		}else{
+			nodes_fetch_list = node_list;
 		}
 
 		let fetchIpInfo = async (ip)=>{
@@ -127,7 +127,6 @@ export default class Nodes extends React.Component {
 		}
 
 		let allDoneFetch = (data_dict)=>{
-			console.log("data:" + JSON.stringify(data_dict));
 			let all_nodes = Object.assign({}, data_dict, read_data.nodes);
 			read_data.nodes = all_nodes;
 			jetpack.write(config.walletConfigFile, read_data, { atomic: true });
@@ -192,8 +191,8 @@ export default class Nodes extends React.Component {
 
 		this.setState({nodeList: data_list},()=>{
 			setTimeout(()=>{
-				stomp.send("/persist/nodes");
-			},15000);
+				this.props.getNodeData();
+			},10000);
 		});
 	}
 
@@ -206,21 +205,23 @@ export default class Nodes extends React.Component {
 							<i className="close icon"/>
 						</button>
 						<div className="ui centered large header map_header_color mt-0">
-							All Nodes Available
+							All Unique Active Nodes
 						</div>
 						<div className="description custom_map_description">
 							You wallet is automatically configured for auto selection of node. It 
 							connects to the most synced and smallest latency node in the network on every
-							request, which means your transactions are fast and will never fail! 
+							request, which means your transactions are fast and will never fail. If a node 
+							doesn't return requested data, another node is automatically tried with the same 
+							request.
 						</div>
 					</div>
 					<div className="center aligned content p-4 center_button">
 						<div className="ui labeled button mx-4">
 							<div className="ui orange button">
-								Total Nodes
+								Total Unique Nodes
 							</div>
 							<span className="ui basic left pointing orange label">
-								{this.state.nodeList.length}
+								{this.props.nodeData.length}
 							</span>
 						</div>
 
@@ -249,5 +250,9 @@ export default class Nodes extends React.Component {
 
 Nodes.defaultProps={
 	handleDockClick: (function(){}),
-	currNode: "0.0.0.0"
+	currNode: "0.0.0.0",
+	getNodeData: (function(){}),
+	subscribe:(function(){}),
+	unsubscribe:(function(){}),
+	nodeData: []
 }

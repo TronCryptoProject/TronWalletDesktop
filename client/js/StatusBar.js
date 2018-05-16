@@ -2,7 +2,7 @@ import React from "react";
 import jetpack from "fs-jetpack";
 import Equal from "deep-equal";
 import config from "../config/config.js";
-
+import NodeOdometer from "./NodeOdometer.js";
 
 export default class StatusBar extends React.Component{
 	constructor(props){
@@ -18,6 +18,7 @@ export default class StatusBar extends React.Component{
 
 		this.renderGlobalDataIcons = this.renderGlobalDataIcons.bind(this);
 		this.renderHotWalletIcons = this.renderHotWalletIcons.bind(this);
+		this.handleLogoutClick = this.handleLogoutClick.bind(this);
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -28,7 +29,12 @@ export default class StatusBar extends React.Component{
 		if (!Equal(nextProps.hotWalletData, this.props.hotWalletData)){
 			tmp_state_dict.hotWalletData = nextProps.hotWalletData;
 		}
+		tmp_state_dict = Object.assign(this.state, tmp_state_dict);
 		this.setState(tmp_state_dict);
+	}
+
+	handleLogoutClick(){
+		this.props.handleLogoutClick();
 	}
 
 	renderGlobalDataIcons(){
@@ -66,26 +72,15 @@ export default class StatusBar extends React.Component{
 	renderHotWalletIcons(){
 		return(
 			<div>
-				<div className="ui tiny p-0 icon circular animated button basic inverted logout_btn">
+				<div className="ui tiny p-0 icon circular animated button basic inverted logout_btn"
+					onClick={this.handleLogoutClick}>
 					<div className="hidden content">logout</div>
 					<div className="visible content m-0 px-2">
 				  		<i className="sign out alternate large icon logout_icon"></i>
 					</div>
 				</div>
-				<div className="ui mini statistic">
-					<div className="value statistic_value_light_blue data_node_odometer mx-auto" id="hotwallet_datanode">
-						<span id="hotwallet_datanodefirst">
-							0.0
-						</span>
-						.
-						<span id="hotwallet_datanodesec">
-							0.0
-						</span>
-					</div>
-					<div className="label statistic_datanode">
-						Last Data Fetch From
-					</div>
-				</div>
+				<NodeOdometer dataNodeFirstHalf={this.state.hotWalletData.dataNodeFirstHalf}
+					dataNodeSecHalf={this.state.hotWalletData.dataNodeSecHalf}/>
 			</div>
 		);
 	}
@@ -117,6 +112,9 @@ StatusBar.defaultProps = {
 		networkStatus: navigator.onLine ? "online" : "offline"
 	},
 	hotWalletData:{
-		showOnlineFeatures: false
-	}
+		showOnlineFeatures: false,
+		dataNodeFirstHalf: 0.0,
+		dataNodeSecHalf: 0.0
+	},
+	handleLogoutClick:(function(){})
 }

@@ -396,18 +396,17 @@ export default class ColdOfflineMainView extends React.Component {
 		ctx.textAlign = "center";
 		ctx.fillText(pub_address, c_width/2, margin * 3);
 
-		let getRoundedImage = (x,y,width,height,radius) =>{
-			//thanks to markE -- stackoverflow
+		let getRoundedImage = (x,y,w,h,r) =>{
 		    ctx.beginPath();
-		    ctx.moveTo(x + radius, y);
-		    ctx.lineTo(x + width - radius, y);
-		    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-		    ctx.lineTo(x + width, y + height - radius);
-		    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-		    ctx.lineTo(x + radius, y + height);
-		    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-		    ctx.lineTo(x, y + radius);
-		    ctx.quadraticCurveTo(x, y, x + radius, y);
+		    ctx.moveTo(x + r, y);
+		    ctx.lineTo(x+w-r, y);
+		    ctx.quadraticCurveTo(x + w,y, x + w,y + r);
+		    ctx.lineTo(x +w, y + h-r);
+		    ctx.quadraticCurveTo(x + w, y + h,x + w -r, y +h);
+		    ctx.lineTo(x +r, y + h);
+		    ctx.quadraticCurveTo(x, y + h, x, y +h - r);
+		    ctx.lineTo(x,y+ r);
+		    ctx.quadraticCurveTo(x, y,x+r,y);
 		    ctx.closePath();
     	}
 

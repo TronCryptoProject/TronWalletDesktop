@@ -101,5 +101,5 @@ export default class Freeze extends React.Component{
 }
 
 Freeze.defaulProps={
-
+	modalOpened: false
 }

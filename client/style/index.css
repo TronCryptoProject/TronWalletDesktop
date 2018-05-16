@@ -241,6 +241,11 @@ i.icon.paperplane:before {
     justify-content: center !important;
 }
 
+.flex_end{
+	display: flex !important;
+	justify-content: flex-end !important;
+}
+
 .ellipse_text{
 	text-overflow: ellipsis !important;
     white-space: nowrap !important;

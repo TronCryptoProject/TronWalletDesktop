@@ -113,7 +113,7 @@
 }
 .tx_list_address{
 	font-size: 0.9em !important;
-    max-width: 16em !important;
+    max-width: 21em !important;
     text-overflow: ellipsis !important;
     overflow: hidden !important;
 }
@@ -194,3 +194,7 @@
 	border-radius: 1em !important;
 }
 
+.timer_odometer_label{
+	font-size: 0.8em !important;
+	margin-top: -5px !important;
+}

@@ -16,5 +16,9 @@ module.exports = {
 		"nodes": "nodes",
 		"backup": "backup"
 	},
+	constants : {
+		SUCCESS: "success",
+		FAILED: "failed"
+	},
 	"API_URL": "http://localhost:8088"
 }

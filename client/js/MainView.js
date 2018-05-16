@@ -12,11 +12,14 @@ export default class MainView extends React.Component {
 		super(props);
 		this.OFFLINE = "offline";
 		this.ONLINE = "online";
+		
 		this.state = {
 			networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE,
 			modalHidden: true,
 			currView: config.views.MAINVIEW,
-			showHotWalletStatusBar: false
+			showHotWalletStatusBar: false,
+			dataNodeDict: {},
+			isLoggedIn: false
 		}
 
 		this.networkStatusUpdate = this.networkStatusUpdate.bind(this);
@@ -27,7 +30,9 @@ export default class MainView extends React.Component {
 		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 		this.handleHotWalletClick = this.handleHotWalletClick.bind(this);
 		this.handleHotWalletStatusBar = this.handleHotWalletStatusBar.bind(this);
-
+		this.handleDataNode = this.handleDataNode.bind(this);
+		this.handleLogoutClick = this.handleLogoutClick.bind(this);
+		this.permissionLogOut = this.permissionLogOut.bind(this);
 	}
 
 	componentDidMount(){
@@ -62,6 +67,7 @@ export default class MainView extends React.Component {
 		window.removeEventListener(this.ONLINE,  this.networkStatusUpdate);
 	  	window.removeEventListener(this.OFFLINE,  this.networkStatusUpdate);
 	}
+
 
 	networkStatusUpdate(){
 		this.setState({networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE},()=>{
@@ -115,11 +121,25 @@ export default class MainView extends React.Component {
 	}
 
 	handleHotWalletClick(){
-		this.setState({currView: config.views.HOTWALLET});
+		this.setState({currView: config.views.HOTWALLET, isLoggedIn: true},()=>{
+			console.log("hot clicked");
+		});
 	}
 
 	handleHotWalletStatusBar(toshow){
 		this.setState({showHotWalletStatusBar: toshow});
+	}
+
+	handleDataNode(node_dict){
+		this.setState({dataNodeDict: node_dict});
+	}
+
+	handleLogoutClick(){
+		this.setState({isLoggedIn: false});
+	}
+
+	permissionLogOut(){
+		this.setState({currView: config.views.MAINVIEW});
 	}
 
 	getMainViewComponent(){
@@ -189,7 +209,9 @@ export default class MainView extends React.Component {
 			);
 		}else if (this.state.currView == config.views.HOTWALLET){
 			view_component = (
-				<HotWalletMainView showStatusBar={this.handleHotWalletStatusBar}/>
+				<HotWalletMainView showStatusBar={this.handleHotWalletStatusBar}
+					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
+					permissionLogOut={this.permissionLogOut}/>
 			);
 		}
 
@@ -200,10 +222,12 @@ export default class MainView extends React.Component {
 		let hot_wallet_data = {
 			showOnlineFeatures: this.state.showHotWalletStatusBar
 		}
+		hot_wallet_data = Object.assign(hot_wallet_data, this.state.dataNodeDict);
 		return(
 			<div>
 				{view_component}
-				<StatusBar globalIconData={status_data} hotWalletData={hot_wallet_data}/>
+				<StatusBar globalIconData={status_data} hotWalletData={hot_wallet_data}
+					handleLogoutClick={this.handleLogoutClick}/>
 			</div>
 		);
 	}
