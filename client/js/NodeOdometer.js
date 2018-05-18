@@ -46,9 +46,7 @@ export default class NodeOdometer extends React.Component{
 			secnode = secnode.toString();
 		}
 
-		console.log(firstnode);
-		console.log("sec: " + secnode);
-		
+
 		if (this.datanodefirst_odometer == null){
 			this.datanodefirst_odometer = new Odometer({
 				el: $("#hotwallet_datanodefirst")[0],

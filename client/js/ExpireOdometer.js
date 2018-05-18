@@ -32,6 +32,7 @@ export default class ExpireOdometer extends React.Component{
 
 	componentWillReceiveProps(nextProps){
 		if (nextProps.expirationTime != this.state.expirationTime){
+			console.log("changing DATE");
 			let time_left = this.parseDate(nextProps.expirationTime);
 			this.setState({
 				expirationTime: nextProps.expirationTime,
@@ -143,7 +144,7 @@ export default class ExpireOdometer extends React.Component{
 						<div className="ui mini statistic width_fit_content">
 							<div className="value statistic_value_purple text_align_right">
 								<span className="height_0" id="hotwallet_exp_hr_odo">
-									{this.state.usdBalance}
+									
 								</span>
 							</div>
 							<div className="label statistic_balances text_align_right timer_odometer_label">
@@ -156,7 +157,7 @@ export default class ExpireOdometer extends React.Component{
 						<div className="ui mini statistic width_fit_content">
 							<div className="value statistic_value_purple text_align_right">
 								<span className="height_0" id="hotwallet_exp_min_odo">
-									{this.state.usdBalance}
+									
 								</span>
 							</div>
 							<div className="label statistic_balances text_align_right timer_odometer_label">
@@ -169,7 +170,7 @@ export default class ExpireOdometer extends React.Component{
 						<div className="ui mini statistic width_fit_content">
 							<div className="value statistic_value_purple text_align_right">
 								<span className="height_0" id="hotwallet_exp_sec_odo">
-									{this.state.usdBalance}
+									
 								</span>
 							</div>
 							<div className="label statistic_balances text_align_right timer_odometer_label">

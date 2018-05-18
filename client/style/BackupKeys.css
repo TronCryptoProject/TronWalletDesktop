@@ -1,8 +1,9 @@
 .backup_main_message{
-	font-size: 1.3em !important;
-    font-family: Avenir !important;
+	font-size: 1.2em !important;
+    font-family: 'Proxima Nova';
     font-weight: 200 !important;
     text-align: justify !important;
+    line-height: 1.2em;
 }
 
 .conf_modal{

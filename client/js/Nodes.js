@@ -25,7 +25,7 @@ export default class Nodes extends React.Component {
 		this.handleConfModalParams = this.handleConfModalParams.bind(this);
 		this.handleConfModalOpen = this.handleConfModalOpen.bind(this);
 		this.controlledFetch = this.controlledFetch.bind(this);
-
+		
 		this.fetchlock = false;
 	}
 

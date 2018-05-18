@@ -8,23 +8,7 @@ export default class TransactionsCard extends React.Component{
 		super(props);
 		this.getTransactions = this.getTransactions.bind(this);
 		this.fetchTransactions = this.fetchTransactions.bind(this);
-		this.state = {
-			txsList: [],
-			accInfo: this.props.accInfo
-		};
-	}
-
-	componentDidMount(){
-		$("#txscard").transition("hide");
-		setTimeout(()=>{
-			$("#txscard").transition({
-				animation: "scale in",
-			 	duration  : 1000
-			});
-		},200);
-
-		this.fetchTransactions(this.props);
-		/*this.setState({txsList: [
+		let txs_list = [
 				{
 					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
 					"to": "27UJ8qgmW8e2vx2Cev7s76eFX3tuKHtF21E",
@@ -49,8 +33,25 @@ export default class TransactionsCard extends React.Component{
 					"amount": 424.24,
 					"timestamp": 2903829823572
 				}
-			]
-		});*/
+			];
+		this.state = {
+			txsList: txs_list,
+			accInfo: this.props.accInfo
+		};
+	}
+
+	componentDidMount(){
+		$("#txscard").transition("hide");
+		setTimeout(()=>{
+			$("#txscard").transition({
+				animation: "scale in",
+			 	duration  : 1000
+			});
+		},200);
+
+		this.fetchTransactions(this.props);
+		//this.setState({txsList: 
+		//});
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -148,7 +149,7 @@ export default class TransactionsCard extends React.Component{
 
 		return(
 			<div className="ui fluid centered raised doubling card txs_card" id="txscard">
-				<div className="content clearfix">
+				<div className="content clearfix height_100">
 					<div className="ui small m-0 center aligned header">{title}</div>
 					<div className="ui middle aligned selection list">
 						{this.getTransactions()}

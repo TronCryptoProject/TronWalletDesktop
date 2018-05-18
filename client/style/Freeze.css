@@ -1,0 +1,24 @@
+#freeze_snow > canvas{
+	width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg,rgba(125, 162, 208, 0.34),rgba(133,145,206,.32));
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.freeze_top_header{
+	color: #4873c1 !important;
+}
+.freeze_header_title{
+	font-size: 1.3em;
+}
+.freeze_description{
+	font-family: "Proxima Nova" !important;
+	line-height: 1.3;
+    text-align: justify;
+}
+.unfreeze_trx_label{
+	font-size:2em !important;
+}

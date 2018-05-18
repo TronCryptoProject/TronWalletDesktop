@@ -146,7 +146,7 @@ export default class MainView extends React.Component {
 		return (
 			<div>
 				<div className="draggable blue_gradient_background">
-					<div className="ui one column page centered padded grid" id="mainview">
+					<div className="ui one column page centered padded grid vertical_center" id="mainview">
 						
 						<div className="row">
 							<div className="column twelve wide">

@@ -114,7 +114,7 @@ export default class BackupKeys extends React.Component {
 							<br/>
 							<br/>
 							<div className="text_align_center">
-								Remember: Do not email or in any way send your keys to anyone. They are your secret :)
+								Remember: Do not email or in any way send your keys to anyone. They are your secret!
 							</div>
 						</div>
 					</div>

@@ -12,6 +12,8 @@
 @import "./ConfModal.css";
 @import "./Witnesses.css";
 @import "./NodesList.css";
+@import "./Spinner.css";
+@import "./Freeze.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -126,6 +128,9 @@ textarea:focus, input:focus{
 	border-radius: 0 !important;
 }
 
+.rounded_corners{
+	border-radius: 1em !important;
+}
 .top_left_border{
 	border-top-left-radius: 1em !important;
 }
@@ -265,4 +270,7 @@ i.icon.paperplane:before {
 }
 .color_green{
 	color: green !important;
+}
+.background_transparent{
+	background: transparent !important;
 }

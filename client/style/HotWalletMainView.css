@@ -88,6 +88,7 @@
 	background: linear-gradient(120deg,hsla(0, 0%, 98%, 0.83),#ffffff 40%,rgba(255, 255, 255, 0.69))!important;
 	border-radius: 0.8em !important;
 	max-height: 20em !important;
+	min-height: 10.0em!important;
 	max-width: 32em !important;
 }
 .ui.raised.card.txs_card, .ui.raised.cards>.card {
@@ -163,6 +164,10 @@
 .send_receive_card_input{
 	border-radius: 0.7em !important;
 }
+.send_receive_card_input + .ui.label{
+	border-radius: 0 0.7em 0.7em 0 !important;
+}
+
 .receive_public_address{
 	max-width: 20em !important;
     overflow-y: scroll !important;
@@ -197,4 +202,8 @@
 .timer_odometer_label{
 	font-size: 0.8em !important;
 	margin-top: -5px !important;
+}
+
+.hot_wallet_main_content{
+	height: 70vh;
 }

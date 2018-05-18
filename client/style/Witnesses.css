@@ -26,9 +26,36 @@
     white-space: nowrap !important;
     overflow: hidden !important;
     width: 100% !important;
+    font-family: "proxima_nova_ltsemibold" !important;
+}
+
+.all_witness_table_row_content .sub.header{
+	font-family: "Proxima Nova" !important;
 }
 
 .all_witness_table_header{
 	color: #635aa2 !important;
     font-family: Avenir !important;
+}
+
+.all_witness_top_header{
+	position: sticky;
+    top: 0;
+    z-index: 1000000;
+    background: linear-gradient(hsl(215, 38%, 94%)50%,hsla(215, 38%, 94%, 0.19));
+}
+
+.all_witnesses_header_title{
+	color: #588fe8!important;
+	font-size: 2.5em !important;
+}
+
+.all_witnesses_description{
+	font-family: 'Proxima Nova';
+    font-size: 1.1em;
+    line-height: 1.2em;
+}
+
+.witness_title_color{
+	color: #588fe8!important;
 }

@@ -5,7 +5,8 @@ export default class Spinner extends React.Component{
 		super(props);
 		this.state = {
 			size: this.props.size,
-			show: this.props.size
+			show: this.props.size,
+			colorClass: this.props.colorClass
 		}
 	}
 
@@ -17,13 +18,16 @@ export default class Spinner extends React.Component{
 		if (this.props.show != nextProps.show){
 			tmp_dict.show = nextProps.show;
 		}
+		if (this.props.colorClass != nextProps.colorClass){
+			tmp_dict.colorClass = nextProps.colorClass;
+		}
+		tmp_dict = Object.assign(this.state, tmp_dict);
 		this.setState(tmp_dict);
 	}
 
 	render(){
 		if (this.state.show){
-			let size = this.props.size;
-			let class_str = `spinner loading violet icon ${size}`;
+			let class_str = `spinner loading ${this.state.colorClass} icon ${this.state.size}`;
 			return(
 				<div className="center aligned content">
 					<i className={class_str}></i>
@@ -38,5 +42,6 @@ export default class Spinner extends React.Component{
 
 Spinner.defaultProps={
 	size: "big",
-	show: false
+	show: false,
+	colorClass: "violet"
 }

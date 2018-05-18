@@ -16,7 +16,6 @@ export default class TrxPriceOdometer extends React.Component{
 	}
 
 	componentWillReceiveProps(nextProps){
-		console.log(JSON.stringify(nextProps));
 		if (nextProps.trxPrice != this.state.trxPrice){
 			this.setState({trxPrice: nextProps.trxPrice},()=>{
 				this.updateTrxPriceOdometer();

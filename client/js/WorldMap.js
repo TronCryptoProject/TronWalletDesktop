@@ -29,12 +29,16 @@ export default class WorldMap extends Component {
 		this.handleHoverEnter = this.handleHoverEnter.bind(this);
 		this.handleHoverLeave = this.handleHoverLeave.bind(this);
 		this.renderNodes = this.renderNodes.bind(this);
+		this.zoomIn = this.zoomIn.bind(this);
+		this.zoomOut = this.zoomOut.bind(this);
+
 		this.state = {
 			x: 0,
 			y: 0,
 			text: "",
 			nodes: [],
-			selectListItem: ""
+			selectListItem: "",
+			zoomLevel: 1
 		}
 	}
 	componentWillReceiveProps(nextProps){
@@ -52,6 +56,18 @@ export default class WorldMap extends Component {
 	}
 	handleHoverLeave() {
 			this.setState({x:0,y:0,text:""});
+	}
+
+	zoomIn(){
+		if (this.state.zoomLevel < 4){
+			this.setState({zoomLevel: this.state.zoomLevel * 1.3});
+		}	
+	}
+
+	zoomOut(){
+		if (this.state.zoomLevel > 1){
+			this.setState({zoomLevel: this.state.zoomLevel/ 1.3});
+		}
 	}
 
 	renderNodes(){
@@ -111,7 +127,7 @@ export default class WorldMap extends Component {
 			            width: "80vw",
 			            height: "60vh"
 			          }}>
-					<ZoomableGroup>
+					<ZoomableGroup zoom={this.state.zoomLevel}>
 						<Geographies geography="client/config/world-50m.json">
 							{(geos, proj) =>
 								geos.map((geography,i) => (
@@ -147,7 +163,17 @@ export default class WorldMap extends Component {
 							{this.renderNodes()}
 						</Markers>
 					</ZoomableGroup>
+
 				</ComposableMap>
+				<div className="ui bottom left attached label background_transparent">
+						<button className="ui icon mini button map_zoom_btn" onClick={this.zoomIn}>
+							<i className="plus icon"/>
+						</button>
+						<button className="ui icon mini m-0 button map_zoom_btn" onClick={this.zoomOut}>
+							<i className="minus icon"/>
+						</button>
+					</div>
+				
 				<ToolTip x={this.state.x} y={this.state.y} text={this.state.text}/>
 			</div>
 		)

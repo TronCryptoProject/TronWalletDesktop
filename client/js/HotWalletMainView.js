@@ -20,6 +20,8 @@ import FrozenBalanceOdometer from "./FrozenBalanceOdometer.js";
 import BandwidthOdometer from "./BandwidthOdometer.js";
 import SharesOdometer from "./SharesOdometer.js";
 import ExpireOdometer from "./ExpireOdometer.js";
+import Freeze from "./Freeze.js";
+
 
 export default class HotWalletMainView extends React.Component {
 	constructor(props){
@@ -43,7 +45,7 @@ export default class HotWalletMainView extends React.Component {
 			usdBalance: 0,
 			frozenBalance: 0,
 			bandwidth: 0,
-			shares: 0,
+			shares: 10000,
 			expirationTime: ""
 		};
 
@@ -59,6 +61,7 @@ export default class HotWalletMainView extends React.Component {
 		this.getNodeData = this.getNodeData.bind(this);
 		this.subscribeNodeData = this.subscribeNodeData.bind(this);
 		this.unsubscribeNodeData = this.unsubscribeNodeData.bind(this);
+		this.initAllModals = this.initAllModals.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -105,16 +108,23 @@ export default class HotWalletMainView extends React.Component {
 		},200);
 		
 
+		this.initAllModals();
 
+		
+		setTimeout(()=>{
+			this.setState({shares:8000});
+		},10000);
 		//testing
-		this.setState({
+		/*this.setState({
 			accInfo:{
 				accountName: "GurkiratWallet",
 				pubAddress: "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy"
 			},
 			expirationTime: "Thu May 17 00:02:15 PDT 2018"
 			
-		});
+		},()=>{
+			console.log("time set: " + this.state.expirationTime);
+		});*/
 	}
 
 	componentWillUnmount(){
@@ -140,22 +150,27 @@ export default class HotWalletMainView extends React.Component {
 		});
 	}
 
-	
+	initAllModals(){
+		let ids = ["#nodes_modal","#witnesses_modal","#freeze_modal","#backup_modal"];
+		for(let id of ids){
+			$(ids).modal({
+				blurring: true,
+				centered: false,
+				transition: "slide up",
+				closable: false,
+				duration: 100,
+				onShow: () =>{
+					$(id).parent().addClass("fullscreen_modal_background");
+					$(id).parent().addClass("overflow_hidden");
+				}
+			});
+		}
+	}
+
 	handleDockClick(toOpen, modal_id){
 		if(toOpen){
 			this.setState({dockModalOpened: true},()=>{
-				$(modal_id).modal({
-					blurring: true,
-					centered: false,
-					transition: "slide up",
-					closable: false,
-					allowMultiple: true,
-					onShow: () =>{
-						$(modal_id).parent().addClass("fullscreen_modal_background");
-						$(modal_id).parent().addClass("overflow_hidden");
-					}
-				})
-				.modal("show");
+				$(modal_id).modal("show");
 			});
 		}else{
 			this.setState({dockModalOpened: false},()=>{
@@ -266,7 +281,6 @@ export default class HotWalletMainView extends React.Component {
 			console.log("connected");
 			this.trxPriceSubscriber = this.stomp.subscribe("/persist/trxPrice",(data)=>{
 				let body = data.body.trim();
-				console.log("PRICE: " + JSON.stringify(body));
 				if (body != ""){
 					let res_json = JSON.parse(data.body.trim());
 					if (res_json.result == config.constants.SUCCESS){
@@ -275,7 +289,6 @@ export default class HotWalletMainView extends React.Component {
 						},()=>{
 							setTimeout(()=>{
 								if (this.stomp){
-									console.log("GETTING TRXPRICE");
 									this.stomp.send("/persist/trxPrice");
 								}
 								
@@ -342,14 +355,11 @@ export default class HotWalletMainView extends React.Component {
 	}
 
 	getNodeData(){
-		console.log("NEED TO GET DATA");
 		this.stomp.send("/persist/nodes");
 	}
 
 	subscribeNodeData(){
-		console.log("in sub method: " + this.stomp);
 		this.nodeSubscriber = this.stomp.subscribe("/persist/nodes",(data)=>{
-			console.log("GOT NODE DATA");
 			let body = data.body.trim();
 			if (body != ""){
 				let res_json = JSON.parse(data.body.trim());
@@ -370,7 +380,6 @@ export default class HotWalletMainView extends React.Component {
 
 	unsubscribeNodeData(){
 		if(this.nodeSubscriber){
-			console.log("unsubcribed node data");
 			this.nodeSubscriber.unsubscribe();
 		}
 	}
@@ -471,7 +480,7 @@ export default class HotWalletMainView extends React.Component {
 	renderSendReceiveCard(){
 		return(
 			<div className="ui card m-auto send_receive_card" id="send_receive_card">
-				<div className="content pt-0">
+				<div className="content">
 					<div className="ui top attached tabular two item menu">
 						<div className="item send_receive_card_item active" data-tab="send">
 	    					SEND
@@ -480,7 +489,7 @@ export default class HotWalletMainView extends React.Component {
 	    					RECEIVE
 	  					</div>
 					</div>
-					<div className="ui bottom attached tab segment send_receive_card_segment active" data-tab="send">
+					<div className="ui bottom attached tab segment send_receive_card_segment active m-0" data-tab="send">
 						<SendCard {...this.getSendCardProps()}/>
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment" data-tab="receive">
@@ -508,6 +517,13 @@ export default class HotWalletMainView extends React.Component {
 		}
 		let node_str = `${firstnode}.${secnode}`;
 
+		let freeze_modal_data = {
+			frozenBalance: this.state.frozenBalance,
+			bandwidth: this.state.bandwidth,
+			shares: this.state.shares,
+			expirationTime: this.state.expirationTime
+		};
+
 		return(
 			<div>
 				<div className="draggable hot_wallet_main_background">
@@ -515,19 +531,19 @@ export default class HotWalletMainView extends React.Component {
 						{this.renderHeader()}
 						{this.renderSubHeader()}
 					</div>
-					<div className="ui one column centered padded grid py-4">
+					<div className="ui one column centered padded grid py-4 hot_wallet_main_content">
 						<div className="two column row">
-							<div className="column">
+							<div className="middle aligned column">
 								<div className="ui one column page centered grid px-0">
 									<div className="row">
 										{this.renderAccountBalances()}
 									</div>
-									<div className="row pt-0">
+									<div className="row">
 										<TransactionsCard {...this.getTxCardProps()}/>
 									</div>
 								</div>
 							</div>
-							<div className="column">
+							<div className="middle aligned column">
 								{this.renderSendReceiveCard()}
 							</div>
 						</div>
@@ -539,7 +555,10 @@ export default class HotWalletMainView extends React.Component {
 						getNodeData={this.getNodeData}/>
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
 						/>
-					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}/>
+					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
+						shares={this.state.shares}/>
+					<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
+						data={freeze_modal_data}/>
 				</div>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 				

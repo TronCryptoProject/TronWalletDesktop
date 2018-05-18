@@ -74,7 +74,8 @@ export default class SendCard extends React.Component{
 				</div>
 				<div className="row">
 					<div className="ui right labeled input">
-						<input type="text" className="send_receive_card_input placeholder_left_align" placeholder="0"/>
+						<input type="number" className="send_receive_card_input placeholder_left_align"
+							placeholder="0" min="0"/>
 						<div className="ui label">
 							TRX
 						</div>
