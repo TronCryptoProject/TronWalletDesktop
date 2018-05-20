@@ -33,7 +33,7 @@ export default class FrozenBalanceOdometer extends React.Component{
 				el: $("#hotwallet_frozen_odo")[0],
 				value: this.state.frozenBalance,
 				theme: "minimal",
-				format: "(,ddd).dd"
+				format: "(,ddd)"
 			})
 			this.frozenbalance_odometer.render();
 		}else{

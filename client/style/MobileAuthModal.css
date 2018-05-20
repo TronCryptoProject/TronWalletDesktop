@@ -1,0 +1,4 @@
+.ui.modal.rounded_corners>:last-child{
+	border-bottom-left-radius: 1em !important;
+	border-bottom-right-radius: 1em !important;
+}

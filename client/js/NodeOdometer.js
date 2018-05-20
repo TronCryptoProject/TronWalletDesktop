@@ -55,7 +55,7 @@ export default class NodeOdometer extends React.Component{
 				el: $("#hotwallet_datanodefirst")[0],
 				value: firstnode,
 				theme: "minimal",
-				format: "(ddd).ddd",
+				format: "(ddd).d",
 				duration: 500
 			});
 			this.datanodefirst_odometer.render();
@@ -68,7 +68,7 @@ export default class NodeOdometer extends React.Component{
 				el: $("#hotwallet_datanodesec")[0],
 				value: secnode,
 				theme: "minimal",
-				format: "(ddd).ddd"
+				format: "(ddd).d"
 			});
 			this.datanodesec_odometer.render();
 		}else{

@@ -14,6 +14,7 @@
 @import "./NodesList.css";
 @import "./Spinner.css";
 @import "./Freeze.css";
+@import "./MobileAuthModal.css";
 
 .draggable{
 	-webkit-app-region: drag;

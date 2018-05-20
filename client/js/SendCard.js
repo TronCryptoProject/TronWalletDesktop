@@ -9,11 +9,9 @@ export default class SendCard extends React.Component{
 	}
 
 	handleSendClick(e){
-		this.props.addContact($("#send_address_input").val().trim(), "", (contacts)=>{
-			$("#send_search_div").search({
-				source: contacts
-			});
-		});
+		let address = $("#send_address_input").val().trim();
+		let value = $("#hotwallet_send_amout").val().trim();
+		this.props.handleSendClick(address, value);
 		
 	}
 
@@ -75,13 +73,13 @@ export default class SendCard extends React.Component{
 				<div className="row">
 					<div className="ui right labeled input send_receive_card_input_div">
 						<input type="number" className="send_receive_card_input placeholder_left_align"
-							placeholder="0" min="0"/>
+							placeholder="0" min="0" id="hotwallet_send_amout"/>
 						<div className="ui label">
 							TRX
 						</div>
 					</div>
 				</div>
-				<div className="row mt-5">
+				<div className="row mt-3">
 					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}>
 						<i className="paperplane icon"/>
 						Send
@@ -94,5 +92,5 @@ export default class SendCard extends React.Component{
 
 SendCard.defaultProps = {
 	handleQRScanClick: (function(){}),
-	addContact: (function(){})
+	handleSendClick: (function(){})
 }

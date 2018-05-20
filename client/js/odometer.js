@@ -315,8 +315,10 @@
       this.el.className = newClasses.join(' ');
       this.ribbons = {};
       this.digits = [];
-      wholePart = !this.format.precision || !fractionalPart(value) || false;
-      _ref = value.toString().split('').reverse();
+      /*Bug: wholePart = !this.format.precision; || !fractionalPart(value) || false;
+      _ref = value.toString().split('').reverse();*/
+       wholePart = !this.format.precision;
+      _ref = value.toFixed(this.format.precision).split('').reverse();
       for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
         digit = _ref[_j];
         if (digit === '.') {

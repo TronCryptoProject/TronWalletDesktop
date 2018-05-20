@@ -33,7 +33,7 @@ export default class BandwidthOdometer extends React.Component{
 				el: $("#hotwallet_bandwidth_odo")[0],
 				value: this.state.bandwidth,
 				theme: "minimal",
-				format: "(,ddd).dd"
+				format: "(,ddd)"
 			})
 			this.bandwidth_odometer.render();
 		}else{

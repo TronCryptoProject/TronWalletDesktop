@@ -21,7 +21,7 @@ import BandwidthOdometer from "./BandwidthOdometer.js";
 import SharesOdometer from "./SharesOdometer.js";
 import ExpireOdometer from "./ExpireOdometer.js";
 import Freeze from "./Freeze.js";
-
+import MobileAuthModal from "./MobileAuthModal.js";
 
 export default class HotWalletMainView extends React.Component {
 	constructor(props){
@@ -64,6 +64,7 @@ export default class HotWalletMainView extends React.Component {
 		this.initAllModals = this.initAllModals.bind(this);
 		this.sendMenuItemClick = this.sendMenuItemClick.bind(this);
 		this.receiveMenuItemClick = this.receiveMenuItemClick.bind(this);
+		this.handleSendClick = this.handleSendClick.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -243,6 +244,29 @@ export default class HotWalletMainView extends React.Component {
 		})
 	}
 
+	handleSendClick(address, amount){
+		this.addContact(address, "", (contacts)=>{
+			$("#send_search_div").search({
+				source: contacts
+			});
+		});
+
+		$("#mobile_auth_modal")
+		.modal({
+			allowMultiple: true,
+			onShow:()=>{
+				$("#hot_wallet_main").addClass("blur");
+			},
+			onHidden:()=>{
+				$("#hot_wallet_main").removeClass("blur");
+			},
+			onApprove:()=>{
+				
+			}
+		})
+		.modal("show");
+	}
+
 	parseDataNode(node){
 		if (node != null && node != undefined && node != ""){
 			node = node.split(":")[0]
@@ -257,8 +281,8 @@ export default class HotWalletMainView extends React.Component {
 	
 	getSendCardProps(){
 		return {
-			addContact: this.addContact,
-			handleQRScanClick: this.handleQRScanClick
+			handleQRScanClick: this.handleQRScanClick,
+			handleSendClick: this.handleSendClick
 		};
 	}
 
@@ -542,7 +566,7 @@ export default class HotWalletMainView extends React.Component {
 
 		return(
 			<div>
-				<div className="draggable hot_wallet_main_background">
+				<div className="draggable hot_wallet_main_background" id="hot_wallet_main">
 					<div className="ui grid px-4">
 						{this.renderHeader()}
 						{this.renderSubHeader()}
@@ -577,7 +601,7 @@ export default class HotWalletMainView extends React.Component {
 						data={freeze_modal_data}/>
 				</div>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
-				
+				<MobileAuthModal />
 			</div>
 		);
 	}
