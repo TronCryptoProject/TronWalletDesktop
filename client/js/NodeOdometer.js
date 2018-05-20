@@ -33,29 +33,14 @@ export default class NodeOdometer extends React.Component{
 
 	updateDataNodeOdometer(){
 		let firstnode = this.state.dataNodeFirstHalf;
-		if (this.state.dataNodeFirstHalf == 0){
-			firstnode = firstnode.toFixed(1);
-			console.log("f is 0");
-		}else{
-			firstnode = firstnode.toString();
-		}
-
 		let secnode = this.state.dataNodeSecHalf;
-		if (this.state.dataNodeSecHalf == 0){
-			secnode = secnode.toFixed(1);
-			console.log("sec is 0");
-		}else{
-			secnode = secnode.toString();
-		}
 
-		console.log("firstnode: " + firstnode);
-		console.log("secnode: " + secnode);
 		if (this.datanodefirst_odometer == null){
 			this.datanodefirst_odometer = new Odometer({
 				el: $("#hotwallet_datanodefirst")[0],
 				value: firstnode,
 				theme: "minimal",
-				format: "(ddd).d",
+				format: "(ddd).ddd",
 				duration: 500
 			});
 			this.datanodefirst_odometer.render();
@@ -68,7 +53,7 @@ export default class NodeOdometer extends React.Component{
 				el: $("#hotwallet_datanodesec")[0],
 				value: secnode,
 				theme: "minimal",
-				format: "(ddd).d"
+				format: "(ddd).ddd"
 			});
 			this.datanodesec_odometer.render();
 		}else{

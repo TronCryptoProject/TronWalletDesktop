@@ -261,7 +261,7 @@ export default class HotWalletMainView extends React.Component {
 				$("#hot_wallet_main").removeClass("blur");
 			},
 			onApprove:()=>{
-				
+
 			}
 		})
 		.modal("show");
@@ -466,6 +466,28 @@ export default class HotWalletMainView extends React.Component {
 	}
 
 	renderAccountBalances(){
+		let getFrozenBalanceData = ()=>{
+			if (this.state.frozenBalance > 0){
+				return(
+					<div className="two column row py-0">
+						<div className="bottom aligned column px-2 pb-3 width_fit_content left floated mr-auto">
+							<FrozenBalanceOdometer frozenBalance={this.state.frozenBalance}/>
+						</div>
+						<div className="bottom aligned column px-2 pb-3 width_fit_content right floated ml-auto">
+							<div className="ui mini statistic width_fit_content">
+								
+								<ExpireOdometer expirationTime={this.state.expirationTime}/>
+								
+								<div className="label statistic_balances text_align_right">
+									Expiration Time Left
+								</div>
+							</div>
+						</div>
+					</div>
+				);
+			}
+		}
+
 		return(
 			<div className="ui fluid centered raised doubling card account_balances_card" id="acc_balances_card">
 				<div className="content">
@@ -481,21 +503,7 @@ export default class HotWalletMainView extends React.Component {
 									trxPrice={this.state.trxPrice}/>
 							</div>
 						</div>
-						<div className="two column row py-0">
-							<div className="bottom aligned column px-2 pb-3 width_fit_content left floated mr-auto">
-								<FrozenBalanceOdometer frozenBalance={this.state.frozenBalance}/>
-							</div>
-							<div className="bottom aligned column px-2 pb-3 width_fit_content right floated ml-auto">
-								<div className="ui mini statistic width_fit_content">
-									
-									<ExpireOdometer expirationTime={this.state.expirationTime}/>
-									
-									<div className="label statistic_balances text_align_right">
-										Expiration Time Left
-									</div>
-								</div>
-							</div>
-						</div>
+						{getFrozenBalanceData()}
 						<div className="two column row pt-2">
 							<div className="bottom aligned column px-2 width_fit_content left floated mr-auto">
 								<BandwidthOdometer bandwidth={this.state.bandwidth}/>
