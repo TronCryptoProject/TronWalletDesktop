@@ -8,8 +8,15 @@ export default class FreezeCard extends React.Component{
 		this.showErrorMessage = this.showErrorMessage.bind(this);
 		this.onInputChange = this.onInputChange.bind(this);
 		this.state = {
-			errorMessage: ""
+			errorMessage: "",
+			trxBalance: props.trxBalance
 		};
+	}
+
+	componentWillReceiveProps(nextProps){
+		if (nextProps.trxBalance != this.state.trxBalance){
+			this.setState({trxBalance: nextProps.trxBalance});
+		}
 	}
 
 	handleFreezeClick(e){
@@ -37,11 +44,18 @@ export default class FreezeCard extends React.Component{
 		}
 	}
 
-	showErrorMessage(message){
+	showErrorMessage(message, error_state){
 		if ($("#freeze_error_div").hasClass("hidden")){
 			$("#freeze_error_div").transition("slide right");
 			$("#freeze_error_div").addClass("visible");
 			$("#freeze_error_div").removeClass("hidden");
+			if (error_state && error_state == "info"){
+				$("#freeze_error_div").removeClass("error");
+				$("#freeze_error_div").addClass("info");
+			}else{
+				$("#freeze_error_div").removeClass("info");
+				$("#freeze_error_div").addClass("error");
+			}
 			this.setState({errorMessage: message},()=>{
 				setTimeout(()=>{
 					this.closeErrorMessage();
@@ -55,23 +69,26 @@ export default class FreezeCard extends React.Component{
 		if (value != ""){
 			value = parseInt(value);
 			if (isNaN(value) || value < 0){
-				$(e.target).val("0");
-			}else{
-				$(e.target).val(value);
+				value = 0;
+			}else if(value > this.state.trxBalance){
+				value = this.state.trxBalance;
+				this.showErrorMessage("Amount exceeds your available balance","info");
 			}
+			$(e.target).val(value);
 		}
+		this.props.handleFreezeAmountInputChange((value == "")  ? -1 : value);
 	}
 
 	render(){
 		return(
-			<div className="ui one column centered padded grid">
+			<div className="ui one column centered padded grid" id="hot_wallet_freeze_segment">
 				<div className="row">
 					<div className="ui medium header">
 						Amount
 					</div>
 				</div>
 				<div className="row">
-					<div className="ui right labeled input">
+					<div className="ui right labeled input send_receive_card_input_div">
 						<input type="number" className="send_receive_card_input placeholder_left_align"
 							id="freeze_amt_input" placeholder="0" onChange={(e)=>{this.onInputChange(e)}}/>
 						<div className="ui label">
@@ -95,7 +112,7 @@ export default class FreezeCard extends React.Component{
 					    
 					</div>
 				</div>
-				<div className="row">
+				<div className="row my-3">
 					<div className="ui labeled icon blue button"
 						onClick={(e)=>{this.handleFreezeClick(e)}}>
 					  	<span className="text">Freeze Balance</span>
@@ -113,5 +130,7 @@ export default class FreezeCard extends React.Component{
 }
 
 FreezeCard.defaultProps = {
-	handleFreezeClick: (function(){})
+	handleFreezeClick: (function(){}),
+	handleFreezeAmountInputChange: (function(){}),
+	trxBalance: 0
 }

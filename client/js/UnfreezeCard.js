@@ -80,7 +80,7 @@ export default class UnfreezeCard extends React.Component{
 
 	render(){
 		return(
-			<div className="ui one column centered padded grid">
+			<div className="ui one column centered padded px-2 grid" id="hot_wallet_unfreeze_segment">
 				<div className="row">
 					<div className="content">
 						<div className="extra freeze_description">
@@ -111,18 +111,18 @@ export default class UnfreezeCard extends React.Component{
 				<div className="row">
 					<div className="content">
 						<div className="meta">
-							<div className="ui list left aligned">
-								<div className="item center aligned">
-								Notes:
+							<div>
+								Remember:
+							</div>
+							<div className="ui list bulleted left aligned">
+								<div className="item">
+								Once unfrozen, you previous votes will become void
 								</div>
 								<div className="item">
-								1) Once unfrozen, you previous votes will expire
+								Your Tron Power will be entirely eliminated
 								</div>
 								<div className="item">
-								2) Your Tron Power will be entirely eliminated
-								</div>
-								<div className="item">
-								3) Your bandwidth will not be cleared; it's accumulated
+								Your Entropy will not be cleared when you unfreeze; it's accumulated
 								</div>
 							</div> 
 						</div>

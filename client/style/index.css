@@ -71,7 +71,7 @@ textarea:focus, input:focus{
 	color: #1e66da !important;
 }
 .mobileauth_icon_green{
-	color: #77e407 !important;
+	color: #528c39!important;
 }
 .status_label{
 	background: rgba(0,0,0,0) !important;
@@ -105,6 +105,9 @@ textarea:focus, input:focus{
 }
 .width_50{
 	width: 50% !important;
+}
+.width_80{
+	width: 80% !important;
 }
 .height_50{
 	height:50% !important;
@@ -273,4 +276,14 @@ i.icon.paperplane:before {
 }
 .background_transparent{
 	background: transparent !important;
+}
+
+.cursor_pointer{
+	cursor: pointer;
+}
+.proxima_semibold{
+	font-family: proxima_nova_ltsemibold !important;
+}
+.blur{
+	filter: blur(2px);
 }

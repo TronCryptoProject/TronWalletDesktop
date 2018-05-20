@@ -31,7 +31,19 @@ export default class TransactionsCard extends React.Component{
 					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
 					"to": "27UJ8qgmW8e2vx2Cev7s26eFX3tuKHtF21E",
 					"amount": 424.24,
-					"timestamp": 2903829823572
+					"timestamp": 2903829823512
+				},
+				{
+					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
+					"to": "27UJ8qgmW8e2vx2Cev7s26eFX3tuKHtF11E",
+					"amount": 424.24,
+					"timestamp": 2903829823502
+				},
+				{
+					"from": "27XSDWdj218f3neNw3X9zsrizfTHyty6gLy",
+					"to": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
+					"amount": 424.24,
+					"timestamp": 2903829823570
 				}
 			];
 		this.state = {
@@ -148,7 +160,7 @@ export default class TransactionsCard extends React.Component{
 		}
 
 		return(
-			<div className="ui fluid centered raised doubling card txs_card" id="txscard">
+			<div className="ui fluid centered raised doubling card txs_card pb-3" id="txscard">
 				<div className="content clearfix height_100">
 					<div className="ui small m-0 center aligned header">{title}</div>
 					<div className="ui middle aligned selection list">

@@ -62,6 +62,8 @@ export default class HotWalletMainView extends React.Component {
 		this.subscribeNodeData = this.subscribeNodeData.bind(this);
 		this.unsubscribeNodeData = this.unsubscribeNodeData.bind(this);
 		this.initAllModals = this.initAllModals.bind(this);
+		this.sendMenuItemClick = this.sendMenuItemClick.bind(this);
+		this.receiveMenuItemClick = this.receiveMenuItemClick.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -384,6 +386,15 @@ export default class HotWalletMainView extends React.Component {
 		}
 	}
 
+	sendMenuItemClick(){
+		$("#hot_wallet_receive_segment").transition("scale out");
+		$("#hot_wallet_send_segment").transition("scale in");
+	}
+	receiveMenuItemClick(){
+		$("#hot_wallet_send_segment").transition("scale out");
+		$("#hot_wallet_receive_segment").transition("scale in");
+	}
+
 	renderHeader(){
 		return(
 			<div className="three column row pb-0">
@@ -482,17 +493,21 @@ export default class HotWalletMainView extends React.Component {
 			<div className="ui card m-auto send_receive_card" id="send_receive_card">
 				<div className="content">
 					<div className="ui top attached tabular two item menu">
-						<div className="item send_receive_card_item active" data-tab="send">
+						<div className="item send_receive_card_item active" data-tab="send"
+							onClick={this.sendMenuItemClick}>
 	    					SEND
 	  					</div>
-	  					<div className="item send_receive_card_item" data-tab="receive">
+	  					<div className="item send_receive_card_item" data-tab="receive"
+	  						onClick={this.receiveMenuItemClick}>
 	    					RECEIVE
 	  					</div>
 					</div>
-					<div className="ui bottom attached tab segment send_receive_card_segment active m-0" data-tab="send">
+					<div className="ui bottom attached tab segment send_receive_card_segment active m-0"
+						data-tab="send">
 						<SendCard {...this.getSendCardProps()}/>
 					</div>
-					<div className="ui bottom attached tab segment send_receive_card_segment" data-tab="receive">
+					<div className="ui bottom attached tab segment send_receive_card_segment"
+						data-tab="receive">
 						<ReceiveCard {...this.getReceiveCardProps()}/>
 					</div>
 				</div>
@@ -521,7 +536,8 @@ export default class HotWalletMainView extends React.Component {
 			frozenBalance: this.state.frozenBalance,
 			bandwidth: this.state.bandwidth,
 			shares: this.state.shares,
-			expirationTime: this.state.expirationTime
+			expirationTime: this.state.expirationTime,
+			trxBalance: this.state.trxBalance
 		};
 
 		return(
@@ -532,7 +548,7 @@ export default class HotWalletMainView extends React.Component {
 						{this.renderSubHeader()}
 					</div>
 					<div className="ui one column centered padded grid py-4 hot_wallet_main_content">
-						<div className="two column row">
+						<div className="two column row height_fit_content">
 							<div className="middle aligned column">
 								<div className="ui one column page centered grid px-0">
 									<div className="row">

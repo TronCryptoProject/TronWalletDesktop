@@ -81,15 +81,17 @@
 .account_balances_card{
 	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(246,246,246,1) 47%,rgba(225, 232, 244, 0.82) 100%) !important;
     border-radius: 0.8em !important;
-    max-width: 32em !important;
+    max-width: 30em !important;
+    transition: all 1s !important;
 }
 
 .txs_card{
 	background: linear-gradient(120deg,hsla(0, 0%, 98%, 0.83),#ffffff 40%,rgba(255, 255, 255, 0.69))!important;
 	border-radius: 0.8em !important;
-	max-height: 20em !important;
+	max-height: 18em !important;
 	min-height: 10.0em!important;
 	max-width: 32em !important;
+	transition: all 1s !important;
 }
 .ui.raised.card.txs_card, .ui.raised.cards>.card {
     box-shadow: 0 0 0 0 #d4d4d5,0 8px 40px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)!important;
@@ -134,7 +136,32 @@
 .send_receive_card{
 	background: transparent !important;
 	box-shadow: none !important;
-	min-width: 28em !important;
+	min-width: 45vw !important;
+	max-width: 45vw !important;
+	transition: all 1s !important;
+}
+
+@media screen and (min-width: 1000px){
+	.send_receive_card{
+		min-width: 38vw !important;
+	}
+}
+
+@media screen and (min-width: 1400px){
+	.send_receive_card{
+		min-width: 34em !important;
+	}
+}
+
+@media screen and (min-height: 800px){
+	.txs_card{
+		max-height: 38vh !important;
+	}
+}
+@media screen and (min-height: 700px) and (max-height: 750px){
+	.txs_card{
+		max-height: 30vh !important;
+	}
 }
 
 .ui.tabular.menu .active.item.send_receive_card_item{
@@ -163,6 +190,11 @@
 
 .send_receive_card_input{
 	border-radius: 0.7em !important;
+	color: #527dcc !important;
+}
+.send_receive_card_input_div{
+	font-size: 1.15em !important;
+    font-weight: bolder !important;
 }
 .send_receive_card_input + .ui.label{
 	border-radius: 0 0.7em 0.7em 0 !important;

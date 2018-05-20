@@ -33,7 +33,7 @@ export default class SendCard extends React.Component{
 
 	render(){
 		return(
-			<div className="ui one column centered padded grid">
+			<div className="ui one column centered padded grid" id="hot_wallet_send_segment">
 				<div className="three column row">
 					<div className="four wide column"/>
 					<div className="eight wide center middle aligned column">
@@ -73,7 +73,7 @@ export default class SendCard extends React.Component{
 					</div>
 				</div>
 				<div className="row">
-					<div className="ui right labeled input">
+					<div className="ui right labeled input send_receive_card_input_div">
 						<input type="number" className="send_receive_card_input placeholder_left_align"
 							placeholder="0" min="0"/>
 						<div className="ui label">
@@ -81,7 +81,7 @@ export default class SendCard extends React.Component{
 						</div>
 					</div>
 				</div>
-				<div className="row">
+				<div className="row mt-5">
 					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}>
 						<i className="paperplane icon"/>
 						Send

@@ -58,9 +58,12 @@ export default class Witnesses extends React.Component{
 			centered: true,
 			transition: "scale",
 			closable: true,
-			duration: 100,
+			allowMultiple: true,
+			onShow:()=>{
+				$("#witnesses_modal").addClass("blur");
+			},
 			onHidden:()=>{
-				$("#witnesses_modal").modal("show");
+				$("#witnesses_modal").removeClass("blur");
 			}
 		});
 		this.adjustVotes();
@@ -349,7 +352,7 @@ export default class Witnesses extends React.Component{
 					</button>
 				</div>
 
-				<table className="ui very basic selectable collapsing striped table all_witness_table">
+				<table className="ui very basic collapsing striped table all_witness_table">
 					<thead>
 						<tr>
 							<th className="five wide all_witness_table_header">Witness</th>
@@ -482,7 +485,7 @@ export default class Witnesses extends React.Component{
 							<br/>
 							<br/>
 							<div className="text_align_center">
-								Voting results are tallied every 4 hours. 
+								Voting results are tallied every 4 hours. Click on the block number to see block info.
 							</div>
 						</div>
 					</div>

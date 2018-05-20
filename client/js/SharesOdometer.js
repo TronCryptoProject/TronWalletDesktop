@@ -7,7 +7,8 @@ export default class SharesOdometer extends React.Component{
 		this.updateSharesOdometer = this.updateSharesOdometer.bind(this);
 		this.state = {
 			shares: props.shares,
-			id: props.id
+			id: props.id,
+			showDescription: props.showDescription
 		};
 		this.shares_odometer = null;
 	}
@@ -24,6 +25,10 @@ export default class SharesOdometer extends React.Component{
 		if(nextProps.id != this.state.id){
 			tmp_dict.id = nextProps.id;
 		}
+		if(nextProps.showDescription != this.state.showDescription){
+			tmp_dict.showDescription = nextProps.showDescription;
+		}
+
 		tmp_dict = Object.assign(this.state, tmp_dict);
 		this.setState(tmp_dict,()=>{
 			this.updateSharesOdometer();
@@ -47,14 +52,22 @@ export default class SharesOdometer extends React.Component{
 
 
 	render(){
+		let getDescription = ()=>{
+			if (this.state.showDescription){
+				return (
+					<div className="label statistic_balances text_align_right">
+						Voting Shares
+					</div>
+				);
+			}
+		}
+
 		return(
 			<div className="ui mini statistic width_fit_content">
 				<div className="value statistic_value_purple text_align_right" id={this.state.id}>
 					{this.state.shares}
 				</div>
-				<div className="label statistic_balances text_align_right">
-					Voting Shares
-				</div>
+				{getDescription()}
 			</div>
 		);
 	}
@@ -62,5 +75,6 @@ export default class SharesOdometer extends React.Component{
 
 SharesOdometer.defaultProps = {
 	shares: 0,
-	id: "hotwallet_shares_odo"
+	id: "hotwallet_shares_odo",
+	showDescription: true
 }
