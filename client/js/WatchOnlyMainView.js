@@ -10,7 +10,8 @@ export default class WatchOnlyMainView extends React.Component {
 		super(props);
 		this.state = {
 			startCamera: false,
-			listSelectedItem: ""
+			listSelectedItem: "",
+			qrscanAddress: ""
 		};
 		this.last_menu_click = config.coldOfflineMenuItems.IMPORT;
 
@@ -40,10 +41,45 @@ export default class WatchOnlyMainView extends React.Component {
 		setTimeout(()=>{
 			$("#qrscan_modal").modal("hide");
 		}, 1000);
+
+		let pub_address = "";
+		try{
+			let json_obj = JSON.parse(data);
+			if ("address" in json_obj){
+				pub_address = json_obj.address;
+			}
+		}catch(e){
+			//data is pub address
+			pub_address = data;
+		}
+		this.setState({
+			listSelectedItem: pub_address,
+			qrscanAddress: pub_address
+		});
+
 	}
 
 	handleRestoreBtnClick(){
-
+		if (jetpack.exists(config.walletConfigFile) == "file"){
+			let read_data = jetpack.read(config.walletConfigFile, "json");
+			if ("watchOnlyAccounts" in read_data){
+				let account_dict = read_data.watchOnlyAccounts;
+				account_dict[this.state.listSelectedItem] = "";
+				read_data.watchOnlyAccounts = account_dict;
+			}else{
+				read_data.watchOnlyAccounts = {
+					[this.state.listSelectedItem]: ""
+				};
+			}
+			jetpack.write(config.walletConfigFile, read_data,{ atomic: true });
+		}else{
+			let data = {
+				watchOnlyAccounts: {
+					[this.state.listSelectedItem]: ""
+				}
+			};
+			jetpack.write(config.walletConfigFile, data, { atomic: true });
+		}
 	}
 
 	onCodeChangeHandler(){
@@ -77,7 +113,9 @@ export default class WatchOnlyMainView extends React.Component {
 
 	getAllAccounts(){
 		let read_data = jetpack.read(config.walletConfigFile, "json");
-		if (!read_data || !("accounts" in read_data) || read_data.accounts.length == 0){
+		if ((!read_data || !("watchOnlyAccounts" in read_data) || 
+				Object.keys(read_data.watchOnlyAccounts).length == 0) &&
+				this.state.qrscanAddress == ""){
 			return(
 				<div className="item mt-3">
 					<div className="content">
@@ -90,10 +128,18 @@ export default class WatchOnlyMainView extends React.Component {
 		}else{
 			let res_list = [];
 			let color_ptr = "";
+			let account_dict = {};
 
-			for(let acc_dict of read_data.accounts){
-				let acc_name = acc_dict.accName;
-				let pub_address = acc_dict.accPubAddress;
+			if (this.state.qrscanAddress != ""){
+				account_dict[this.state.qrscanAddress] = "";
+			}
+
+			if (read_data && "watchOnlyAccounts" in read_data){
+				account_dict = Object.assign(read_data.watchOnlyAccounts, account_dict);
+			}
+			
+			for(let pub_address in account_dict){
+				let acc_name = account_dict[pub_address];
 				
 				let getAccountInit = (name)=>{
 					if (name == ""){
@@ -134,7 +180,7 @@ export default class WatchOnlyMainView extends React.Component {
 
 								<div className="left aligned column fourteen wide">
 									<div className="header">
-										{acc_name == "" ? "no name found" : acc_name}
+										{acc_name == "" ? "No name found" : acc_name}
 									</div>
 									<div className="meta">
 										{pub_address}

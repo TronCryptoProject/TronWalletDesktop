@@ -649,12 +649,17 @@ var ColdOfflineDashboard = function (_React$Component) {
 			setTimeout(function () {
 				$("#qrscan_modal").modal("hide");
 			}, 1000);
-			var jsonobj = JSON.parse(data);
 
 			if ($("#coldwallet_send_menu").hasClass("active")) {
-				$("#send_address_input").val(jsonobj.address);
+				try {
+					var jsonobj = JSON.parse(data);
+					$("#send_address_input").val(jsonobj.address);
+					$("#hotwallet_send_amout").val(jsonobj.amount);
+				} catch (e) {
+					$("#send_address_input").val(data);
+				}
 			} else if ($("#coldwallet_sign_menu").hasClass("active")) {
-				$("#raw_tx_input").val(jsonobj.txData);
+				$("#raw_tx_input").val(data);
 			}
 		}
 	}, {
@@ -1103,6 +1108,7 @@ var ColdOfflineMainView = function (_React$Component) {
 			setTimeout(function () {
 				$("#qrscan_modal").modal("hide");
 			}, 1000);
+			$("#privkey_input").val(data);
 		}
 	}, {
 		key: "cacheAccountAddress",
@@ -5243,6 +5249,8 @@ var _QRScanModal2 = _interopRequireDefault(_QRScanModal);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -5259,7 +5267,8 @@ var WatchOnlyMainView = function (_React$Component) {
 
 		_this.state = {
 			startCamera: false,
-			listSelectedItem: ""
+			listSelectedItem: "",
+			qrscanAddress: ""
 		};
 		_this.last_menu_click = _config2.default.coldOfflineMenuItems.IMPORT;
 
@@ -5293,10 +5302,42 @@ var WatchOnlyMainView = function (_React$Component) {
 			setTimeout(function () {
 				$("#qrscan_modal").modal("hide");
 			}, 1000);
+
+			var pub_address = "";
+			try {
+				var json_obj = JSON.parse(data);
+				if ("address" in json_obj) {
+					pub_address = json_obj.address;
+				}
+			} catch (e) {
+				//data is pub address
+				pub_address = data;
+			}
+			this.setState({
+				listSelectedItem: pub_address,
+				qrscanAddress: pub_address
+			});
 		}
 	}, {
 		key: "handleRestoreBtnClick",
-		value: function handleRestoreBtnClick() {}
+		value: function handleRestoreBtnClick() {
+			if (_fsJetpack2.default.exists(_config2.default.walletConfigFile) == "file") {
+				var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
+				if ("watchOnlyAccounts" in read_data) {
+					var account_dict = read_data.watchOnlyAccounts;
+					account_dict[this.state.listSelectedItem] = "";
+					read_data.watchOnlyAccounts = account_dict;
+				} else {
+					read_data.watchOnlyAccounts = _defineProperty({}, this.state.listSelectedItem, "");
+				}
+				_fsJetpack2.default.write(_config2.default.walletConfigFile, read_data, { atomic: true });
+			} else {
+				var data = {
+					watchOnlyAccounts: _defineProperty({}, this.state.listSelectedItem, "")
+				};
+				_fsJetpack2.default.write(_config2.default.walletConfigFile, data, { atomic: true });
+			}
+		}
 	}, {
 		key: "onCodeChangeHandler",
 		value: function onCodeChangeHandler() {}
@@ -5330,7 +5371,7 @@ var WatchOnlyMainView = function (_React$Component) {
 			var _this3 = this;
 
 			var read_data = _fsJetpack2.default.read(_config2.default.walletConfigFile, "json");
-			if (!read_data || !("accounts" in read_data) || read_data.accounts.length == 0) {
+			if ((!read_data || !("watchOnlyAccounts" in read_data) || Object.keys(read_data.watchOnlyAccounts).length == 0) && this.state.qrscanAddress == "") {
 				return _react2.default.createElement(
 					"div",
 					{ className: "item mt-3" },
@@ -5348,102 +5389,88 @@ var WatchOnlyMainView = function (_React$Component) {
 				var _ret = function () {
 					var res_list = [];
 					var color_ptr = "";
+					var account_dict = {};
 
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
+					if (_this3.state.qrscanAddress != "") {
+						account_dict[_this3.state.qrscanAddress] = "";
+					}
 
-					try {
-						var _loop = function _loop() {
-							var acc_dict = _step.value;
+					if (read_data && "watchOnlyAccounts" in read_data) {
+						account_dict = Object.assign(read_data.watchOnlyAccounts, account_dict);
+					}
 
-							var acc_name = acc_dict.accName;
-							var pub_address = acc_dict.accPubAddress;
+					var _loop = function _loop(pub_address) {
+						var acc_name = account_dict[pub_address];
 
-							var getAccountInit = function getAccountInit(name) {
-								if (name == "") {
-									return "NA";
-								} else {
-									return name[0].toUpperCase();
-								}
-							};
+						var getAccountInit = function getAccountInit(name) {
+							if (name == "") {
+								return "NA";
+							} else {
+								return name[0].toUpperCase();
+							}
+						};
 
-							var getAccountLabelColor = function getAccountLabelColor() {
-								var colors = ["violet_label", "light_blue_label", "gray_purple_label", "magenta_label"];
-								var color_picked = colors[Math.floor(Math.random() * colors.length)];
-								while (color_picked == color_ptr) {
-									color_picked = colors[Math.floor(Math.random() * colors.length)];
-								}
-								color_ptr = color_picked;
-								return color_picked;
-							};
+						var getAccountLabelColor = function getAccountLabelColor() {
+							var colors = ["violet_label", "light_blue_label", "gray_purple_label", "magenta_label"];
+							var color_picked = colors[Math.floor(Math.random() * colors.length)];
+							while (color_picked == color_ptr) {
+								color_picked = colors[Math.floor(Math.random() * colors.length)];
+							}
+							color_ptr = color_picked;
+							return color_picked;
+						};
 
-							var getAccIcon = function getAccIcon() {
-								if (pub_address != _this3.state.listSelectedItem) {
-									var classname = "ui circular large label " + getAccountLabelColor();
-									return _react2.default.createElement(
-										"i",
-										{ className: classname },
-										getAccountInit(acc_name)
-									);
-								} else {
-									return _react2.default.createElement("i", { className: "ui circular green check icon" });
-								}
-							};
+						var getAccIcon = function getAccIcon() {
+							if (pub_address != _this3.state.listSelectedItem) {
+								var classname = "ui circular large label " + getAccountLabelColor();
+								return _react2.default.createElement(
+									"i",
+									{ className: classname },
+									getAccountInit(acc_name)
+								);
+							} else {
+								return _react2.default.createElement("i", { className: "ui circular green check icon" });
+							}
+						};
 
-							res_list.push(_react2.default.createElement(
+						res_list.push(_react2.default.createElement(
+							"div",
+							{ className: "item", key: pub_address, onClick: function onClick(e) {
+									_this3.accListItemSelect(e, pub_address);
+								} },
+							_react2.default.createElement(
 								"div",
-								{ className: "item", key: pub_address, onClick: function onClick(e) {
-										_this3.accListItemSelect(e, pub_address);
-									} },
+								{ className: "ui one column grid" },
 								_react2.default.createElement(
 									"div",
-									{ className: "ui one column grid" },
+									{ className: "row" },
 									_react2.default.createElement(
 										"div",
-										{ className: "row" },
+										{ className: "column two wide" },
+										getAccIcon()
+									),
+									_react2.default.createElement(
+										"div",
+										{ className: "left aligned column fourteen wide" },
 										_react2.default.createElement(
 											"div",
-											{ className: "column two wide" },
-											getAccIcon()
+											{ className: "header" },
+											acc_name == "" ? "No name found" : acc_name
 										),
 										_react2.default.createElement(
 											"div",
-											{ className: "left aligned column fourteen wide" },
-											_react2.default.createElement(
-												"div",
-												{ className: "header" },
-												acc_name == "" ? "no name found" : acc_name
-											),
-											_react2.default.createElement(
-												"div",
-												{ className: "meta" },
-												pub_address
-											)
+											{ className: "meta" },
+											pub_address
 										)
 									)
 								)
-							));
-						};
+							)
+						));
+					};
 
-						for (var _iterator = read_data.accounts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							_loop();
-						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
-						}
+					for (var pub_address in account_dict) {
+						_loop(pub_address);
 					}
-
 					return {
 						v: res_list
 					};

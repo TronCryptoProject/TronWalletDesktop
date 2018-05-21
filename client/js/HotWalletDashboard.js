@@ -232,8 +232,17 @@ export default class HotWalletDashboard extends React.Component {
 		setTimeout(()=>{
 			$("#qrscan_modal").modal("hide");
 		}, 1000);
-		let jsonobj = JSON.parse(data);
-		$("#send_address_input").val(jsonobj.address);
+
+		if ($("#hotwallet_send_menu").hasClass("active")){
+			try{
+				let jsonobj = JSON.parse(data);
+				$("#send_address_input").val(jsonobj.address);
+				$("#hotwallet_send_amout").val(jsonobj.amount);
+			}catch(e){
+				$("#send_address_input").val(data);
+			}
+			
+		}
 	}
 
 	handleQRScanClick(toStartCamera, callback){
@@ -526,20 +535,20 @@ export default class HotWalletDashboard extends React.Component {
 				<div className="content">
 					<div className="ui top attached tabular two item menu">
 						<div className="item send_receive_card_item active" data-tab="send"
-							onClick={this.sendMenuItemClick}>
+							onClick={this.sendMenuItemClick} id="hotwallet_send_menu">
 	    					SEND
 	  					</div>
 	  					<div className="item send_receive_card_item" data-tab="receive"
-	  						onClick={this.receiveMenuItemClick}>
+	  						onClick={this.receiveMenuItemClick} id="hotwallet_receive_menu">
 	    					RECEIVE
 	  					</div>
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment active m-0"
-						data-tab="send">
+						data-tab="send" id="hot_wallet_send_segment">
 						<SendCard {...this.getSendCardProps()}/>
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment"
-						data-tab="receive">
+						data-tab="receive" id="hot_wallet_receive_segment">
 						<ReceiveCard {...this.getReceiveCardProps()}/>
 					</div>
 				</div>

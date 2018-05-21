@@ -185,12 +185,19 @@ export default class ColdOfflineDashboard extends React.Component {
 		setTimeout(()=>{
 			$("#qrscan_modal").modal("hide");
 		}, 1000);
-		let jsonobj = JSON.parse(data);
+		
 
 		if ($("#coldwallet_send_menu").hasClass("active")){
-			$("#send_address_input").val(jsonobj.address);
+			try{
+				let jsonobj = JSON.parse(data);
+				$("#send_address_input").val(jsonobj.address);
+				$("#hotwallet_send_amout").val(jsonobj.amount);
+			}catch(e){
+				$("#send_address_input").val(data);
+			}
+			
 		}else if ($("#coldwallet_sign_menu").hasClass("active")){
-			$("#raw_tx_input").val(jsonobj.txData);
+			$("#raw_tx_input").val(data);
 		}
 		
 	}

@@ -126,6 +126,7 @@ export default class ColdOfflineMainView extends React.Component {
 		setTimeout(()=>{
 			$("#qrscan_modal").modal("hide");
 		}, 1000);
+		$("#privkey_input").val(data);
 		
 	}
 
