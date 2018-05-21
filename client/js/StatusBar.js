@@ -9,15 +9,16 @@ export default class StatusBar extends React.Component{
 		super(props);
 		this.state = {
 			globalIconData: {
-				networkStatus: this.props.globalIconData.networkStatus
+				networkStatus: props.globalIconData.networkStatus
 			},
 			hotWalletData: {
-				showOnlineFeatures: this.props.hotWalletData.showOnlineFeatures
+				onlineFeaturesView: props.hotWalletData.onlineFeaturesView
 			}
 		}
 
 		this.renderGlobalDataIcons = this.renderGlobalDataIcons.bind(this);
 		this.renderHotWalletIcons = this.renderHotWalletIcons.bind(this);
+		this.renderLogOutButton = this.renderLogOutButton.bind(this);
 		this.handleLogoutClick = this.handleLogoutClick.bind(this);
 	}
 
@@ -42,12 +43,19 @@ export default class StatusBar extends React.Component{
 		//is mobile auth set up 
 		let read_data = jetpack.read(config.walletConfigFile, "json");
 		if (read_data && ("mobileAuthCode" in read_data)){
+			let color = "mobileauth_icon_green_light";
+			if (this.state.hotWalletData.onlineFeaturesView == config.views.HOTWALLET
+				|| this.state.hotWalletData.onlineFeaturesView == config.views.COLDWALLET){
+				color = "mobileauth_icon_green";
+			}
+
 			status_divs.push(
-				<i className="mobile mobileauth_icon_green big icon status_icon" key="status_mobileauth"
+				<i className={"mobile big icon status_icon " + color} key="status_mobileauth"
 					data-title="Mobile 2FA is on!"
 			  		data-variation="tiny"
 			  		data-position="top center"/>
-			  	);
+			);
+
 		}
 
 		// is wifi connected
@@ -69,16 +77,22 @@ export default class StatusBar extends React.Component{
 		return status_divs;
 	}
 
+	renderLogOutButton(){
+		return(
+			<div className="ui tiny p-0 icon circular animated button basic inverted logout_btn"
+				onClick={this.handleLogoutClick}>
+				<div className="hidden content">logout</div>
+				<div className="visible content m-0 px-2">
+			  		<i className="sign out alternate large icon logout_icon"></i>
+				</div>
+			</div>
+		);
+	}
+
 	renderHotWalletIcons(){
 		return(
 			<div>
-				<div className="ui tiny p-0 icon circular animated button basic inverted logout_btn"
-					onClick={this.handleLogoutClick}>
-					<div className="hidden content">logout</div>
-					<div className="visible content m-0 px-2">
-				  		<i className="sign out alternate large icon logout_icon"></i>
-					</div>
-				</div>
+				{this.renderLogOutButton()}
 				<NodeOdometer dataNodeFirstHalf={this.state.hotWalletData.dataNodeFirstHalf}
 					dataNodeSecHalf={this.state.hotWalletData.dataNodeSecHalf}/>
 			</div>
@@ -86,11 +100,17 @@ export default class StatusBar extends React.Component{
 	}
 
 	render(){
-		let getHotWalletData = ()=>{
-			if (this.state.hotWalletData.showOnlineFeatures){
+		let getLeftSideData = ()=>{
+			if (this.state.hotWalletData.onlineFeaturesView == config.views.HOTWALLET){
 				return(
 					<div className="ui bottom left attached label status_label">
 						{this.renderHotWalletIcons()}
+					</div>
+				);
+			}else if(this.state.hotWalletData.onlineFeaturesView == config.views.COLDWALLET){
+				return(
+					<div className="ui bottom left attached label status_label">
+						{this.renderLogOutButton()}
 					</div>
 				);
 			}
@@ -98,7 +118,7 @@ export default class StatusBar extends React.Component{
 
 		return(
 			<div>
-				{getHotWalletData()}
+				{getLeftSideData()}
 				<div className="ui bottom right attached label status_label">
 					{this.renderGlobalDataIcons()}
 				</div>
@@ -112,7 +132,7 @@ StatusBar.defaultProps = {
 		networkStatus: navigator.onLine ? "online" : "offline"
 	},
 	hotWalletData:{
-		showOnlineFeatures: false,
+		onlineFeaturesView: "",
 		dataNodeFirstHalf: 0.0,
 		dataNodeSecHalf: 0.0
 	},

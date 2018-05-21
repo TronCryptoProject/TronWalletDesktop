@@ -48,7 +48,7 @@ export default class ConfModal extends React.Component {
 		let getPropsChildren = ()=>{
 			if (this.props.children != undefined){
 				return (
-					<div className="center_button content">
+					<div>
 						{this.props.children}
 					</div>
 				);

@@ -117,7 +117,7 @@ export default class GoogleAuth extends React.Component{
 						$("#qr_shape").shape("flip over");
 					});
 				}, 1000);
-				
+				this.props.handleMobileAuthGenerated(mobilecode.base32);
 			}
 		});
 
@@ -183,7 +183,7 @@ export default class GoogleAuth extends React.Component{
 			}else if (this.state.tokenVerified == "failed"){
 				return(
 					<button className="ui icon red button" id="token_check_btn">
-						<i className="icon-clear"/>
+						<i className="remove icon"/>
 					</button>
 				);
 			}else{
@@ -343,5 +343,6 @@ class QRCheckModal extends React.Component{
 }
 
 GoogleAuth.defaultProps = {
-	handleBackButtonClick: (function(){})
+	handleBackButtonClick: (function(){}),
+	handleMobileAuthGenerated: (function(){})
 }

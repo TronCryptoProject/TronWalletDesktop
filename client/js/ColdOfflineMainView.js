@@ -21,7 +21,6 @@ export default class ColdOfflineMainView extends React.Component {
 		this.renderHeader = this.renderHeader.bind(this);
 		this.renderMenu = this.renderMenu.bind(this);
 		this.handleMenuItemClick = this.handleMenuItemClick.bind(this);
-		this.getAllAccounts = this.getAllAccounts.bind(this);
 		this.onCodeChangeHandler = this.onCodeChangeHandler.bind(this);
 		this.renderImportCard = this.renderImportCard.bind(this);
 		this.renderRegisterCard = this.renderRegisterCard.bind(this);
@@ -35,8 +34,9 @@ export default class ColdOfflineMainView extends React.Component {
 		this.handlePaperWalletDismiss = this.handlePaperWalletDismiss.bind(this);
 		this.savePaperWallet = this.savePaperWallet.bind(this);
 		this.startQRScan = this.startQRScan.bind(this);
-		this.accListItemSelect = this.accListItemSelect.bind(this);
 		this.handleQRCallback = this.handleQRCallback.bind(this);
+		this.cacheAccountAddress = this.cacheAccountAddress.bind(this);
+		this.showSecret = this.showSecret.bind(this);
 	}
 
 	componentDidMount(){
@@ -95,7 +95,10 @@ export default class ColdOfflineMainView extends React.Component {
 	}
 
 	handleImportBtnClick(){
+		let res_dict = {
 
+		};
+		this.cacheAccountAddress();
 	}
 
 	handleRegisterBtnClick(){
@@ -126,6 +129,23 @@ export default class ColdOfflineMainView extends React.Component {
 		
 	}
 
+	cacheAccountAddress(){
+
+	}
+
+	showSecret(e){
+		let inp_target = "#privkey_input";
+		let input_type = $(inp_target).attr('type');
+
+		if (input_type == "password"){
+			$(inp_target).clone().attr("type","text").insertAfter(inp_target).prev().remove();
+			$(e.target).addClass("slash");
+		}else{
+			$(inp_target).clone().attr("type","password").insertAfter(inp_target).prev().remove();
+			$(e.target).removeClass("slash");
+		}
+	}
+
 	onCodeChangeHandler(){
 
 	}
@@ -153,98 +173,12 @@ export default class ColdOfflineMainView extends React.Component {
 	}
 
 	generatePaperWallet(){
-		this.renderPaperWalletCard();
+		this.renderPaperWalletCard("23","42", "2");
 		$("#coldofflinemenushape")
 			.shape("set next side", $("#paperwalletgeneratedside"))
 			.shape("flip up");
 	}
 
-	accListItemSelect(e, pub_address){
-		if (this.state.listSelectedItem == pub_address){
-			//toggle
-			this.setState({listSelectedItem: ""});
-		}else{
-			this.setState({listSelectedItem: pub_address});
-		}
-		
-	}
-
-	getAllAccounts(){
-		let read_data = jetpack.read(config.walletConfigFile, "json");
-		if (!read_data || !("accounts" in read_data) || read_data.accounts.length == 0){
-			return(
-				<div className="item">
-					<div className="content">
-						<div className="header">
-							No Accounts Found
-						</div>
-					</div>
-				</div>
-			);
-		}else{
-			let res_list = [];
-			let color_ptr = "";
-
-			for(let acc_dict of read_data.accounts){
-				let acc_name = acc_dict.accName;
-				let pub_address = acc_dict.accPubAddress;
-				
-				let getAccountInit = (name)=>{
-					if (name == ""){
-						return "NA"
-					}else{
-						return name[0].toUpperCase();
-					}
-				};
-
-				let getAccountLabelColor = ()=>{
-					let colors = ["violet_label", "light_blue_label", "gray_purple_label", "magenta_label"];
-					let color_picked = colors[Math.floor(Math.random() * colors.length)];
-					while (color_picked == color_ptr){
-						color_picked = colors[Math.floor(Math.random() * colors.length)];
-					}
-					color_ptr = color_picked;
-					return color_picked;
-				}
-
-				let getAccIcon = ()=>{
-					if (pub_address != this.state.listSelectedItem){
-						let classname = "ui circular large label " + getAccountLabelColor();
-						return (<i className={classname}>{getAccountInit(acc_name)}</i>);
-					}else{
-						return(<i className="ui circular green check icon"/>)
-					}
-				}
-				
-
-				res_list.push(
-					<div className="item" key={pub_address} onClick={(e)=>{this.accListItemSelect(e,pub_address)}}>
-						<div className="ui one column grid">
-						
-							<div className="row">
-								<div className="column two wide">
-									{getAccIcon()}
-								</div>
-
-								<div className="left aligned column fourteen wide">
-									<div className="header">
-										{acc_name == "" ? "no name found" : acc_name}
-									</div>
-									<div className="meta">
-										{pub_address}
-									</div>
-								</div>
-							</div>
-						</div>
-						
-						
-					</div>
-				);
-
-			}
-			return res_list;
-		}
-	}
 
 	renderHeader(){
 		return(
@@ -297,20 +231,13 @@ export default class ColdOfflineMainView extends React.Component {
 	}
 
 	renderImportCard(){
-		let accounts = this.getAllAccounts();
-		let getDescription = ()=>{
-			if (accounts && accounts.length > 0){
-				let description = `Please select one (${accounts.length} found)`;
-				return <div className="description">{description}</div>;
-			}
-		}
-		
 		return(
 			<div className="ui raised card height_fit_content
 											cold_offline_import_card" id="importcard">
 						
 				<div className="center aligned content">
-					<div className="ui header vertical_center mt-3 mb-1">Accounts</div>
+					
+					<div className="ui header vertical_center mt-3 mb-1">Private Key</div>
 					
 					<div className="circular ui icon animated compact right floated button qrcode_scan_btn"
 						onClick={this.startQRScan}>
@@ -320,12 +247,14 @@ export default class ColdOfflineMainView extends React.Component {
 					  	</div>
 					</div>
 						
-					
-					{getDescription()}
-					<div className="ui middle aligned selection animated list cold_offline_import_list">
-						{accounts}
+					<div className="content py-3">
+						<div className="ui icon input privatekey_input_txt mt-4">
+							<input type="password" className="rounded_corners"
+								placeholder="Key" id="privkey_input"/>
+							<i className="circular eye link icon my-auto cursor_pointer"
+								onClick={(e)=>{this.showSecret(e)}}/>
+						</div>
 					</div>
-					
 					<div className="ui header">Wallet Passcode</div>
 					<div className="py-3">
 						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
@@ -364,15 +293,14 @@ export default class ColdOfflineMainView extends React.Component {
 		);
 	}
 
-	renderPaperWalletCard(){
+	renderPaperWalletCard(pubAddress, privAddress, passcode){
 
 		let margin = 20;
 		let qrimagewh = 50;
 		let c_width = 350;
 		let c_height = 750;
-		let pub_address = "27TkooQ63LTnLjprMAv1MHYxySRNNDjdyqH";
-		let priv_address = "5a4b5a92dd18e42a0ee0214c53ac1bb69a15628a53e2074a7c982ab6117c1a51";
-		let passcode = "123456";
+		let pub_address = pubAddress;
+		let priv_address = privAddress;
 
 		let canvas = $("#paperwalletcanvas")[0];
 		canvas.width = 700;
@@ -387,6 +315,12 @@ export default class ColdOfflineMainView extends React.Component {
 		ctx.fillStyle = "#e5ecfb";
   		ctx.fillRect (0, 0, c_width, c_height);
   		ctx.restore();*/
+
+  		let image = new Image;
+		image.src = "client/images/tronbluetransparent.png";
+		image.onload = function(){
+			createRect(image, canvas, margin, this.width, this.height, 20);
+		}
 
 		ctx.font = "bolder 16px Avenir";
 		ctx.textAlign = "center";
@@ -447,7 +381,7 @@ export default class ColdOfflineMainView extends React.Component {
 			})
 			.catch(err =>{
 				let image = new Image;
-				image.src = "../images/blankqrcode.png";
+				image.src = "client/images/blankqrcode.png";
 				image.onload = function(){
 					createRect(image, canvas, y + margin, this.width, this.height, 20);
 					createPasscodeImage(y + (margin * (lines + 3)) + this.height);
@@ -476,7 +410,7 @@ export default class ColdOfflineMainView extends React.Component {
 			})
 			.catch(err =>{
 				let image = new Image;
-				image.src = "../images/blankqrcode.png";
+				image.src = "client/images/blankqrcode.png";
 				image.onload = function(){
 					createRect(image, canvas, y + margin * 2, this.width, this.height, 20);
 				}
@@ -494,7 +428,7 @@ export default class ColdOfflineMainView extends React.Component {
 		})
 		.catch(err =>{
 			let image = new Image();
-			image.src = "../images/blankqrcode.png";
+			image.src = "client/images/blankqrcode.png";
 			image.onload = function(){
 				createRect(image, canvas, margin * 4, this.width, this.height, 20);
 				createPrivImage(this.height + (margin * 6));
@@ -597,11 +531,32 @@ export default class ColdOfflineMainView extends React.Component {
 	}
 
 	render(){
+		let getDescriptionText = ()=>{
+			if (this.props.view == config.views.COLDWALLET){
+				return(
+					<div className="content text_align_center width_50 mb-4 mx-auto">
+						Private key generation is done locally on your machine. No network
+						requests can be sent for your wallet protection.
+					</div>
+				);
+			}else{
+				return(
+					<div className="content text_align_center width_80 mb-4 mx-auto">
+						Hot Wallet is connected to the internet and offers more features
+						and built-in signing of transactions. It provides convenience and speed
+						at the little expense of security.
+					</div>
+				);
+			}
+		}
+
+
 		return(
 			<div>
 				<div className="draggable blue_gradient_background" id="coldofflinemainview">
 					<div className="ui grid">
 						{this.renderHeader()}
+						{getDescriptionText()}
 						<div className="row px-5">
 							{this.renderMenu()}
 						</div>
@@ -618,5 +573,6 @@ export default class ColdOfflineMainView extends React.Component {
 }
 
 ColdOfflineMainView.defaultProps = {
-	handleBackButtonClick: (function(){})
+	handleBackButtonClick: (function(){}),
+	view: config.views.COLDWALLET
 }

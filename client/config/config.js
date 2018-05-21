@@ -12,6 +12,9 @@ module.exports = {
 		"REGISTER": "REGISTER",
 		"PAPERWALLET": "PAPERWALLET"
 	}, 
+	"watchOnlyMenuItems":{
+		"RESTORE": "RESTORE"
+	},
 	"dockbar": {
 		"nodes": "nodes",
 		"backup": "backup"
@@ -20,5 +23,6 @@ module.exports = {
 		SUCCESS: "success",
 		FAILED: "failed"
 	},
-	"API_URL": "http://localhost:8088"
+	"API_URL": "http://localhost:8088",
+	"COLD_API_URL": "http://localhost:8088"
 }

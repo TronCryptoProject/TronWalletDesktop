@@ -5,7 +5,9 @@ import NetworkConfirmationModal from "./NetworkConfirmationModal.js";
 import GoogleAuth from "./GoogleAuth.js";
 import StatusBar from "./StatusBar.js";
 import ColdOfflineMainView from "./ColdOfflineMainView.js";
-import HotWalletMainView from "./HotWalletMainView.js";
+import WatchOnlyMainView from "./WatchOnlyMainView.js";
+import ColdOfflineDashboard from "./ColdOfflineDashboard.js";
+import jetpack from "fs-jetpack";
 
 export default class MainView extends React.Component {
 	constructor(props){
@@ -17,9 +19,10 @@ export default class MainView extends React.Component {
 			networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE,
 			modalHidden: true,
 			currView: config.views.MAINVIEW,
-			showHotWalletStatusBar: false,
+			onlineFeaturesView: "",
 			dataNodeDict: {},
-			isLoggedIn: false
+			isLoggedIn: false,
+			mobileAuthCode: ""
 		}
 
 		this.networkStatusUpdate = this.networkStatusUpdate.bind(this);
@@ -29,10 +32,12 @@ export default class MainView extends React.Component {
 		this.getMainViewComponent = this.getMainViewComponent.bind(this);
 		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 		this.handleHotWalletClick = this.handleHotWalletClick.bind(this);
-		this.handleHotWalletStatusBar = this.handleHotWalletStatusBar.bind(this);
+		this.handleStatusBar = this.handleStatusBar.bind(this);
 		this.handleDataNode = this.handleDataNode.bind(this);
 		this.handleLogoutClick = this.handleLogoutClick.bind(this);
 		this.permissionLogOut = this.permissionLogOut.bind(this);
+		this.handleMobileAuthGenerated = this.handleMobileAuthGenerated.bind(this);
+		this.checkMobileAuth = this.checkMobileAuth.bind(this);
 	}
 
 	componentDidMount(){
@@ -61,6 +66,7 @@ export default class MainView extends React.Component {
 				hide: 0
 			}
 		});
+		this.checkMobileAuth();
 	}
 
 	componentWillUnmount(){
@@ -68,6 +74,14 @@ export default class MainView extends React.Component {
 	  	window.removeEventListener(this.OFFLINE,  this.networkStatusUpdate);
 	}
 
+	checkMobileAuth(){
+		let read_data = jetpack.read(config.walletConfigFile, "json");
+		if (!read_data || !("mobileAuthCode" in read_data)){
+			this.setState({mobileAuthCode: ""});
+		}else{
+			this.setState({mobileAuthCode: read_data.mobileAuthCode});
+		}
+	}
 
 	networkStatusUpdate(){
 		this.setState({networkStatus: navigator.onLine ? this.ONLINE : this.OFFLINE},()=>{
@@ -76,6 +90,10 @@ export default class MainView extends React.Component {
 				this.setState({currView: config.views.COLDWALLET});
 			}
 		});
+	}
+
+	handleMobileAuthGenerated(code){
+		this.setState({mobileAuthCode: code});
 	}
 
 	handleColdOfflineClick(e){
@@ -104,12 +122,16 @@ export default class MainView extends React.Component {
 			})
 			.modal("show");*/
 			//remove the following line and uncomment the above line to get the dialog back; that's all
-			this.setState({currView: config.views.COLDWALLET});
+			this.setState({currView: config.views.COLDWALLET, isLoggedIn: true});
+		}else{
+			/*remove this line*/
+		this.setState({currView: config.views.COLDWALLET, isLoggedIn: true});
 		}
+		
 	}
 
 	handleWatchOnlyWalletClick(e){
-
+		this.setState({currView: config.views.WATCHONLY});
 	}
 
 	handleMobileAuthClick(e){
@@ -121,13 +143,11 @@ export default class MainView extends React.Component {
 	}
 
 	handleHotWalletClick(){
-		this.setState({currView: config.views.HOTWALLET, isLoggedIn: true},()=>{
-			console.log("hot clicked");
-		});
+		this.setState({currView: config.views.HOTWALLET, isLoggedIn: true});
 	}
 
-	handleHotWalletStatusBar(toshow){
-		this.setState({showHotWalletStatusBar: toshow});
+	handleStatusBar(view){
+		this.setState({onlineFeaturesView: view});
 	}
 
 	handleDataNode(node_dict){
@@ -139,7 +159,9 @@ export default class MainView extends React.Component {
 	}
 
 	permissionLogOut(){
-		this.setState({currView: config.views.MAINVIEW});
+		this.setState({currView: config.views.MAINVIEW,
+			onlineFeaturesView: ""
+		});
 	}
 
 	getMainViewComponent(){
@@ -201,17 +223,33 @@ export default class MainView extends React.Component {
 			view_component = this.getMainViewComponent();
 		}else if (this.state.currView == config.views.MOBILEAUTH){
 			view_component = (
-				<GoogleAuth handleBackButtonClick={this.handleBackButtonClick}/>
+				<GoogleAuth handleBackButtonClick={this.handleBackButtonClick}
+					handleMobileAuthGenerated={this.handleMobileAuthGenerated}/>
 			);
 		}else if (this.state.currView == config.views.COLDWALLET){
+			/*view_component = (
+				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}
+					view={config.views.COLDWALLET}/>
+			);*/
 			view_component = (
-				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}/>
+				<ColdOfflineDashboard showStatusBar={this.handleStatusBar}
+					permissionLogOut={this.permissionLogOut} isLoggedIn={this.state.isLoggedIn}
+					mobileAuthCode={this.state.mobileAuthCode}/>
 			);
 		}else if (this.state.currView == config.views.HOTWALLET){
-			view_component = (
-				<HotWalletMainView showStatusBar={this.handleHotWalletStatusBar}
+			/*view_component = (
+				<HotWalletDashboard showStatusBar={this.handleStatusBar}
 					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
-					permissionLogOut={this.permissionLogOut}/>
+					permissionLogOut={this.permissionLogOut} mobileAuthCode={this.state.mobileAuthCode}/>
+			);*/
+			view_component = (
+				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}
+					view={config.views.HOTWALLET}/>
+			);
+		}else if (this.state.currView == config.views.WATCHONLY){
+			view_component = (
+				<WatchOnlyMainView handleBackButtonClick={this.handleBackButtonClick}
+					mobileAuthCode={this.state.mobileAuthCode}/>
 			);
 		}
 
@@ -220,14 +258,14 @@ export default class MainView extends React.Component {
 		}
 
 		let hot_wallet_data = {
-			showOnlineFeatures: this.state.showHotWalletStatusBar
+			onlineFeaturesView: this.state.onlineFeaturesView
 		}
 		hot_wallet_data = Object.assign(hot_wallet_data, this.state.dataNodeDict);
 		return(
 			<div>
 				{view_component}
 				<StatusBar globalIconData={status_data} hotWalletData={hot_wallet_data}
-					handleLogoutClick={this.handleLogoutClick}/>
+					handleLogoutClick={this.handleLogoutClick} mobileAuthCode={this.state.mobileAuthCode}/>
 			</div>
 		);
 	}

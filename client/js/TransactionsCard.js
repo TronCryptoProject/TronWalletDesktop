@@ -48,7 +48,8 @@ export default class TransactionsCard extends React.Component{
 			];
 		this.state = {
 			txsList: txs_list,
-			accInfo: this.props.accInfo
+			accInfo: props.accInfo,
+			view: props.view
 		};
 	}
 
@@ -62,23 +63,30 @@ export default class TransactionsCard extends React.Component{
 		},200);
 
 		this.fetchTransactions(this.props);
-		//this.setState({txsList: 
-		//});
 	}
 
 	componentWillReceiveProps(nextProps){
 		let tmp_dict = {}
-
+		let dirty = false;
 		if (!Equal(this.props.accInfo, nextProps.accInfo)){
 			tmp_dict.accInfo = nextProps.accInfo;
+			dirty = true;
 		}
 		tmp_dict = Object.assign(this.state, tmp_dict);
-		this.setState(tmp_dict);
+		this.setState(tmp_dict, ()=>{
+			if (dirty){
+				this.fetchTransactions(nextProps);
+			}
+		});
 
 	}
 
 	fetchTransactions(props){
-		axios.get(`${config.API_URL}/api/txs/` + this.props.accInfo.pubAddress)
+		let url = config.API_URL;
+		if (this.state.view == config.views.COLDWALLET){
+			url = config.COLD_API_URL;
+		}
+		axios.get(`${url}/api/txs/` + this.props.accInfo.pubAddress)
 		.then((res)=>{
 			let json_obj = res.data;
 			if (json_obj && "result" in json_obj){
@@ -155,12 +163,19 @@ export default class TransactionsCard extends React.Component{
 
 	render(){
 		let title = "Recent Transactions";
+		let card_class = "txs_card";
+		if (this.state.view == config.views.COLDWALLET){
+			title = "Recently Signed Transactions";
+			card_class = "sign_txs_card";
+		}
 		if (this.state.txsList.length > 0){
 			title += ` (${this.state.txsList.length})`;
 		}
 
+
 		return(
-			<div className="ui fluid centered raised doubling card txs_card pb-3" id="txscard">
+			<div className={"ui fluid centered raised doubling card pb-3 " + card_class}
+				id="txscard">
 				<div className="content clearfix height_100">
 					<div className="ui small m-0 center aligned header">{title}</div>
 					<div className="ui middle aligned selection list">
@@ -177,5 +192,6 @@ TransactionsCard.defaultProps = {
 	accInfo: {
 		accountName : "",
 		pubAddress: ""
-	}
+	},
+	view: config.views.HOTWALLET
 }

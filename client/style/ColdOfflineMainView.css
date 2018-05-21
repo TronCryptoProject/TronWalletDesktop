@@ -10,6 +10,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    text-align: center;
 }
 
 .header_label_div{
@@ -101,11 +102,11 @@
    text-align: center;
 }
 
-:-moz-placeholder { /* Firefox 18- */
+:-moz-placeholder {
    text-align: center;  
 }
 
-::-moz-placeholder {  /* Firefox 19+ */
+::-moz-placeholder {
    text-align: center;  
 }
 
@@ -139,4 +140,18 @@
 .qrcode_scan_btn{
 	background-color: white !important;
 	color: #475db1 !important;
+}
+
+.hide_secret{
+    -webkit-text-security: disc;
+}
+
+.privatekey_input_txt{
+    font-size: 1.2em !important;
+    width: 90% !important;
+    margin-left: 0.5em;
+}
+.privatekey_input_txt input{
+    background: rgba(242, 246, 255, 0.95) !important;
+    border: none !important;
 }

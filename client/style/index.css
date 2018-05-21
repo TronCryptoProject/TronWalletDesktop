@@ -3,7 +3,7 @@
 @import "./ColdOfflineMainView.css";
 @import "./Spacing.css";
 @import "./QRScanModal.css";
-@import "./HotWalletMainView.css";
+@import "./HotWalletDashboard.css";
 @import "./odometer-theme-minimal.css";
 @import "./DockMenu.css";
 @import "./Nodes.css";
@@ -15,6 +15,8 @@
 @import "./Spinner.css";
 @import "./Freeze.css";
 @import "./MobileAuthModal.css";
+@import "./WatchOnlyMainView.css";
+@import "./ColdOfflineDashboard.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -73,6 +75,9 @@ textarea:focus, input:focus{
 }
 .mobileauth_icon_green{
 	color: #528c39!important;
+}
+.mobileauth_icon_green_light{
+	color: #83c765!important;
 }
 .status_label{
 	background: rgba(0,0,0,0) !important;
@@ -280,11 +285,19 @@ i.icon.paperplane:before {
 }
 
 .cursor_pointer{
-	cursor: pointer;
+	cursor: pointer !important;
 }
 .proxima_semibold{
 	font-family: proxima_nova_ltsemibold !important;
 }
 .blur{
 	filter: blur(2px);
+}
+
+.position_sticky{
+	position: sticky !important;
+}
+
+.width_95{
+	width: 95% !important;
 }

@@ -1,0 +1,27 @@
+.raw_hex_input{
+	height: 16vh !important;
+}
+.raw_hex_input textarea{
+	background: hsla(240, 4%, 90%, 0.36) !important;
+    border: none !important;
+    font-family: "Avenir" !important;
+    border-radius: 1em !important;
+}
+.raw_hex_input textarea::-webkit-input-placeholder{
+	line-height: 16vh !important;
+}
+
+.cold_wallet_send_card_header{
+	color: #5176b9!important;
+}
+.sign_txs_card{
+	background: linear-gradient(120deg,hsla(0, 0%, 98%, 0.83),#ffffff 40%,rgba(255, 255, 255, 0.69))!important;
+	border-radius: 0.8em !important;
+	max-height: 50vh !important;
+	min-height: 20em!important;
+	max-width: 32em !important;
+	transition: all 1s !important;
+}
+.ui.raised.card.sign_txs_card, .ui.raised.cards>.card {
+    box-shadow: 0 0 0 0 #d4d4d5,0 8px 40px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)!important;
+}

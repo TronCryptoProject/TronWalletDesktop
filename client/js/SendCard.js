@@ -1,18 +1,42 @@
 import React from "react";
+import config from "../config/config.js";
 
 export default class SendCard extends React.Component{
 	constructor(props){
 		super(props);
 		this.handleQRScanClick = this.handleQRScanClick.bind(this);
 		this.handleSendClick = this.handleSendClick.bind(this);
-		this.state = {};
+		this.renderSimpleSendCard = this.renderSimpleSendCard.bind(this);
+		this.renderPrepareTxCard = this.renderPrepareTxCard.bind(this);
+		this.handleSignClick = this.handleSignClick.bind(this);
+		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+		this.state = {
+			qrcodeData: ""
+		};
+	}
+
+	componentDidMount(){
+		$("#coldwallet_send_sign_shape").shape();
 	}
 
 	handleSendClick(e){
 		let address = $("#send_address_input").val().trim();
 		let value = $("#hotwallet_send_amout").val().trim();
-		this.props.handleSendClick(address, value);
+		this.props.handleSendClick(address, value,(qrcode_data)=>{
+			this.setState({qrcodeData: qrcode_data}, ()=>{
+				$("#coldwallet_send_sign_shape").shape("flip over");
+			});
+		});
 		
+	}
+
+	handleSignClick(e){
+		//switch to sign card menu
+		this.props.handlePrepareClick(this.state.qrcodeData);
+	}
+
+	handleBackButtonClick(){
+		$("#coldwallet_send_sign_shape").shape("flip back");
 	}
 
 	handleQRScanClick(){
@@ -29,9 +53,61 @@ export default class SendCard extends React.Component{
 		});
 	}
 
-	render(){
+	renderPrepareTxCard(){
+		return(
+			<div className="ui one column centered padded grid">
+				<div className="three column row">
+					<div className="three wide column">
+						<button className="circular medium ui icon button" onClick={this.handleBackButtonClick}>
+							<i className="arrow left icon"/>
+						</button>
+					</div>
+					<div className="eleven wide center middle aligned column">
+						<div className="ui medium header cold_wallet_send_card_header">
+							Raw Transaction Data
+						</div>
+					</div>
+					<div className="two wide column right aligned px-3"/>
+				</div>
+
+				<div className="row">
+					<div className="image">
+						<img src={this.state.qrcodeData} className="qrcode_image"/>
+					</div>
+				</div>
+				<div className="row">
+					<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSignClick(e)}}>
+						<i className="pencil alternate icon"/>
+						Sign Transaction
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	renderSimpleSendCard(){
+		let getCardDescription = ()=>{
+			if (this.props.id == config.views.COLDWALLET){
+				return(
+					<div className="row">
+						<div className="ui medium header cold_wallet_send_card_header">
+							Prepare Transaction to Sign
+						</div>
+					</div>
+				);
+			}
+		}
+		let getSubmitButtonText = ()=>{
+			if (this.props.id == config.views.COLDWALLET){
+				return "Create Transaction";
+			}else{
+				return "Send";
+			}
+		}
+
 		return(
 			<div className="ui one column centered padded grid" id="hot_wallet_send_segment">
+				{getCardDescription()}
 				<div className="three column row">
 					<div className="four wide column"/>
 					<div className="eight wide center middle aligned column">
@@ -82,15 +158,33 @@ export default class SendCard extends React.Component{
 				<div className="row mt-3">
 					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}>
 						<i className="paperplane icon"/>
-						Send
+						{getSubmitButtonText()}
 					</button>
 				</div>
 			</div>
+		);
+	}
+
+	render(){
+		return(
+			<div className="ui people shape" id="coldwallet_send_sign_shape">
+				<div className="sides">
+					<div className="active side">
+						{this.renderSimpleSendCard()}
+					</div>
+					<div className="side">
+						{this.renderPrepareTxCard()}
+					</div>
+				</div>
+			</div>
+			
 		);
 	}
 }
 
 SendCard.defaultProps = {
 	handleQRScanClick: (function(){}),
-	handleSendClick: (function(){})
+	handleSendClick: (function(){}),
+	handlePrepareClick: (function(){}),
+	id: ""
 }

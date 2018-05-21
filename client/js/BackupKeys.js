@@ -13,21 +13,10 @@ export default class BackupKeys extends React.Component {
 		this.confModal = this.confModal.bind(this);
 		this.handleAcceptConfModal = this.handleAcceptConfModal.bind(this);
 		this.getCodeInputConfig = this.getCodeInputConfig.bind(this);
-		this.onCodeChangeHandler = this.onCodeChangeHandler.bind(this);
+		this.onPasscodeChangeHandler = this.onPasscodeChangeHandler.bind(this);
+		this.ononAuthCodeChangeHandler = this.onAuthCodeChangeHandler.bind(this);
 		this.state={
 			modalId: "backup_conf_modal"
-		}
-	}
-
-	componentWillReceiveProps(nextProps){
-		if(this.props.modalOpened != nextProps.modalOpened){
-			if (nextProps.modalOpened){
-				this.setState({modalOpened: nextProps.modalOpened},()=>{
-
-				});
-			}else{
-				
-			}
 		}
 	}
 
@@ -52,7 +41,11 @@ export default class BackupKeys extends React.Component {
 		return code_input_props;
 	}
 
-	onCodeChangeHandler(){
+	onPasscodeChangeHandler(){
+
+	}
+
+	onAuthCodeChangeHandler(){
 
 	}
 
@@ -90,6 +83,24 @@ export default class BackupKeys extends React.Component {
 	}
 
 	render(){
+		let getMobileAuthConf = ()=>{
+			if (this.props.mobileAuthCode){
+				return(
+					<div className="pt-5 pb-3">
+						<div className="text_align_center content">
+							<div className="ui header cold_wallet_send_card_header">
+								Enter Mobile Auth code below
+							</div>
+						</div>
+						<div className="center_button my-3">
+							<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
+								onChange={this.onAuthCodeChangeHandler}/>
+						</div>
+					</div>
+				);
+			}
+		}
+
 		return(
 			<div className="ui fullscreen modal fullscreen_modal" id="backup_modal">
 				<div className="ui blurring segment fullscreen_modal_segment">
@@ -125,12 +136,20 @@ export default class BackupKeys extends React.Component {
 					</div>
 				</div>
 				<ConfModal headerText="Do you want to begin backup?"
-					message="Your backup will be saved to your computer in an encrypted file"
+					message="Your backup will be saved to your computer in an encoded file"
 					actions={["deny", "accept"]} id={this.state.modalId}
 					handleAcceptConfModal={this.handleAcceptConfModal}>
 
-					<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onCodeChangeHandler}/>
+					<div className="text_align_center content">
+						<div className="ui header cold_wallet_send_card_header">
+							Enter your wallet password below
+						</div>
+					</div>
+					<div className="center_button my-3">
+						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
+							onChange={this.onPasscodeChangeHandler}/>
+					</div>
+					{getMobileAuthConf()}
 				</ConfModal>
 
 			</div>
@@ -139,5 +158,6 @@ export default class BackupKeys extends React.Component {
 }
 
 BackupKeys.defaultProps = {
-	handleDockClick: (function(){})
+	handleDockClick: (function(){}),
+	mobileAuthCode: false
 }

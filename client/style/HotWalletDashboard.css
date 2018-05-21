@@ -1,0 +1,241 @@
+.hot_wallet_main_background{
+	background: linear-gradient(10deg,rgba(72, 91, 183, 0.58),#e1e1e2 40%,rgba(164,193,247,.33)) !important;
+	padding: 3em;
+	position: fixed;
+	height: 100%;
+	width: 100%;
+	overflow: auto;
+}
+.ui.basic.inverted.button.logout_btn, .ui.basic.inverted.buttons .button{
+	background: transparent none!important;
+	color: #ffffff !important;
+	box-shadow: none !important;
+}
+.ui.basic.inverted.button.logout_btn:hover, .ui.basic.inverted.buttons .button:hover {
+    color: #1340cc!important;
+    box-shadow: inset 0 0 0 2px #5a7adc!important;
+    background: #e1ecf7!important;
+}
+
+.logout_btn .visible.content{
+	top: 0.2em !important;
+	font-size: 1.6em !important;
+}
+.logout_icon{
+	margin-left: 0.25em !important;
+	margin-bottom: 0.1em !important;
+}
+.hot_wallet_header_title{
+	font-family: Avenir!important;
+    font-size: 30px!important;
+    color: rgba(0, 0, 0, 0.2);
+    background: linear-gradient(to right, #3e4ff3 0%,#3e6ee0 40%,#53afe7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0);
+    position: relative;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.statistic_block{
+	font-size: 0.8em !important;
+	margin: -5px !important;
+}
+.statistic_balances{
+	font-size: 0.8em !important;
+}
+.statistic_trx_price{
+	font-size: 0.8em !important;
+}
+.statistic_datanode{
+	font-size: 0.85em !important;
+	color: mintcream !important;
+}
+.statistic_value_purple{
+	color: #4545e8 !important;
+}
+.statistic_value_green{
+	color: #4f8e22 !important;
+}
+.statistic_value_green_div{
+	color: #4f8e22 !important;
+	display: inline-flex !important;
+}
+
+.statistic_value_light_blue{
+	color: #d2dfff !important;
+}
+.data_node_odometer{
+	display: inherit !important;
+}
+.hot_top_header{
+	height: 80% !important;
+}
+.hot_sub_header_column{
+	margin-top: -0.8em !important;
+}
+
+
+.account_balances_card{
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(246,246,246,1) 47%,rgba(225, 232, 244, 0.82) 100%) !important;
+    border-radius: 0.8em !important;
+    max-width: 30em !important;
+    transition: all 1s !important;
+}
+
+.txs_card{
+	background: linear-gradient(120deg,hsla(0, 0%, 98%, 0.83),#ffffff 40%,rgba(255, 255, 255, 0.69))!important;
+	border-radius: 0.8em !important;
+	max-height: 18em !important;
+	min-height: 10.0em!important;
+	max-width: 32em !important;
+	transition: all 1s !important;
+}
+.ui.raised.card.txs_card, .ui.raised.cards>.card {
+    box-shadow: 0 0 0 0 #d4d4d5,0 8px 40px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)!important;
+}
+
+
+.ui.raised.card.account_balances_card, .ui.raised.cards>.card {
+    box-shadow: 0 0 0 0 #d4d4d5,0 8px 40px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)!important;
+}
+
+
+.ui.grid>[class*="two column"].row>.column.width_fit_content{
+	width: fit-content !important;
+}
+
+.ui.grid>[class*="two column"].row>.column.width_50{
+	width: 50% !important;
+}
+
+.tx_list_timestamp{
+	font-size: 0.8em !important;
+}
+.tx_list_address{
+	font-size: 0.9em !important;
+    max-width: 21em !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+}
+
+.faded_bottom {
+    bottom: 0;
+    position: absolute;
+    margin-left: -1em !important;
+    height: 4em;
+    background: linear-gradient(hsla(0,0%,100%,0),#fff);
+    width: 100%;
+    border-radius: 1em;
+    padding: 0;
+    margin: 0;
+} 
+
+.send_receive_card{
+	background: transparent !important;
+	box-shadow: none !important;
+	min-width: 45vw !important;
+	max-width: 45vw !important;
+	transition: all 1s !important;
+}
+
+@media screen and (min-width: 1000px){
+	.send_receive_card{
+		min-width: 38vw !important;
+	}
+}
+
+@media screen and (min-width: 1400px){
+	.send_receive_card{
+		min-width: 34em !important;
+	}
+}
+
+@media screen and (min-height: 800px){
+	.txs_card{
+		max-height: 38vh !important;
+	}
+}
+@media screen and (min-height: 700px) and (max-height: 750px){
+	.txs_card{
+		max-height: 30vh !important;
+	}
+}
+
+.ui.tabular.menu .active.item.send_receive_card_item{
+	font-family: Avenir!important;
+    font-weight: 600 !important;
+    color: #447bd4 !important;
+    border-top-right-radius: 0.8em !important;
+    border-top-left-radius: 0.8em !important;
+    border: none !important;
+}
+.ui.tabular.menu .item.send_receive_card_item{
+	font-family: Avenir!important;
+    font-weight: lighter !important;
+    color: #447bd4 !important;
+    border-top-right-radius: 0.8em !important;
+    border-top-left-radius: 0.8em !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+
+.send_receive_card_segment{
+	border: none !important;
+    border-bottom-left-radius: 0.8em !important;
+    border-bottom-right-radius: 0.8em !important;
+}
+
+.send_receive_card_input{
+	border-radius: 0.7em !important;
+	color: #527dcc !important;
+}
+.send_receive_card_input_div{
+	font-size: 1.15em !important;
+    font-weight: bolder !important;
+}
+.send_receive_card_input + .ui.label{
+	border-radius: 0 0.7em 0.7em 0 !important;
+}
+
+.receive_public_address{
+	max-width: 20em !important;
+    overflow-y: scroll !important;
+    border-top-left-radius: 0.7em !important;
+    border-bottom-left-radius: 0.7em !important;
+}
+.receive_right_btn_border{
+	border-top-right-radius: 0.7em !important;
+    border-bottom-right-radius: 0.7em !important;
+}
+.placeholder_left_align::-webkit-input-placeholder {
+	text-align:left !important; 
+}
+
+.cornblue_button{
+	background: #7b97de !important;
+    color: white !important;
+}
+
+.hotwalletreceivecanvas{
+	width: 12em !important;
+	height: 12em !important;
+	border-radius: 1em !important;
+}
+.hotwallet_canvas_div{
+	width: 12em !important;
+	height: 12em !important;
+	background: linear-gradient(90deg,#6268b1,#6388dc 40%,#aec4f7)!important;
+	border-radius: 1em !important;
+}
+
+.timer_odometer_label{
+	font-size: 0.8em !important;
+	margin-top: -5px !important;
+}
+
+.hot_wallet_main_content{
+	height: 70vh;
+}
