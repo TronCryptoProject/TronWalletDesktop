@@ -2,55 +2,20 @@ import React from "react";
 import Equal from "deep-equal";
 import axios from "axios";
 import config from "../config/config.js";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class TransactionsCard extends React.Component{
 	constructor(props){
 		super(props);
 		this.getTransactions = this.getTransactions.bind(this);
 		this.fetchTransactions = this.fetchTransactions.bind(this);
-		let txs_list = [
-				{
-					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"to": "27UJ8qgmW8e2vx2Cev7s76eFX3tuKHtF21E",
-					"amount": 45924,
-					"timestamp": 2903849823572
-				},
-				{
-					"from": "27XSDWdW218f3n24w3X9zsrizfTHyty6gLy",
-					"to": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"amount": 4594,
-					"timestamp": 2903849823272
-				},
-				{
-					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"to": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"amount": 4593242324,
-					"timestamp": 290384523572
-				},
-				{
-					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"to": "27UJ8qgmW8e2vx2Cev7s26eFX3tuKHtF21E",
-					"amount": 424.24,
-					"timestamp": 2903829823512
-				},
-				{
-					"from": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"to": "27UJ8qgmW8e2vx2Cev7s26eFX3tuKHtF11E",
-					"amount": 424.24,
-					"timestamp": 2903829823502
-				},
-				{
-					"from": "27XSDWdj218f3neNw3X9zsrizfTHyty6gLy",
-					"to": "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy",
-					"amount": 424.24,
-					"timestamp": 2903829823570
-				}
-			];
 		this.state = {
-			txsList: txs_list,
+			txsList: [],
 			accInfo: props.accInfo,
-			view: props.view
+			view: props.view,
+			toUpdate: props.toUpdate
 		};
+		
 	}
 
 	componentDidMount(){
@@ -72,6 +37,12 @@ export default class TransactionsCard extends React.Component{
 			tmp_dict.accInfo = nextProps.accInfo;
 			dirty = true;
 		}
+		if (!Equal(this.props.toUpdate, nextProps.toUpdate)){
+			tmp_dict.toUpdate = nextProps.toUpdate;
+			if (this.state.toUpdate == false && nextProps.toUpdate == true){
+				dirty = true;
+			}
+		}
 		tmp_dict = Object.assign(this.state, tmp_dict);
 		this.setState(tmp_dict, ()=>{
 			if (dirty){
@@ -82,20 +53,19 @@ export default class TransactionsCard extends React.Component{
 	}
 
 	fetchTransactions(props){
-		let url = config.API_URL;
-		if (this.state.view == config.views.COLDWALLET){
-			url = config.COLD_API_URL;
-		}
-		axios.get(`${url}/api/txs/` + this.props.accInfo.pubAddress)
+		let url = BlowfishSingleton.createPostURL(this.state.view, "GET","txs",{
+			pubAddress: this.props.accInfo.pubAddress
+		});
+
+		axios.get(url)
 		.then((res)=>{
-			let json_obj = res.data;
-			if (json_obj && "result" in json_obj){
-				if (json_obj.result == config.constants.SUCCESS){
-					this.setState({txsList: json_obj.transactions});
-				}else{
-					//fetch failed
-					console.log("tx failed");
-				}
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if (data.result == config.constants.SUCCESS){
+				this.setState({txsList: data.txs});
+			}else{
+				//TODO error handling
 			}
 		})
 		.catch((error)=>{
@@ -150,7 +120,7 @@ export default class TransactionsCard extends React.Component{
 			}
 		}else{
 			txs_list.push(
-				<div className="item" key="no_txs_found">
+				<div className="item font_size_large" key="no_txs_found">
 					<div className="center aligned content">
 						No transactions found
 					</div>
@@ -193,5 +163,6 @@ TransactionsCard.defaultProps = {
 		accountName : "",
 		pubAddress: ""
 	},
-	view: config.views.HOTWALLET
+	view: config.views.HOTWALLET,
+	toUpdate: false
 }

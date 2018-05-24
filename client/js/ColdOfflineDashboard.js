@@ -10,6 +10,8 @@ import TransactionsCard from "./TransactionsCard.js";
 import SignCard from "./SignCard.js";
 import TransactionViewerModal from "./TransactionViewerModal.js";
 import DockMenu from "./DockMenu.js";
+import axios from "axios";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class ColdOfflineDashboard extends React.Component {
 	constructor(props){
@@ -23,7 +25,9 @@ export default class ColdOfflineDashboard extends React.Component {
 				accountName : props.accInfo.accountName,
 				pubAddress: props.accInfo.pubAddress
 			},
-			currTxData: {}
+			currTxData: {},
+			txToken: "",
+			toUpdateTxs: false
 		};
 
 		//utitlity functions
@@ -40,7 +44,7 @@ export default class ColdOfflineDashboard extends React.Component {
 		this.handlePrepareClick = this.handlePrepareClick.bind(this);
 		this.handleDockClick = this.handleDockClick.bind(this);
 		this.getTxData = this.getTxData.bind(this);
-		
+		this.handleUpdateTxs = this.handleUpdateTxs.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -210,6 +214,12 @@ export default class ColdOfflineDashboard extends React.Component {
 		})
 	}
 
+	handleUpdateTxs(){
+		this.setState({toUpdateTxs: true},()=>{
+			this.setState({toUpdateTxs: false});
+		})
+	}
+
 	//after prepare transaction
 	handlePrepareClick(qrcode_data){
 		$("#raw_tx_input").val(qrcode_data);
@@ -227,18 +237,64 @@ export default class ColdOfflineDashboard extends React.Component {
 			});
 		});
 
-		if (callback){
-			callback();
-		}
-		//TODO prepare transaction
+		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
+			toAddress: address,
+			amount: amount
+		});
+
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if (data.result == config.constants.SUCCESS){
+				if (callback){
+					callback(data.data);
+				}
+			}else{
+				//TODO error handling
+				if (callback){
+					callback("");
+				}
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+			if (callback){
+				callback("");
+			}
+		});
+		
 	}
 
-	getTxData(hex_str, callback){
-		//TODO get tx data
-		this.setState({currTxData: {}},()=>{
-			if(callback){
-				callback();
+	getTxData(hex_str, token, callback){
+		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "GET","signTxInfo",{
+			hextx: hex_str
+		});
+
+		axios.get(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if (data.result == config.constants.SUCCESS){
+				this.setState({currTxData: data, txToken: token},()=>{
+					if (callback){
+						callback();
+					}
+				});
+
+			}else{
+				this.setState({currTxData: {}, txToken: token},()=>{
+					//TODO error handling
+				});
 			}
+		})
+		.catch((error)=>{
+			console.log(error);
+			this.setState({currTxData: {}, txToken: token},()=>{
+				//TODO error handling
+			});
 		});
 		
 	}
@@ -269,12 +325,27 @@ export default class ColdOfflineDashboard extends React.Component {
 	getTxCardProps(){
 		return{
 			accInfo: this.state.accInfo,
-			view: config.views.COLDWALLET
+			view: config.views.COLDWALLET,
+			toUpdate: this.state.toUpdateTxs
 		};
 	}
 
 	handleLogOut(){
-		this.props.permissionLogOut();
+		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","logout",{});
+
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if (data.result == config.constants.SUCCESS){
+				this.props.permissionLogOut();
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+		});
+		
 	}
 
 	sendMenuItemClick(){
@@ -390,7 +461,9 @@ export default class ColdOfflineDashboard extends React.Component {
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
 						mobileAuthCode={this.props.mobileAuthCode}/>
 				</div>
-				<TransactionViewerModal txData={this.state.currTxData}/>
+				<TransactionViewerModal txData={this.state.currTxData} txToken={this.state.txToken}
+					mobileAuthCode={this.props.mobileAuthCode}
+					handleUpdateTxs={this.handleUpdateTxs} view={config.views.COLDWALLET}/>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 			</div>
 		);

@@ -34,6 +34,8 @@ export default class GoogleAuth extends React.Component{
 			this.setState({token: val},()=>{
 				this.handleCheckCode();
 			});
+		}else{
+			this.setState({token: ""});
 		}
 	}
 	componentDidMount(){

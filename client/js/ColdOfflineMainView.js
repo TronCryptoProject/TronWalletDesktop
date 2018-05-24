@@ -7,13 +7,19 @@ import FileSaver from "file-saver";
 import RegisterWalletModal from "./RegisterWalletModal.js";
 import QRCode from "qrcode";
 import QRScanModal from "./QRScanModal.js";
+import speakeasy from "speakeasy";
+import axios from "axios";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class ColdOfflineMainView extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
 			startCamera: false,
-			listSelectedItem: ""
+			listSelectedItem: "",
+			regInputText: "",
+			importInputText: "",
+			paperInputText: ""
 		};
 		this.last_menu_click = config.coldOfflineMenuItems.IMPORT;
 
@@ -21,7 +27,9 @@ export default class ColdOfflineMainView extends React.Component {
 		this.renderHeader = this.renderHeader.bind(this);
 		this.renderMenu = this.renderMenu.bind(this);
 		this.handleMenuItemClick = this.handleMenuItemClick.bind(this);
-		this.onCodeChangeHandler = this.onCodeChangeHandler.bind(this);
+		this.onRegCodeChangeHandler = this.onRegCodeChangeHandler.bind(this);
+		this.onImportCodeChangeHandler = this.onImportCodeChangeHandler.bind(this);
+		this.onPaperCodeChangeHandler = this.onPaperCodeChangeHandler.bind(this);
 		this.renderImportCard = this.renderImportCard.bind(this);
 		this.renderRegisterCard = this.renderRegisterCard.bind(this);
 		this.renderPaperWalletCard = this.renderPaperWalletCard.bind(this);
@@ -35,8 +43,13 @@ export default class ColdOfflineMainView extends React.Component {
 		this.savePaperWallet = this.savePaperWallet.bind(this);
 		this.startQRScan = this.startQRScan.bind(this);
 		this.handleQRCallback = this.handleQRCallback.bind(this);
-		this.cacheAccountAddress = this.cacheAccountAddress.bind(this);
 		this.showSecret = this.showSecret.bind(this);
+		this.getRegisterModalProps = this.getRegisterModalProps.bind(this);
+		this.handleProcessState = this.handleProcessState.bind(this);
+
+		
+		this.walletlock = false;
+
 	}
 
 	componentDidMount(){
@@ -94,31 +107,119 @@ export default class ColdOfflineMainView extends React.Component {
 		}
 	}
 
-	handleImportBtnClick(){
-		let res_dict = {
-
-		};
-		this.cacheAccountAddress();
+	handleProcessState(e, toLoad){
+		if (toLoad){
+			$(e.target).addClass("loading");
+			this.walletlock = true;
+		}else{
+			$(e.target).removeClass("loading");
+			this.walletlock = false;
+		}
 	}
 
-	handleRegisterBtnClick(){
-		$("#registerwalletmodal").modal({
-			blurring: true,
-			centered: false,
-			transition: "scale",
-			closable: false,
-			onVisible: () =>{
-				
-			},
-			onHidden: ()=>{
-				
-			},
-			onDeny: () => {},
-			onApprove:()=>{
-				
+	handleImportBtnClick(e){
+		e.persist();
+
+		if (!this.walletlock){
+			this.handleProcessState(e,true);
+
+			let pkey = $("#privkey_input").val().trim();
+			let code = this.state.importInputText
+
+			if (pkey != "" && code != ""){
+				//encrypt all data
+				console.log("privkey: " + pkey);
+				let url = BlowfishSingleton.createPostURL(this.props.view, "POST","importWallet",{
+					password: code,
+					privKey: pkey
+				});
+
+				axios.post(url)
+				.then((res)=>{
+					let data = res.data;
+					data = BlowfishSingleton.decryptToJSON(data);
+					console.log("Import data: " + JSON.stringify(data));
+					console.log("data result: " + data.result);
+					console.log("s: " + config.constants.SUCCESS);
+					if (data.result == config.constants.SUCCESS){
+						//TODO success processing
+						console.log("result in");
+						let prop_data = {
+							accountName: data.accountName,
+							pubAddress: data.pubAddress
+						};
+						this.props.handleWalletGatewaySuccess(this.props.view,prop_data);
+					}else{
+						//TODO error processing
+						console.log("error");
+					}
+					
+					this.handleProcessState(e,false);
+				})
+				.catch((error)=>{
+					this.handleProcessState(e,false);
+				});
+			}else{
+				this.handleProcessState(e,false);
 			}
-		})
-		.modal("show");
+		}
+
+
+	}
+
+	handleRegisterBtnClick(e){
+		e.persist();
+
+		if (!this.walletlock){
+			this.handleProcessState(e,true);
+
+			let acc_name = $("#register_accname_input").val();
+			let code = this.state.regInputText
+
+			if (acc_name != "" && code != ""){
+				//encrypt all data
+				let url = BlowfishSingleton.createPostURL(this.props.view, "POST","registerWallet",{
+					password: code,
+					accountName: acc_name
+				});
+
+				axios.post(url)
+				.then((res)=>{
+					let data = res.data;
+					data = BlowfishSingleton.decryptToJSON(data);
+
+					if (data.result == config.constants.SUCCESS){
+						this.setState(data,()=>{
+							$("#registerwalletmodal").modal({
+								blurring: true,
+								centered: false,
+								transition: "scale",
+								closable: false,
+								onApprove:()=>{
+									let prop_data = {
+										accountName: data.accountName,
+										pubAddress: data.pubAddress
+									};
+									this.props.handleWalletGatewaySuccess(this.props.view,prop_data);
+								}
+							})
+							.modal("show");
+						});
+					}else{
+						//TODO error processing
+					}
+					
+					this.handleProcessState(e,false);
+				})
+				.catch((error)=>{
+					this.handleProcessState(e,false);
+				});
+			}else{
+				this.handleProcessState(e,false);
+			}
+		}
+
+		
 	}
 
 
@@ -130,9 +231,6 @@ export default class ColdOfflineMainView extends React.Component {
 		
 	}
 
-	cacheAccountAddress(){
-
-	}
 
 	showSecret(e){
 		let inp_target = "#privkey_input";
@@ -147,8 +245,31 @@ export default class ColdOfflineMainView extends React.Component {
 		}
 	}
 
-	onCodeChangeHandler(){
+	onRegCodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({regInputText: val});
+		}else{
+			this.setState({regInputText: ""});
+		}
+	}
 
+	onImportCodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({importInputText: val});
+		}else{
+			this.setState({importInputText: ""});
+		}
+	}
+
+	onPaperCodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({paperInputText: val});
+		}else{
+			this.setState({paperInputText: ""});
+		}
 	}
 
 	startQRScan(){
@@ -173,13 +294,59 @@ export default class ColdOfflineMainView extends React.Component {
 	    });
 	}
 
-	generatePaperWallet(){
-		this.renderPaperWalletCard("23","42", "2");
-		$("#coldofflinemenushape")
-			.shape("set next side", $("#paperwalletgeneratedside"))
-			.shape("flip up");
+	generatePaperWallet(e){
+		e.persist();
+
+		if (!this.walletlock){
+			this.handleProcessState(e,true);
+
+			let code = this.state.paperInputText
+
+			if (code != ""){
+				//encrypt all data
+				let url = BlowfishSingleton.createPostURL(this.props.view, "POST","registerWallet",{
+					password: code,
+					accountName: ""
+				});
+
+				axios.post(url)
+				.then((res)=>{
+					let data = res.data;
+					data = BlowfishSingleton.decryptToJSON(data);
+					console.log("paper data: " + JSON.stringify(data));
+					console.log("paper datatype: " + typeof data);
+					console.log("data result: " + data.result);
+					if (data.result == config.constants.SUCCESS){
+						console.log("result in ");
+						this.renderPaperWalletCard(data.pubAddress,data.privAddress,
+							data.passcode);
+						$("#coldofflinemenushape")
+							.shape("set next side", $("#paperwalletgeneratedside"))
+							.shape("flip up");
+					}else{
+						console.log("no result");
+						//TODO error processing
+					}
+					
+					this.handleProcessState(e,false);
+				})
+				.catch((error)=>{
+					this.handleProcessState(e,false);
+				});
+			}else{
+				this.handleProcessState(e,false);
+			}
+		}
+
 	}
 
+	getRegisterModalProps(){
+		return{
+			pubAddress: this.state.pubAddress,
+			privAddress: this.state.privAddress,
+			passcode: this.state.passcode
+		};
+	}
 
 	renderHeader(){
 		return(
@@ -259,11 +426,11 @@ export default class ColdOfflineMainView extends React.Component {
 					<div className="ui header">Wallet Passcode</div>
 					<div className="py-3">
 						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onCodeChangeHandler}/>
+							onChange={this.onImportCodeChangeHandler}/>
 					</div>
 				</div>
 				<div className="ui bottom attached button cold_offline_import_btn"
-					onClick={this.handleImportBtnClick}>
+					onClick={(e)=>{this.handleImportBtnClick(e)}}>
 			    	IMPORT
 			    </div>
 			</div>
@@ -277,17 +444,18 @@ export default class ColdOfflineMainView extends React.Component {
 				<div className="center aligned content">
 					<div className="ui header">Account Name</div>
 					<div className="ui large transparent input">
-						<input type="text" className="account_name_input" placeholder="JakeWallet"/>
+						<input type="text" className="account_name_input" placeholder="JakeWallet"
+							id="register_accname_input"/>
 					</div>
 
 					<div className="ui header">Wallet Passcode</div>
 					<div className="py-3">
 						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onCodeChangeHandler}/>
+							onChange={this.onRegCodeChangeHandler}/>
 					</div>
 				</div>
 				<div className="ui bottom attached button cold_offline_import_btn"
-					onClick={this.handleRegisterBtnClick}>
+					onClick={(e)=>{this.handleRegisterBtnClick(e)}}>
 			    	REGISTER
 			    </div>
 			</div>
@@ -445,11 +613,11 @@ export default class ColdOfflineMainView extends React.Component {
 					<div className="ui header">Wallet Passcode</div>
 					<div className="py-3">
 						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onCodeChangeHandler}/>
+							onChange={this.onPaperCodeChangeHandler}/>
 					</div>
 				</div>
 				<div className="ui bottom attached button cold_offline_import_btn"
-					onClick={this.generatePaperWallet}>
+					onClick={(e)=>{this.generatePaperWallet(e)}}>
 			    	Generate
 			    </div>
 			</div>
@@ -563,7 +731,7 @@ export default class ColdOfflineMainView extends React.Component {
 						</div>
 					</div>
 				</div>
-				<RegisterWalletModal/>
+				<RegisterWalletModal {...this.getRegisterModalProps()}/>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 			</div>
 
@@ -575,5 +743,6 @@ export default class ColdOfflineMainView extends React.Component {
 
 ColdOfflineMainView.defaultProps = {
 	handleBackButtonClick: (function(){}),
-	view: config.views.COLDWALLET
+	view: config.views.COLDWALLET,
+	handleWalletGatewaySuccess: (function(){})
 }

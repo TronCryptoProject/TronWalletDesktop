@@ -3,8 +3,11 @@ module.exports = {
 		"MAINVIEW": "MAINVIEW",
 		"MOBILEAUTH": "MOBILEAUTH",
 		"COLDWALLET": "COLDWALLET",
+		"COLDDASH": "COLDDASH",
 		"WATCHONLY": "WATCHONLY",
-		"HOTWALLET": "HOTWALLET"
+		"WATCHDASH": "WATCHDASH",
+		"HOTWALLET": "HOTWALLET",
+		"HOTDASH": "HOTDASH"
 	},
 	"walletConfigFile": "wallet.config.json",
 	"coldOfflineMenuItems": {
@@ -24,5 +27,5 @@ module.exports = {
 		FAILED: "failed"
 	},
 	"API_URL": "http://localhost:8088",
-	"COLD_API_URL": "http://localhost:8088"
+	"COLD_API_URL": "http://localhost:"
 }

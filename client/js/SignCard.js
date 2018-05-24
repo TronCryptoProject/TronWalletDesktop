@@ -3,7 +3,8 @@ import ReactCodeInput from "react-code-input";
 import speakeasy from "speakeasy";
 import jetpack from "fs-jetpack";
 import config from "../config/config.js";
-import TransactionViewerModal from "./TransactionViewerModal.js";
+import axios from "axios";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class SignCard extends React.Component{
 	constructor(props){
@@ -12,7 +13,6 @@ export default class SignCard extends React.Component{
 		this.handleValidateTxClick = this.handleValidateTxClick.bind(this);
 		this.onChangeHandler = this.onChangeHandler.bind(this);
 		this.state = {
-			code: "",
 			token: ""
 		};
 		this.isSigning = false;
@@ -22,6 +22,8 @@ export default class SignCard extends React.Component{
 		if (val.length >= 6){
 			val = val.substring(0,6);
 			this.setState({token: val});
+		}else{
+			this.setState({token: ""});
 		}
 	}
 
@@ -63,47 +65,51 @@ export default class SignCard extends React.Component{
 				},2000);
 			}
 
-			let is_good = true;
-			if (this.props.mobileAuthCode){
-				let token_status = speakeasy.totp.verify({
-					secret: this.state.code,
-					encoding: "base32",
-					token: this.state.token
-				})
-				if (!token_status){
-					is_good = false;
-				}
-			}
-			
-			if (is_good){
-				let hex_str = $("#raw_tx_input").val().trim();
-				if (hex_str != ""){
-					this.props.getTxData(hex_str,()=>{
-						$("#tx_viewer_modal")
-						.modal({
-							allowMultiple: true,
-							onShow:()=>{
-								$("#hot_wallet_main").addClass("blur");
-							},
-							onHidden:()=>{
-								$("#hot_wallet_main").removeClass("blur");
-							},
-							onApprove: ()=>{
-								//now sign transaction TODO
-								//show error if it fails
-							}
-						})
-						.modal("show");
-					});
+			let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","validatePass",{
+				password: this.state.token
+			});
+
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if (data.result == config.constants.SUCCESS){
+					let hex_str = $("#raw_tx_input").val().trim();
+					if (hex_str != ""){
+						this.props.getTxData(hex_str,this.state.token,()=>{
+							$("#tx_viewer_modal")
+							.modal({
+								allowMultiple: true,
+								onShow:()=>{
+									$("#hot_wallet_main").addClass("blur");
+								},
+								onHidden:()=>{
+									$("#hot_wallet_main").removeClass("blur");
+								}
+							})
+							.modal("show");
+						});
+					}else{
+						showError("Hex data is empty!");
+					}
+
 				}else{
-					showError("Hex data is empty!");
+					//get specific error
+					if (date.result == config.constants.FAILED){
+						showError(data.reason);
+					}else{
+						showError("Validate passcode failed!");
+					}
+					
 				}
-			}else{
-				showError("Auth code is incorrect!");
-			}
+			})
+			.catch((error)=>{
+				console.log(error);
+				showError("Validate passcode failed!");
+			});
 		}
-		
-		
 	}
 
 	handleQRScanClick(){
@@ -139,25 +145,6 @@ export default class SignCard extends React.Component{
 			}
 		};
 
-		let getMobileAuthInput = ()=>{
-			if (this.props.mobileAuthCode){
-				return(
-					<div>
-						<div className="row mb-3">
-							<div className="ui small header text_align_center width_100">
-								Mobile Auth Code
-							</div>
-						</div>
-						<div className="row">
-							<div className="content center_button">
-						  		<ReactCodeInput type="number" fields={6} {...code_input_props}
-						  			onChange={this.onChangeHandler}/>
-						  	</div>
-						</div>
-					</div>
-				);
-			}
-		}
 
 		return(
 			<div className="ui one column centered padded grid" id="hot_wallet_sign_segment">
@@ -180,7 +167,19 @@ export default class SignCard extends React.Component{
 						 	id="raw_tx_input"/>
 					</div>
 				</div>
-				{getMobileAuthInput()}
+				<div>
+					<div className="row mb-3">
+						<div className="ui small header text_align_center width_100">
+							Wallet Passcode
+						</div>
+					</div>
+					<div className="row">
+						<div className="content center_button">
+					  		<ReactCodeInput type="number" fields={6} {...code_input_props}
+					  			onChange={this.onChangeHandler}/>
+					  	</div>
+					</div>
+				</div>
 				<div className="row">
 					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleValidateTxClick(e)}}>
 						<i className="sitemap icon"/>

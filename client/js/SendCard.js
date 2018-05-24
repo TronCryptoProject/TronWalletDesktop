@@ -23,6 +23,12 @@ export default class SendCard extends React.Component{
 		let address = $("#send_address_input").val().trim();
 		let value = $("#hotwallet_send_amout").val().trim();
 		this.props.handleSendClick(address, value,(qrcode_data)=>{
+			if (qrcode_data == ""){
+				qrcode_data = "client/images/blankqrcode.png";
+				$("#sign_tx_button").addClass("disabled");
+			}else{
+				$("#sign_tx_button").removeClass("disabled");
+			}
 			this.setState({qrcodeData: qrcode_data}, ()=>{
 				$("#coldwallet_send_sign_shape").shape("flip over");
 			});
@@ -76,7 +82,8 @@ export default class SendCard extends React.Component{
 					</div>
 				</div>
 				<div className="row">
-					<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSignClick(e)}}>
+					<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSignClick(e)}}
+						id="sign_tx_button">
 						<i className="pencil alternate icon"/>
 						Sign Transaction
 					</button>

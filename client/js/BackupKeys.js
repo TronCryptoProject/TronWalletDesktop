@@ -14,9 +14,11 @@ export default class BackupKeys extends React.Component {
 		this.handleAcceptConfModal = this.handleAcceptConfModal.bind(this);
 		this.getCodeInputConfig = this.getCodeInputConfig.bind(this);
 		this.onPasscodeChangeHandler = this.onPasscodeChangeHandler.bind(this);
-		this.ononAuthCodeChangeHandler = this.onAuthCodeChangeHandler.bind(this);
+		this.onAuthCodeChangeHandler = this.onAuthCodeChangeHandler.bind(this);
 		this.state={
-			modalId: "backup_conf_modal"
+			modalId: "backup_conf_modal",
+			passInputText: "",
+			authInputText: ""
 		}
 	}
 
@@ -41,12 +43,22 @@ export default class BackupKeys extends React.Component {
 		return code_input_props;
 	}
 
-	onPasscodeChangeHandler(){
-
+	onPasscodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({passInputText: val});
+		}else{
+			this.setState({passInputText: ""});
+		}
 	}
 
-	onAuthCodeChangeHandler(){
-
+	onAuthCodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({authInputText: val});
+		}else{
+			this.setState({authInputText: ""});
+		}
 	}
 
 	handleAcceptConfModal(){

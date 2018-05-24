@@ -11,10 +11,16 @@ export default class RegisterWalletModal extends React.Component{
 	}
 
 	downloadCreds(){
-		let cred_dict = `{
-	"Public Address": ${this.props.pubAddress == "" ? '""' : this.props.pubAddress},
-	"Private Address": ${this.props.privAddress == "" ? '""' : this.props.privAddress},
-	"Passcode": ${this.props.passcode == "" ? '""' : this.props.privAddress}
+		let pubAddress = `"${this.props.pubAddress}"`;
+		let privAddress = `"${this.props.privAddress}"`;
+		let passcode = `"${this.props.passcode}"`;
+		//this info is displayed only 1 time during registration
+		let cred_dict = `/*Use this information to safely recover your wallet in case you lose 
+access to your machine. DO NOT SEND THIS FILE TO ANYONE.*/
+{
+	"Public Address": ${this.props.pubAddress == "" ? '""' : pubAddress},
+	"Private Address": ${this.props.privAddress == "" ? '""' : privAddress},
+	"Passcode": ${this.props.passcode == "" ? '""' : passcode}
 }`;
 		let blob = new Blob([cred_dict],{type:"application/json"});
 		FileSaver.saveAs(blob, 'TronWallet.json');
@@ -84,7 +90,7 @@ export default class RegisterWalletModal extends React.Component{
 				</div>
 
 			  	<div className="actions py-5">
-					<div className="ui yellow basic ok button" onClick={this.downloadCreds}>
+					<div className="ui yellow basic button" onClick={this.downloadCreds}>
 				  		<i className="download icon"></i>
 				  		Download Credentials
 					</div>

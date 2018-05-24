@@ -301,3 +301,7 @@ i.icon.paperplane:before {
 .width_95{
 	width: 95% !important;
 }
+
+.font_size_large{
+	font-size: large !important;
+}

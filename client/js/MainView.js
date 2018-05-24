@@ -22,7 +22,8 @@ export default class MainView extends React.Component {
 			onlineFeaturesView: "",
 			dataNodeDict: {},
 			isLoggedIn: false,
-			mobileAuthCode: ""
+			mobileAuthCode: "",
+			dashboardData: {}
 		}
 
 		this.networkStatusUpdate = this.networkStatusUpdate.bind(this);
@@ -38,6 +39,7 @@ export default class MainView extends React.Component {
 		this.permissionLogOut = this.permissionLogOut.bind(this);
 		this.handleMobileAuthGenerated = this.handleMobileAuthGenerated.bind(this);
 		this.checkMobileAuth = this.checkMobileAuth.bind(this);
+		this.handleWalletGatewaySuccess = this.handleWalletGatewaySuccess.bind(this);
 	}
 
 	componentDidMount(){
@@ -142,6 +144,21 @@ export default class MainView extends React.Component {
 		this.setState({currView: config.views.MAINVIEW});	
 	}
 
+	handleWalletGatewaySuccess(view, data){
+		let gotoview;
+		console.log("view success: " + view);
+		console.log("data: " + JSON.stringify(data));
+		if (view == config.views.COLDWALLET){
+			gotoview = config.views.COLDDASH;
+		}else if (view == config.views.HOTWALLET){
+			gotoview = config.views.HOTDASH;
+		}else if (view == config.views.WATCHONLY){
+			gotoview = config.views.WATCHDASH;
+		}
+		console.log("gotoview: " + gotoview);
+		this.setState({currView: gotoview, dashboardData: data});
+	}
+
 	handleHotWalletClick(){
 		this.setState({currView: config.views.HOTWALLET, isLoggedIn: true});
 	}
@@ -227,30 +244,39 @@ export default class MainView extends React.Component {
 					handleMobileAuthGenerated={this.handleMobileAuthGenerated}/>
 			);
 		}else if (this.state.currView == config.views.COLDWALLET){
-			/*view_component = (
+			view_component = (
 				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}
-					view={config.views.COLDWALLET}/>
-			);*/
+					view={config.views.COLDWALLET} handleWalletGatewaySuccess={this.handleWalletGatewaySuccess}/>
+			);
+		}else if(this.state.currView == config.views.COLDDASH){
 			view_component = (
 				<ColdOfflineDashboard showStatusBar={this.handleStatusBar}
 					permissionLogOut={this.permissionLogOut} isLoggedIn={this.state.isLoggedIn}
-					mobileAuthCode={this.state.mobileAuthCode}/>
+					mobileAuthCode={this.state.mobileAuthCode}
+					accInfo={this.state.dashboardData}/>
 			);
+
 		}else if (this.state.currView == config.views.HOTWALLET){
-			/*view_component = (
-				<HotWalletDashboard showStatusBar={this.handleStatusBar}
-					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
-					permissionLogOut={this.permissionLogOut} mobileAuthCode={this.state.mobileAuthCode}/>
-			);*/
 			view_component = (
 				<ColdOfflineMainView handleBackButtonClick={this.handleBackButtonClick}
-					view={config.views.HOTWALLET}/>
+					view={config.views.HOTWALLET} handleWalletGatewaySuccess={this.handleWalletGatewaySuccess}/>
 			);
+
+		}else if(this.state.currView == config.views.HOTDASH){
+			view_component = (
+				<HotWalletDashboard showStatusBar={this.handleStatusBar}
+					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
+					permissionLogOut={this.permissionLogOut} mobileAuthCode={this.state.mobileAuthCode}
+					accInfo={this.state.dashboardData}/>
+			);
+
 		}else if (this.state.currView == config.views.WATCHONLY){
 			view_component = (
 				<WatchOnlyMainView handleBackButtonClick={this.handleBackButtonClick}
 					mobileAuthCode={this.state.mobileAuthCode}/>
 			);
+		}else if (this.state.currView == config.views.WATCHDASH){
+
 		}
 
 		let status_data = {

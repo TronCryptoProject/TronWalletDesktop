@@ -47,7 +47,14 @@ function createWindow () {
      mainWindow.webContents.openDevTools()
   }
   
-
+  /*Start process*/
+  /*let spawn = require("child_process").spawn;
+  var child = spawn("java", ["-jar","tronwallet.jar"]);
+  child.on("data",(data)=>{
+    process.stdout.write(data.toString());
+  });*/
+  /*End process*/
+  
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows

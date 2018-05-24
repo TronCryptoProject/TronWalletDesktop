@@ -142,7 +142,7 @@ export default class ReceiveCard extends React.Component{
 				<div className="row">
 					<button className="ui right labeled icon blue button" onClick={this.handleReceiveSave}>
 						<i className="save icon"/>
-						Save QR Image
+						Save QRCode
 					</button>
 				</div>
 			</div>
