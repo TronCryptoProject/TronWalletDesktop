@@ -26,7 +26,6 @@ export default class ColdOfflineDashboard extends React.Component {
 				pubAddress: props.accInfo.pubAddress
 			},
 			currTxData: {},
-			txToken: "",
 			toUpdateTxs: false
 		};
 
@@ -153,6 +152,11 @@ export default class ColdOfflineDashboard extends React.Component {
 			}	
 		}
 		this.setState({contacts: contacts},()=>{
+			console.log("contacts: " + JSON.stringify(this.state.contacts));
+			console.log("contacts2: " + JSON.stringify(contacts));
+			$("#send_search_div").search({
+				source: contacts
+			});
 			if (callback){
 				callback(contacts);
 			}
@@ -230,44 +234,81 @@ export default class ColdOfflineDashboard extends React.Component {
 		this.signMenuItemClick();
 	}
 
-	handleSendClick(address, amount, callback){
-		this.addContact(address, "", (contacts)=>{
-			$("#send_search_div").search({
-				source: contacts
+	handleSendClick(address, amount, view, callback){
+		
+		if (view == config.views.COLDWALLET){
+			let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
+				toAddress: address,
+				amount: amount
 			});
-		});
 
-		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
-			toAddress: address,
-			amount: amount
-		});
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
 
-		axios.post(url)
-		.then((res)=>{
-			let data = res.data;
-			data = BlowfishSingleton.decryptToJSON(data);
-
-			if (data.result == config.constants.SUCCESS){
-				if (callback){
-					callback(data.data);
+				if ("result" in data && data.result == config.constants.SUCCESS){
+					this.addContact(address, "", (contacts)=>{
+						$("#send_search_div").search({
+							source: contacts
+						});
+					});
+					if (callback){
+						callback(data.data);
+					}
+				}else{
+					//TODO error handling
+					if (callback){
+						callback("");
+					}
 				}
-			}else{
-				//TODO error handling
+			})
+			.catch((error)=>{
+				console.log(error);
 				if (callback){
 					callback("");
 				}
-			}
-		})
-		.catch((error)=>{
-			console.log(error);
-			if (callback){
-				callback("");
-			}
-		});
+			});
+		}else{ //hot wallet
+			/*let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
+				toAddress: address,
+				amount: amount
+			});
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if ("result" in data && data.result == config.constants.SUCCESS){
+					this.addContact(address, "", (contacts)=>{
+						$("#send_search_div").search({
+							source: contacts
+						});
+					});
+					if (callback){
+						callback(data.data);
+					}
+				}else{
+					//TODO error handling
+					if (callback){
+						callback("");
+					}
+				}
+			})
+			.catch((error)=>{
+				console.log(error);
+				if (callback){
+					callback("");
+				}
+			});*/
+		}
+
+		
 		
 	}
 
-	getTxData(hex_str, token, callback){
+	getTxData(hex_str, callback){
 		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "GET","signTxInfo",{
 			hextx: hex_str
 		});
@@ -278,22 +319,26 @@ export default class ColdOfflineDashboard extends React.Component {
 			data = BlowfishSingleton.decryptToJSON(data);
 
 			if (data.result == config.constants.SUCCESS){
-				this.setState({currTxData: data, txToken: token},()=>{
+				this.setState({currTxData: data},()=>{
 					if (callback){
-						callback();
+						callback(data);
 					}
 				});
 
 			}else{
-				this.setState({currTxData: {}, txToken: token},()=>{
-					//TODO error handling
+				this.setState({currTxData: {}},()=>{
+					if (callback){
+						callback({});
+					}
 				});
 			}
 		})
 		.catch((error)=>{
 			console.log(error);
-			this.setState({currTxData: {}, txToken: token},()=>{
-				//TODO error handling
+			this.setState({currTxData: {}},()=>{
+				if (callback){
+					callback({});
+				}
 			});
 		});
 		
@@ -461,7 +506,7 @@ export default class ColdOfflineDashboard extends React.Component {
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
 						mobileAuthCode={this.props.mobileAuthCode}/>
 				</div>
-				<TransactionViewerModal txData={this.state.currTxData} txToken={this.state.txToken}
+				<TransactionViewerModal txData={this.state.currTxData}
 					mobileAuthCode={this.props.mobileAuthCode}
 					handleUpdateTxs={this.handleUpdateTxs} view={config.views.COLDWALLET}/>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>

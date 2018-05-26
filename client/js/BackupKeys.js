@@ -148,7 +148,7 @@ export default class BackupKeys extends React.Component {
 					</div>
 				</div>
 				<ConfModal headerText="Do you want to begin backup?"
-					message="Your backup will be saved to your computer in an encoded file"
+					message="Your backup will be saved to your computer in a 128 bit encrypted file"
 					actions={["deny", "accept"]} id={this.state.modalId}
 					handleAcceptConfModal={this.handleAcceptConfModal}>
 

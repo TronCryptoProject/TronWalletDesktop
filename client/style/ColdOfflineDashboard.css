@@ -25,3 +25,8 @@
 .ui.raised.card.sign_txs_card, .ui.raised.cards>.card {
     box-shadow: 0 0 0 0 #d4d4d5,0 8px 40px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)!important;
 }
+
+.error_qr_code{
+	width: 200px !important;
+	height: 200px !important;
+}

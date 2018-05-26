@@ -113,21 +113,6 @@ export default class HotWalletDashboard extends React.Component {
 
 		this.initAllModals();
 
-		
-		setTimeout(()=>{
-			this.setState({shares:8000});
-		},10000);
-		//testing
-		/*this.setState({
-			accInfo:{
-				accountName: "GurkiratWallet",
-				pubAddress: "27XSDWdW218f3neNw3X9zsrizfTHyty6gLy"
-			},
-			expirationTime: "Thu May 17 00:02:15 PDT 2018"
-			
-		},()=>{
-			console.log("time set: " + this.state.expirationTime);
-		});*/
 	}
 
 	componentWillUnmount(){
@@ -196,6 +181,9 @@ export default class HotWalletDashboard extends React.Component {
 			}	
 		}
 		this.setState({contacts: contacts},()=>{
+			$("#send_search_div").search({
+				source: contacts
+			});
 			if (callback){
 				callback(contacts);
 			}

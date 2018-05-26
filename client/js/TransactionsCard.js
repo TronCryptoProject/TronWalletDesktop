@@ -120,7 +120,7 @@ export default class TransactionsCard extends React.Component{
 			}
 		}else{
 			txs_list.push(
-				<div className="item font_size_large" key="no_txs_found">
+				<div className="item" key="no_txs_found">
 					<div className="center aligned content">
 						No transactions found
 					</div>
@@ -147,7 +147,7 @@ export default class TransactionsCard extends React.Component{
 			<div className={"ui fluid centered raised doubling card pb-3 " + card_class}
 				id="txscard">
 				<div className="content clearfix height_100">
-					<div className="ui small m-0 center aligned header">{title}</div>
+					<div className="ui medium m-0 center aligned header cold_wallet_send_card_header">{title}</div>
 					<div className="ui middle aligned selection list">
 						{this.getTransactions()}
 					</div>

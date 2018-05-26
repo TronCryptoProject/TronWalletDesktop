@@ -48,9 +48,10 @@ access to your machine. DO NOT SEND THIS FILE TO ANYONE.*/
 					<i className="user secret icon"></i>
 					Secret Wallet Credentials
 			  	</div>
-				<div className="p-5">
+				<div className="p-5 text_align_center">
 					<p>Please write down and save your credentials. If you lose them, you will not be
-					able to access your wallet forever. This is the last time you will be shown them.</p>
+					able to access your wallet forever.</p>
+					<p>This is the last time you will be shown them.</p>
 				</div>
 
 				<div className="ui center aligned grid">

@@ -305,3 +305,20 @@ i.icon.paperplane:before {
 .font_size_large{
 	font-size: large !important;
 }
+
+.naked_div{
+	border: none !important;
+    outline: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+.force_meta{
+	color: rgba(0,0,0,.4) !important;
+}
+
+.center_canvas{
+	margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}

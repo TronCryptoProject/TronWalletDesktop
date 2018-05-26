@@ -155,3 +155,18 @@
     background: rgba(242, 246, 255, 0.95) !important;
     border: none !important;
 }
+
+.ui.basic.positive.bg_green.button, .ui.basic.positive.bg_green.button:hover{
+    background: #15bf15 !important;
+    color: white !important;
+}
+
+.ui.basic.deny.bg_red.button, .ui.basic.deny.bg_red.button:hover{
+    background: #db2828 !important;
+    color: white !important;
+}
+
+.ui.fixed.table.tx_info_table td, .ui.fixed.table.tx_info_table th{
+    overflow: scroll !important;
+    text-overflow: inherit !important;
+}

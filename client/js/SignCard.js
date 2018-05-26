@@ -5,6 +5,7 @@ import jetpack from "fs-jetpack";
 import config from "../config/config.js";
 import axios from "axios";
 import {BlowfishSingleton} from "Utils.js";
+import Equal from "deep-equal";
 
 export default class SignCard extends React.Component{
 	constructor(props){
@@ -32,83 +33,86 @@ export default class SignCard extends React.Component{
 		if (!this.isSigning){
 			this.isSigning = true;
 
-			$(e.target).addClass("loading");
+			$("#validate_tx_submit_button").addClass("loading");
 
 			let showError = (message)=>{
 				if (message == undefined || message == null || message == ""){
-					message = "Sign transaction failed!";
+					message = "Validation failed!";
 				}
-				$(e.target).removeClass("loading right labeled");
-				$(e.target).addClass("red");
-				$(e.target).text(message);
-				$(e.target).transition("shake");
+				$("#validate_tx_submit_button").removeClass("loading right labeled");
+				$("#validate_tx_submit_button").addClass("red");
+				$("#validate_tx_submit_button").text(message);
+				$("#validate_tx_submit_button").transition("shake");
 				setTimeout(()=>{
-					$(e.target).removeClass("red");
-					$(e.target).addClass("right labeled");
-					$(e.target).text("Validate Transaction");
-					$(e.target).prepend("<i class='sitemap icon'/>");
+					$("#validate_tx_submit_button").removeClass("red");
+					$("#validate_tx_submit_button").addClass("right labeled");
+					$("#validate_tx_submit_button").text("Validate Transaction");
+					$("#validate_tx_submit_button").prepend("<i class='sitemap icon'/>");
 					this.isSigning = false;
 				},2000);
 			}
 
 			let showSuccess = ()=>{
-				$(e.target).removeClass("loading right labeled");
-				$(e.target).addClass("green");
-				$(e.target).text("Sign transaction Success!");
-				$(e.target).transition("pulse");
+				$("#validate_tx_submit_button").removeClass("loading right labeled");
+				$("#validate_tx_submit_button").addClass("green");
+				$("#validate_tx_submit_button").text("Authenticated!");
+				$("#validate_tx_submit_button").transition("pulse");
 				setTimeout(()=>{
-					$(e.target).removeClass("green");
-					$(e.target).addClass("right labeled");
-					$(e.target).prepend("<i class='sitemap icon'/>");
-					$(e.target).text("Validate Transaction");
+					$("#validate_tx_submit_button").removeClass("green");
+					$("#validate_tx_submit_button").addClass("right labeled");
+					$("#validate_tx_submit_button").text("Validate Transaction");
+					$("#validate_tx_submit_button").prepend("<i class='sitemap icon'/>");
 					this.isSigning = false;
 				},2000);
 			}
 
-			let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","validatePass",{
-				password: this.state.token
-			});
-
-
-			axios.post(url)
-			.then((res)=>{
-				let data = res.data;
-				data = BlowfishSingleton.decryptToJSON(data);
-
-				if (data.result == config.constants.SUCCESS){
-					let hex_str = $("#raw_tx_input").val().trim();
-					if (hex_str != ""){
-						this.props.getTxData(hex_str,this.state.token,()=>{
-							$("#tx_viewer_modal")
-							.modal({
-								allowMultiple: true,
-								onShow:()=>{
-									$("#hot_wallet_main").addClass("blur");
-								},
-								onHidden:()=>{
-									$("#hot_wallet_main").removeClass("blur");
-								}
-							})
-							.modal("show");
-						});
-					}else{
-						showError("Hex data is empty!");
+			let hex_str = $("#raw_tx_input").val().trim();
+			if (hex_str != ""){
+				let is_good = true;
+				if (this.props.mobileAuthCode != ""){
+					let token_status = speakeasy.totp.verify({
+						secret: this.props.mobileAuthCode,
+						encoding: "base32",
+						token: this.state.token
+					})
+					if (!token_status){
+						is_good = false;
 					}
-
-				}else{
-					//get specific error
-					if (date.result == config.constants.FAILED){
-						showError(data.reason);
-					}else{
-						showError("Validate passcode failed!");
-					}
-					
 				}
-			})
-			.catch((error)=>{
-				console.log(error);
-				showError("Validate passcode failed!");
-			});
+				
+				if (is_good){
+					this.props.getTxData(hex_str,(data)=>{
+						if (Equal(data,{})){
+							showError("Transaction data fetch failed!");
+						}else{
+							showSuccess();
+							setTimeout(()=>{
+								$("#tx_viewer_modal")
+								.modal({
+									allowMultiple: true,
+									closable: false,
+									onShow:()=>{
+										$("#hot_wallet_main").addClass("blur");
+									},
+									onHidden:()=>{
+										$("#hot_wallet_main").removeClass("blur");
+									},
+									onApprove:()=>{
+										return false;
+									}
+								})
+								.modal("show");
+							}, 1000);
+						}
+						
+					});
+				}else{
+					showError("Auth code is incorrect!");
+				}
+			}else{
+				showError("Hex data is empty!");
+			}
+
 		}
 	}
 
@@ -145,7 +149,33 @@ export default class SignCard extends React.Component{
 			}
 		};
 
-
+		let getMobileAuthInput = ()=>{
+			if (this.props.mobileAuthCode != ""){
+				return(
+					<div>
+						<div className="row mb-3">
+							<div className="ui small header text_align_center width_100">
+								Mobile Auth Code
+							</div>
+						</div>
+						<div className="row">
+							<div className="content center_button">
+						  		<ReactCodeInput type="number" fields={6} {...code_input_props}
+						  			onChange={this.onChangeHandler}/>
+						  	</div>
+						</div>
+					</div>
+				);
+			}else{
+				<div className="row mb-3 content">
+					<div className="meta">
+						We recommend that you enable mobile authentication via Google Auth to prevent
+						fraudulent transactions. Even if your private key is stolen, no one will be 
+						able to sign and drain your wallet if you have mobile auth enabled.
+					</div>
+				</div>
+			}
+		}
 		return(
 			<div className="ui one column centered padded grid" id="hot_wallet_sign_segment">
 				<div className="row">
@@ -168,20 +198,11 @@ export default class SignCard extends React.Component{
 					</div>
 				</div>
 				<div>
-					<div className="row mb-3">
-						<div className="ui small header text_align_center width_100">
-							Wallet Passcode
-						</div>
-					</div>
-					<div className="row">
-						<div className="content center_button">
-					  		<ReactCodeInput type="number" fields={6} {...code_input_props}
-					  			onChange={this.onChangeHandler}/>
-					  	</div>
-					</div>
+				{getMobileAuthInput()}
 				</div>
 				<div className="row">
-					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleValidateTxClick(e)}}>
+					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleValidateTxClick(e)}}
+						id="validate_tx_submit_button">
 						<i className="sitemap icon"/>
 						Validate Transaction
 					</button>

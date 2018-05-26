@@ -1,5 +1,6 @@
 import React from "react";
 import config from "../config/config.js";
+import QRCode from "qrcode";
 
 export default class SendCard extends React.Component{
 	constructor(props){
@@ -13,6 +14,7 @@ export default class SendCard extends React.Component{
 		this.state = {
 			qrcodeData: ""
 		};
+		this.isCreatingTx = false;
 	}
 
 	componentDidMount(){
@@ -20,25 +22,116 @@ export default class SendCard extends React.Component{
 	}
 
 	handleSendClick(e){
-		let address = $("#send_address_input").val().trim();
-		let value = $("#hotwallet_send_amout").val().trim();
-		this.props.handleSendClick(address, value,(qrcode_data)=>{
-			if (qrcode_data == ""){
-				qrcode_data = "client/images/blankqrcode.png";
-				$("#sign_tx_button").addClass("disabled");
-			}else{
-				$("#sign_tx_button").removeClass("disabled");
+		e.persist();
+		if (!this.isCreatingTx){
+			this.isCreatingTx = true;
+
+			$("#send_submit_button").addClass("loading");
+
+			let showError = (message)=>{
+				if (message == undefined || message == null || message == ""){
+					if (this.props.id != config.views.HOTWALLET){
+						message = "Create transaction failed!";
+					}else{
+						message = "Send failed!";
+					}
+				}
+				$("#send_submit_button").removeClass("loading right labeled");
+				$("#send_submit_button").addClass("red");
+				$("#send_submit_button").text(message);
+				$("#send_submit_button").transition("shake");
+				setTimeout(()=>{
+					$("#send_submit_button").removeClass("red");
+					$("#send_submit_button").addClass("right labeled");
+					if (this.props.id != config.views.HOTWALLET){
+						$("#send_submit_button").text("Create Transaction");
+					}else{
+						$("#send_submit_button").text("Send");
+					}
+					$("#send_submit_button").prepend("<i class='paperplane icon'/>");
+					this.isCreatingTx = false;
+				},2000);
 			}
-			this.setState({qrcodeData: qrcode_data}, ()=>{
-				$("#coldwallet_send_sign_shape").shape("flip over");
-			});
-		});
+
+			let showSuccess = ()=>{
+				$("#send_submit_button").removeClass("loading right labeled");
+				$("#send_submit_button").addClass("green");
+				$("#send_submit_button").text("Success!");
+				$("#send_submit_button").transition("pulse");
+				setTimeout(()=>{
+					$("#send_submit_button").removeClass("green");
+					$("#send_submit_button").addClass("right labeled");
+					if (this.props.id != config.views.HOTWALLET){
+						$("#send_submit_button").text("Create Transaction");
+					}else{
+						$("#send_submit_button").text("Send");
+					}
+					$("#send_submit_button").prepend("<i class='paperplane icon'/>");
+					this.isCreatingTx = false;
+				},2000);
+			}
+
+			let address = $("#send_address_input").val().trim();
+			let value = $("#hotwallet_send_amout").val().trim();
+
+			if (address != "" && value != ""){
+
+				if (this.props.id != config.views.HOTWALLET){
+					this.props.handleSendClick(address, value, this.props.id,(qrcode_data)=>{
+						let showErrorLocal = ()=>{
+							
+						}
+						let showQR = (qrdata)=>{
+							if (qrdata == null || qrdata == undefined || qrdata == ""){
+								qrdata = "";
+								qrcode_data = "client/images/blankqrcode.png";
+								$("#sign_tx_button").addClass("disabled");
+								$("#cold_qr_img").removeClass("qrcode_image");
+								$("#cold_qr_img").addClass("error_qr_code");
+							}
+							
+							$("#send_submit_button").removeClass("loading");
+							this.isCreatingTx = false;
+
+							this.setState({qrcodeData: qrcode_data, qrRawData:qrdata}, ()=>{
+								$("#coldwallet_send_sign_shape").shape("flip over");
+							});
+						}
+
+						if (qrcode_data == ""){
+							showQR("");
+						}else{
+							QRCode.toDataURL(qrcode_data, (error, img_data)=>{
+								if (!error){
+									$("#sign_tx_button").removeClass("disabled");
+									$("#cold_qr_img").addClass("qrcode_image");
+									$("#cold_qr_img").removeClass("error_qr_code");
+									let tmp_data = qrcode_data;
+									qrcode_data = img_data;
+									showQR(tmp_data);
+								}else{
+									showQR("");
+								}
+							});
+						}
+						
+					});
+				}else{
+					this.props.handleSendClick(address, value, this.props.id,()=>{
+
+					});
+				}
+				
+			}else{
+				showError("Input is empty!");
+			}
+		}
 		
 	}
 
 	handleSignClick(e){
 		//switch to sign card menu
-		this.props.handlePrepareClick(this.state.qrcodeData);
+		this.props.handlePrepareClick(this.state.qrRawData);
 	}
 
 	handleBackButtonClick(){
@@ -60,6 +153,17 @@ export default class SendCard extends React.Component{
 	}
 
 	renderPrepareTxCard(){
+		let getDesc = ()=>{
+			if (this.props.id != config.views.HOTWALLET){
+				return (
+					<div className="content">
+						<div className="extra">
+							Scan this QRCode in cold wallet to sign
+						</div>
+					</div>
+				);
+			}
+		}
 		return(
 			<div className="ui one column centered padded grid">
 				<div className="three column row">
@@ -76,9 +180,10 @@ export default class SendCard extends React.Component{
 					<div className="two wide column right aligned px-3"/>
 				</div>
 
+				{getDesc()}
 				<div className="row">
 					<div className="image">
-						<img src={this.state.qrcodeData} className="qrcode_image"/>
+						<img src={this.state.qrcodeData} id="cold_qr_img" width="120" height="120"/>
 					</div>
 				</div>
 				<div className="row">
@@ -94,7 +199,7 @@ export default class SendCard extends React.Component{
 
 	renderSimpleSendCard(){
 		let getCardDescription = ()=>{
-			if (this.props.id == config.views.COLDWALLET){
+			if (this.props.id != config.views.HOTWALLET){
 				return(
 					<div className="row">
 						<div className="ui medium header cold_wallet_send_card_header">
@@ -102,10 +207,18 @@ export default class SendCard extends React.Component{
 						</div>
 					</div>
 				);
+			}else{
+				return(
+					<div className="row">
+						<div className="ui medium header cold_wallet_send_card_header">
+							Send Transaction
+						</div>
+					</div>
+				);
 			}
 		}
 		let getSubmitButtonText = ()=>{
-			if (this.props.id == config.views.COLDWALLET){
+			if (this.props.id != config.views.HOTWALLET){
 				return "Create Transaction";
 			}else{
 				return "Send";
@@ -140,7 +253,7 @@ export default class SendCard extends React.Component{
 											id="send_address_input" type="text" placeholder="address"/>
 										<i className="search icon"/>
 									</div>
-									<div className="results"></div>
+									<div className="results search_results_div"></div>
 								</div>
 							</div>
 							
@@ -163,7 +276,8 @@ export default class SendCard extends React.Component{
 					</div>
 				</div>
 				<div className="row mt-3">
-					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}>
+					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}
+						id="send_submit_button">
 						<i className="paperplane icon"/>
 						{getSubmitButtonText()}
 					</button>

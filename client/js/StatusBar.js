@@ -50,7 +50,7 @@ export default class StatusBar extends React.Component{
 			}
 
 			status_divs.push(
-				<i className={"mobile big icon status_icon " + color} key="status_mobileauth"
+				<i className={"mobile big icon status_icon_size status_icon " + color} key="status_mobileauth"
 					data-title="Mobile 2FA is on!"
 			  		data-variation="tiny"
 			  		data-position="top center"/>

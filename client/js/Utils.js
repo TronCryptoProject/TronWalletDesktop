@@ -1,4 +1,4 @@
-import Blowfish from "egoroof-blowfish";
+//import Blowfish from "egoroof-blowfish";
 import fs from "fs";
 import hexToArrayBuffer from "hex-to-array-buffer";
 import config from "../config/config.js";
@@ -6,8 +6,7 @@ import config from "../config/config.js";
 export class EncryptedRequest{
 	constructor(){
 		this.kslist = fs.readFileSync("client/config/tronks.ks","utf8").split("\n");
-		this.blowfishEncrypt = new Blowfish(atob(this.kslist[0]), Blowfish.MODE.CBC, Blowfish.PADDING.PKCS5);
-		this.blowfishEncrypt.setIv("abcdefgh");
+		this.key = atob(this.kslist[0]);
 
 		this.baseurl = `${config.COLD_API_URL}${atob(this.kslist[1])}/api/`;
 		this.encrypt = this.encrypt.bind(this);
@@ -16,20 +15,21 @@ export class EncryptedRequest{
 	}
 
 	encrypt(message){
-		let buffer = this.blowfishEncrypt.encode(message);
-		let hexstr = Buffer.from(buffer).toString("hex");
-		return btoa(hexstr);
+		console.log("message: " + message);
+		console.log("key: " + this.key);
+		console.log("hex: " + blowfish.encrypt(message, this.key, {cipherMode: 0, outputType: 1}));
+		return blowfish.encrypt(message, this.key, {cipherMode: 0, outputType: 1});
 	}
 
 	decryptToJSON(data){
-		data = this.blowfishEncrypt.decode(hexToArrayBuffer(atob(data)));
-		console.log("decryptToJSON: " + data);
+		let decrypted_data = blowfish.decrypt(data, this.key, {cipherMode: 0, outputType: 1});
+		console.log("decryptToJSON: " + decrypted_data);
 		try{
-			data = JSON.parse(data);
+			decrypted_data = JSON.parse(decrypted_data);
 		}catch(e){
 			return {};
 		}
-		return data;
+		return decrypted_data;
 	}
 
 	createPostURL(view, req_type, endpoint, data_dict){

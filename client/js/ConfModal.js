@@ -6,8 +6,13 @@ export default class ConfModal extends React.Component {
 		super(props);
 		this.renderActions = this.renderActions.bind(this);
 
+		this.action_map = {
+			"deny": 0,
+			"accept": 1
+		}
 		this.state = {
-			actions: this.props.actions
+			actions: this.props.actions,
+			actionsText: this.props.actionsText
 		}
 	}
 
@@ -16,6 +21,9 @@ export default class ConfModal extends React.Component {
 		if (!Equal(nextProps.actions, this.props.actions)){
 			tmp_dict.actions = nextProps.actions;
 		}
+		if (!Equal(nextProps.actionsText, this.props.actionsText)){
+			tmp_dict.actionsText = nextProps.actionsText;
+		}
 		tmp_dict = Object.assign(this.state,tmp_dict);
 		this.setState(tmp_dict);
 
@@ -23,24 +31,31 @@ export default class ConfModal extends React.Component {
 
 	renderActions(){
 		let action_list = [];
-		if (this.state.actions.includes("deny")){
-			action_list.push(
-				<div className="ui red deny basic right labeled icon button" onClick={this.props.handleDenyConfModal}
-					key={"deny_conf_modal"}>
-					No
-					 <i className="close icon"></i>
-				</div>
-			);
+
+		for(let i = 0; i < this.state.actions.length; i++){
+			if (this.state.actions[i] == "deny"){
+				action_list.push(
+					<div className="ui red deny basic right labeled icon button" 
+						onClick={(e)=>{this.props.handleDenyConfModal(e)}}
+						key={"deny_conf_modal"}
+						id={this.props.id + "_deny"}>
+						{this.state.actionsText[this.action_map[this.state.actions[i]]]}
+						 <i className="close icon"></i>
+					</div>
+				);
+			}else if (this.state.actions[i] == "accept"){
+				action_list.push(
+					<div className="ui green positive basic right labeled icon button"
+						onClick={(e)=>{this.props.handleAcceptConfModal(e)}}
+						key={"accept_conf_modal"}
+						id={this.props.id + "_accept"}>
+						{this.state.actionsText[this.action_map[this.state.actions[i]]]}
+						<i className="checkmark icon"></i>
+					</div>
+				);
+			}
 		}
-		if (this.state.actions.includes("accept")){
-			action_list.push(
-				<div className="ui olive positive basic right labeled icon button" onClick={this.props.handleAcceptConfModal}
-					key={"accept_conf_modal"}>
-					Ok
-					<i className="checkmark icon"></i>
-				</div>
-			);
-		}
+		
 		return action_list;
 	}
 
@@ -54,18 +69,32 @@ export default class ConfModal extends React.Component {
 				);
 			}
 		}
-		let headerClass = "text_align_center header " + this.props.headerClass;
-		
+		let getMessageDiv = ()=>{
+			if (this.props.message.trim() != ""){
+				return(
+					<div className="content">
+						<div className="text_align_center description">
+							{this.props.message}
+						</div>
+					</div>
+				);
+			}
+		}
+		let headerClass = "text_align_center header ";
+		if (this.props.headerClass && this.props.headerClass != ""){
+			headerClass += this.props.headerClass;
+		}
+		let modalClass = "ui small modal conf_modal ";
+		if (this.props.modalClass && this.props.modalClass != ""){
+			modalClass += this.props.modalClass;
+		}
+
 		return(
-			<div className="ui small modal conf_modal" id={this.props.id}>
+			<div className={modalClass} id={this.props.id}>
 				<div className={headerClass}>
 					{this.props.headerText}
 				</div>
-				<div className="content">
-					<div className="text_align_center description">
-						{this.props.message}
-					</div>
-				</div>
+				{getMessageDiv()}
 				{getPropsChildren()}
 				<div className="actions">
 					{this.renderActions()}
@@ -77,8 +106,11 @@ export default class ConfModal extends React.Component {
 
 ConfModal.defaultProps={
 	headerText: "",
+	headerClass: "",
+	modalClass: "",
 	message: "",
 	actions: ["deny", "accept"],
+	actionsText: ["No","Ok"],
 	handleDenyConfModal: (function(){}),
 	handleAcceptConfModal: (function(){}),
 	id: ""
