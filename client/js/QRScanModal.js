@@ -10,7 +10,6 @@ export default class QRScanModal extends React.Component{
 		}
 		this.addQRListener = this.addQRListener.bind(this);
 		this.checkCameras = this.checkCameras.bind(this);
-		this.showErrorModal = this.showErrorModal.bind(this);
 		this.startStopCamera = this.startStopCamera.bind(this);
 
 		this.qrscanner = null;
@@ -30,9 +29,21 @@ export default class QRScanModal extends React.Component{
 
 	startStopCamera(){
 		if (this.state.startCamera){
-			this.qrscanner = new Instascan.Scanner({video:document.getElementById("qrvideo")});
-			this.addQRListener();
-			this.checkCameras();
+			this.checkCameras()
+			.then((camera)=>{
+				try{
+					this.qrscanner = new Instascan.Scanner({
+						video:document.getElementById("qrvideo")
+					});
+					this.qrscanner.start(camera);
+					this.addQRListener();
+				}catch(e){
+					this.setState({error: "Error activating camera. Please try restarting your computer"});
+				}
+			}).catch((error_msg)=>{
+				this.setState({error: error_msg});
+			});
+			
 		}else{
 			if (this.qrscanner != null){
 				this.qrscanner.stop()
@@ -41,9 +52,7 @@ export default class QRScanModal extends React.Component{
 				})
 				.catch((error)=>{
 					let error_str = "Unable to Stop the Camera: " + error;
-					this.setState({error: error},()=>{
-						this.showErrorModal();
-					});
+					this.setState({error: error});
 				});
 			}
 		}
@@ -65,33 +74,49 @@ export default class QRScanModal extends React.Component{
 		});
 	}
 
-	showErrorModal(){
-		$("#camera_error_modal")
-		.modal({
-			blurring: true
-		})
-		.modal("show");
-	}
-
 	checkCameras(){
-		Instascan.Camera.getCameras()
-		.then(cameraslist => {
-			if (cameraslist.length > 0){
-				this.qrscanner.start(cameraslist[0]);
-			}else{
-				this.setState({error: "No Cameras Found!"},()=>{
-					this.showErrorModal();
-				});
-			}
-		})
-		.catch(error => {
-			this.setState({error: error},()=>{
-				this.showErrorModal();
+		return new Promise((resolve, reject)=>{
+			Instascan.Camera.getCameras()
+			.then(cameraslist => {
+				console.log("camlength: " + cameraslist.length);
+				if (cameraslist.length > 0){
+					resolve(cameraslist[0]);
+				}else{
+					reject("No Cameras found!");
+				}
+			})
+			.catch(error => {
+				console.log("error cam: " + error);
+				reject(error.message);
+
 			});
 		});
+		
 	}
 
 	render(){
+		let getVideoContent = ()=>{
+			if (this.state.error == ""){
+				return(
+					<div>
+						<video className="qrscan_video" id="qrvideo"/>
+						<div className="qrcheckoverlay">
+							<i className="ui circular qr_check_icon check circle outline icon massive"
+								id="qrcheckicon"/>
+						</div>
+					</div>
+				);
+			}else{
+				return(
+					<div className="content text_align_center height_100">
+						<div className="ui header yellow height_100 center_error_message">
+							{this.state.error}
+						</div>
+					</div>
+				);
+			}
+		}
+
 		return(
 			<div className="ui basic modal" id="qrscan_modal">
 				<div className="ui icon header">
@@ -103,14 +128,7 @@ export default class QRScanModal extends React.Component{
 				</div>
 				
 				<div className="content qrvideo_div">
-					
-
-					<video className="qrscan_video" id="qrvideo"/>
-
-					<div className="qrcheckoverlay">
-						<i className="ui circular qr_check_icon check circle outline icon massive"
-							id="qrcheckicon"/>
-					</div>
+					{getVideoContent()}
 				</div>
 			  	<div className="actions text_align_center">
 					<div className="ui red basic cancel inverted button">

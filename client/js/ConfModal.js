@@ -35,7 +35,7 @@ export default class ConfModal extends React.Component {
 		for(let i = 0; i < this.state.actions.length; i++){
 			if (this.state.actions[i] == "deny"){
 				action_list.push(
-					<div className="ui red deny basic right labeled icon button" 
+					<div className="ui red custom_red_conf_button deny inverted right labeled icon button" 
 						onClick={(e)=>{this.props.handleDenyConfModal(e)}}
 						key={"deny_conf_modal"}
 						id={this.props.id + "_deny"}>
@@ -45,7 +45,7 @@ export default class ConfModal extends React.Component {
 				);
 			}else if (this.state.actions[i] == "accept"){
 				action_list.push(
-					<div className="ui green positive basic right labeled icon button"
+					<div className="ui green custom_red_conf_button positive inverted right labeled icon button"
 						onClick={(e)=>{this.props.handleAcceptConfModal(e)}}
 						key={"accept_conf_modal"}
 						id={this.props.id + "_accept"}>
@@ -80,10 +80,20 @@ export default class ConfModal extends React.Component {
 				);
 			}
 		}
-		let headerClass = "text_align_center header ";
-		if (this.props.headerClass && this.props.headerClass != ""){
-			headerClass += this.props.headerClass;
+		let getHeader = ()=>{
+			if (this.props.headerText != ""){
+				let headerClass = "text_align_center header ";
+				if (this.props.headerClass && this.props.headerClass != ""){
+					headerClass += this.props.headerClass;
+				}
+				return(
+					<div className={headerClass}>
+						{this.props.headerText}
+					</div>
+				);
+			}
 		}
+		
 		let modalClass = "ui small modal conf_modal ";
 		if (this.props.modalClass && this.props.modalClass != ""){
 			modalClass += this.props.modalClass;
@@ -91,9 +101,7 @@ export default class ConfModal extends React.Component {
 
 		return(
 			<div className={modalClass} id={this.props.id}>
-				<div className={headerClass}>
-					{this.props.headerText}
-				</div>
+				{getHeader()}
 				{getMessageDiv()}
 				{getPropsChildren()}
 				<div className="actions">

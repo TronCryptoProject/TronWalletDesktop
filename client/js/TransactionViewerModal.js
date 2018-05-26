@@ -17,7 +17,6 @@ export default class TransactionViewerModal extends React.Component{
 		};
 		this.isSigning = false;
 		this.handleSignTransaction = this.handleSignTransaction.bind(this);
-		this.getConfModalProps = this.getConfModalProps.bind(this);
 		this.handleQRImageSave = this.handleQRImageSave.bind(this);
 		this.renderQRCodeCanvas = this.renderQRCodeCanvas.bind(this);
 	}
@@ -36,25 +35,6 @@ export default class TransactionViewerModal extends React.Component{
 				this.renderQRCodeCanvas();
 			}
 		});
-	}
-
-	getConfModalProps(){
-		let message = `Scan this QRCode in Watch Only wallet to broadcast your transaction. You will 
-				not be able to access this QRCode after dismissing this popup, so make sure you save 
-				it.`;
-
-		if (this.props.view != config.views.COLDWALLET){
-			message = `Scan this QRCode in Cold wallet to sign this transaction. You will 
-				not be able to access this QRCode after dismissing this popup, so make sure you save 
-				it.`;
-		}
-
-		return{
-			headerText: "Signed Transaction QRCode",
-			message: message,
-			actions: ["accept"],
-			id: "signed_tx_qrcode_modal"
-		};
 	}
 
 	renderQRCodeCanvas(){
@@ -143,13 +123,12 @@ export default class TransactionViewerModal extends React.Component{
 			}
 
 			let showSuccess = ()=>{
-				$(button_id).removeClass("loading right labeled");
+				$(button_id).removeClass("loading right labeled button_tron_blue");
 				$(button_id).addClass("green");
 				$(button_id).text("Sign transaction Success!");
 				$(button_id).transition("pulse");
 				setTimeout(()=>{
-					$(button_id).removeClass("green");
-					$(button_id).addClass("right labeled");
+					$(button_id).addClass("right labeled button_tron_blue");
 					$(button_id).text("Sign Transaction");
 					$(button_id).prepend("<i class='pencil alternate icon'/>");
 					this.isSigning = false;
@@ -213,6 +192,19 @@ export default class TransactionViewerModal extends React.Component{
 			}else{
 				return (this.state.txData.timestamp);
 			}
+		}
+
+		let getQRConfModalMessage = ()=>{
+			let message = `Scan this QRCode in Watch Only wallet to broadcast your transaction. You will 
+				not be able to access this QRCode after dismissing this popup, so make sure you save 
+				it.`;
+
+			if (this.props.view != config.views.COLDWALLET){
+				message = `Scan this QRCode in Cold wallet to sign this transaction. You will 
+					not be able to access this QRCode after dismissing this popup, so make sure you save 
+					it.`;
+			}
+			return message;
 		}
 
 		return(
@@ -294,6 +286,14 @@ export default class TransactionViewerModal extends React.Component{
 							</tr>
 							<tr>
 								<td>
+									Total Signatures
+								</td>
+								<td className="clearfix">
+									{this.state.txData.signatures ? this.state.txData.signatures.length:0}
+								</td>
+							</tr>
+							<tr>
+								<td>
 									Signatures
 								</td>
 								<td className="clearfix">
@@ -316,16 +316,27 @@ export default class TransactionViewerModal extends React.Component{
 							Cancel
 							<i className="remove icon"/>
 						</div>
-						<div className="ui green ok vertical icon right labeled button"
+						<div className="ui button_tron_blue vertical icon right labeled button"
 							onClick={(e)=>{this.handleSignTransaction(e)}} id="tx_modal_submit_button">
 							Sign Transaction
 							<i className="pencil alternate icon"/>
 						</div>
 					</div>
 				</div>
-				<ConfModal {...this.getConfModalProps()}>
-					<div className="content p-3 pb-4 width_fit_content mx-auto">
-						<canvas id="signed_tx_qr_canvas" className="hotwalletreceivecanvas mb-3"/>
+				<div className="ui modal tx_qr_modal conf_modal" id="signed_tx_qrcode_modal">
+					<div className="text_align_center header tx_qr_modal_header">
+						Signed Transaction QRCode
+					</div>
+					<div className="content tx_qr_modal_content">
+						<div className="text_align_center description">
+							{getQRConfModalMessage()}
+						</div>
+					</div>
+					<div className="content p-3 pb-4 width_100 mx-auto tx_qr_modal_content">
+						<div className="mx-auto width_fit_content">
+							<canvas id="signed_tx_qr_canvas" className="mb-3" width="300"
+								height="300"/>
+						</div>
 						<div className="row center_button">
 							<button className="ui right labeled icon blue button m-0" onClick={this.handleQRImageSave}>
 								<i className="save icon"/>
@@ -333,7 +344,13 @@ export default class TransactionViewerModal extends React.Component{
 							</button>
 						</div>
 					</div>
-				</ConfModal>
+					<div className="actions tx_qr_modal_actions center_button">
+						<div className="ui green positive right labeled icon button">
+							Ok
+							<i className="checkmark icon"></i>
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}

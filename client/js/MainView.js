@@ -146,8 +146,6 @@ export default class MainView extends React.Component {
 
 	handleWalletGatewaySuccess(view, data){
 		let gotoview;
-		console.log("view success: " + view);
-		console.log("data: " + JSON.stringify(data));
 		if (view == config.views.COLDWALLET){
 			gotoview = config.views.COLDDASH;
 		}else if (view == config.views.HOTWALLET){
@@ -155,7 +153,6 @@ export default class MainView extends React.Component {
 		}else if (view == config.views.WATCHONLY){
 			gotoview = config.views.WATCHDASH;
 		}
-		console.log("gotoview: " + gotoview);
 		this.setState({currView: gotoview, dashboardData: data});
 	}
 

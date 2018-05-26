@@ -35,7 +35,8 @@ export default class HotWalletDashboard extends React.Component {
 
 			accInfo:{
 				accountName : props.accInfo.accountName,
-				pubAddress: props.accInfo.pubAddress
+				pubAddress: props.accInfo.pubAddress,
+				pdirty: props.accInfo.pdirty
 			},
 			blockNum: 0,
 			trxPrice: 0,
@@ -599,7 +600,7 @@ export default class HotWalletDashboard extends React.Component {
 						subscribe={this.subscribeNodeData} unsubscribe={this.unsubscribeNodeData}
 						getNodeData={this.getNodeData}/>
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
-						/>
+						pdirty={this.state.accInfo.pdirty} accountName={this.state.accInfo.accountName}/>
 					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
 						shares={this.state.shares}/>
 					<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
@@ -616,7 +617,8 @@ HotWalletDashboard.defaultProps={
 	showStatusBar: (function(){}),
 	accInfo: {
 		pubAddress: "",
-		accountName: ""
+		accountName: "",
+		pdirty: false
 	},
 	handleDataNode: (function(){}),
 	permissionLogOut: (function(){})

@@ -39,13 +39,13 @@ export default class SignCard extends React.Component{
 				if (message == undefined || message == null || message == ""){
 					message = "Validation failed!";
 				}
-				$("#validate_tx_submit_button").removeClass("loading right labeled");
+				$("#validate_tx_submit_button").removeClass("loading right labeled button_tron_blue");
 				$("#validate_tx_submit_button").addClass("red");
 				$("#validate_tx_submit_button").text(message);
 				$("#validate_tx_submit_button").transition("shake");
 				setTimeout(()=>{
 					$("#validate_tx_submit_button").removeClass("red");
-					$("#validate_tx_submit_button").addClass("right labeled");
+					$("#validate_tx_submit_button").addClass("right labeled button_tron_blue");
 					$("#validate_tx_submit_button").text("Validate Transaction");
 					$("#validate_tx_submit_button").prepend("<i class='sitemap icon'/>");
 					this.isSigning = false;
@@ -53,13 +53,13 @@ export default class SignCard extends React.Component{
 			}
 
 			let showSuccess = ()=>{
-				$("#validate_tx_submit_button").removeClass("loading right labeled");
+				$("#validate_tx_submit_button").removeClass("loading right labeled button_tron_blue");
 				$("#validate_tx_submit_button").addClass("green");
 				$("#validate_tx_submit_button").text("Authenticated!");
 				$("#validate_tx_submit_button").transition("pulse");
 				setTimeout(()=>{
 					$("#validate_tx_submit_button").removeClass("green");
-					$("#validate_tx_submit_button").addClass("right labeled");
+					$("#validate_tx_submit_button").addClass("right labeled button_tron_blue");
 					$("#validate_tx_submit_button").text("Validate Transaction");
 					$("#validate_tx_submit_button").prepend("<i class='sitemap icon'/>");
 					this.isSigning = false;
@@ -201,7 +201,7 @@ export default class SignCard extends React.Component{
 				{getMobileAuthInput()}
 				</div>
 				<div className="row">
-					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleValidateTxClick(e)}}
+					<button className="ui right labeled icon button_tron_blue button" onClick={(e)=>{this.handleValidateTxClick(e)}}
 						id="validate_tx_submit_button">
 						<i className="sitemap icon"/>
 						Validate Transaction

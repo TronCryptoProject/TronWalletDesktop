@@ -17,6 +17,7 @@
 @import "./MobileAuthModal.css";
 @import "./WatchOnlyMainView.css";
 @import "./ColdOfflineDashboard.css";
+@import "./TransactionQRModal.css";
 
 .draggable{
 	-webkit-app-region: drag;
@@ -321,4 +322,15 @@ i.icon.paperplane:before {
 	margin-left: auto !important;
     margin-right: auto !important;
     display: block !important;
+}
+
+.ui.inverted.red.custom_red_conf_button.button, .ui.inverted.red.custom_red_conf_button.buttons .button{
+	background-color: transparent;
+    box-shadow: 0 0 0 2px #d01919 inset!important;
+    color: #d01919 !important;
+    border-color: #d01919 !important;
+}
+.ui.inverted.red.custom_red_conf_button.button:hover{
+	background-color: #d01919 !important;
+	color: white !important;
 }

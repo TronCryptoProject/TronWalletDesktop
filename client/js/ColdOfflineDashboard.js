@@ -23,7 +23,8 @@ export default class ColdOfflineDashboard extends React.Component {
 
 			accInfo:{
 				accountName : props.accInfo.accountName,
-				pubAddress: props.accInfo.pubAddress
+				pubAddress: props.accInfo.pubAddress,
+				pdirty: props.accInfo.pdirty
 			},
 			currTxData: {},
 			toUpdateTxs: false
@@ -504,7 +505,8 @@ export default class ColdOfflineDashboard extends React.Component {
 					</div>
 					<DockMenu handleDockClick={this.handleDockClick} view={config.views.COLDWALLET}/>
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
-						mobileAuthCode={this.props.mobileAuthCode}/>
+						mobileAuthCode={this.props.mobileAuthCode} pdirty={this.state.accInfo.pdirty}
+						accountName={this.state.accInfo.accountName}/>
 				</div>
 				<TransactionViewerModal txData={this.state.currTxData}
 					mobileAuthCode={this.props.mobileAuthCode}
@@ -519,7 +521,8 @@ ColdOfflineDashboard.defaultProps={
 	showStatusBar: (function(){}),
 	accInfo: {
 		pubAddress: "",
-		accountName: ""
+		accountName: "",
+		pdirty: false
 	},
 	permissionLogOut: (function(){}),
 	mobileAuthCode: ""

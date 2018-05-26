@@ -36,13 +36,13 @@ export default class SendCard extends React.Component{
 						message = "Send failed!";
 					}
 				}
-				$("#send_submit_button").removeClass("loading right labeled");
+				$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
 				$("#send_submit_button").addClass("red");
 				$("#send_submit_button").text(message);
 				$("#send_submit_button").transition("shake");
 				setTimeout(()=>{
 					$("#send_submit_button").removeClass("red");
-					$("#send_submit_button").addClass("right labeled");
+					$("#send_submit_button").addClass("right labeled button_tron_blue");
 					if (this.props.id != config.views.HOTWALLET){
 						$("#send_submit_button").text("Create Transaction");
 					}else{
@@ -54,13 +54,13 @@ export default class SendCard extends React.Component{
 			}
 
 			let showSuccess = ()=>{
-				$("#send_submit_button").removeClass("loading right labeled");
+				$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
 				$("#send_submit_button").addClass("green");
 				$("#send_submit_button").text("Success!");
 				$("#send_submit_button").transition("pulse");
 				setTimeout(()=>{
 					$("#send_submit_button").removeClass("green");
-					$("#send_submit_button").addClass("right labeled");
+					$("#send_submit_button").addClass("right labeled button_tron_blue");
 					if (this.props.id != config.views.HOTWALLET){
 						$("#send_submit_button").text("Create Transaction");
 					}else{
@@ -276,7 +276,7 @@ export default class SendCard extends React.Component{
 					</div>
 				</div>
 				<div className="row mt-3">
-					<button className="ui right labeled icon blue button" onClick={(e)=>{this.handleSendClick(e)}}
+					<button className="ui right labeled icon button_tron_blue button" onClick={(e)=>{this.handleSendClick(e)}}
 						id="send_submit_button">
 						<i className="paperplane icon"/>
 						{getSubmitButtonText()}

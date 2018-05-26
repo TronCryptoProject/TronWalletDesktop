@@ -1,0 +1,105 @@
+.tx_qr_modal_header{
+	background: hsla(0, 6%, 86%, 0.73) !important;
+}
+.tx_qr_modal_content{
+	background: rgba(228, 228, 228, 0.42) !important;
+}
+.tx_qr_modal_actions{
+	background: hsla(0, 6%, 86%, 0.73) !important;
+}
+
+#signed_tx_qrcode_modal{
+	z-index: 10000000 !important;
+}
+
+@media only screen and (min-width: 697px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -27%;
+  }
+}
+
+@media only screen and (min-width: 780px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -24%;
+  }
+}
+
+
+@media only screen and (min-width: 840px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -22%;
+  }
+}
+
+@media only screen and (min-width: 900px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -20%;
+  }
+}
+
+@media only screen and (min-width: 1000px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -20%;
+  }
+}
+
+@media only screen and (min-width: 1140px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -17%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -16%;
+  }
+}
+@media only screen and (min-width: 1300px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -14%;
+  }
+}
+@media only screen and (min-width: 1600px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -12%;
+  }
+}
+@media only screen and (min-width: 1700px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -11%;
+  }
+}
+@media only screen and (min-width: 1800px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -10%;
+  }
+}
+@media only screen and (min-width: 1900px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -9%;
+  }
+}
+@media only screen and (min-width: 2500px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -7%;
+  }
+}
+@media only screen and (min-width: 3000px) {
+  .ui.tx_qr_modal.modal {
+    width: 400px;
+    margin: 0em 0em 0em -6%;
+  }
+}

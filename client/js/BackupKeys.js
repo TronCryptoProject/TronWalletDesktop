@@ -4,7 +4,8 @@ import FileSaver from "file-saver";
 import axios from "axios";
 import config from "../config/config.js";
 import ReactCodeInput from "react-code-input";
-
+import {BlowfishSingleton} from "Utils.js";
+import speakeasy from "speakeasy";
 
 export default class BackupKeys extends React.Component {
 	constructor(props){
@@ -15,11 +16,16 @@ export default class BackupKeys extends React.Component {
 		this.getCodeInputConfig = this.getCodeInputConfig.bind(this);
 		this.onPasscodeChangeHandler = this.onPasscodeChangeHandler.bind(this);
 		this.onAuthCodeChangeHandler = this.onAuthCodeChangeHandler.bind(this);
+		this.saveBackupFile = this.saveBackupFile.bind(this);
+
 		this.state={
 			modalId: "backup_conf_modal",
 			passInputText: "",
-			authInputText: ""
+			authInputText: "",
+			getConfModal: false
 		}
+
+		this.isBackingLock = false;
 	}
 
 	getCodeInputConfig(){
@@ -61,21 +67,117 @@ export default class BackupKeys extends React.Component {
 		}
 	}
 
-	handleAcceptConfModal(){
-		axios.get(`${config.API_URL}/api/backupWallet/`)
-		.then((res)=>{
-			let json_obj = res.body;
-			if (json_obj.result == "success"){
-				//uncomment
-				//let encoded_str = window.btoa(JSON.stringify(json_obj));
-				//FileSaver.saveAs(encoded_str, 'TronWalletBackup.dat');
-			}else{
 
+	saveBackupFile(encrypted_data){
+		let blob = new Blob([encrypted_data],{type: "text/plain;charset=utf-8"});
+		let suffix_file_name = "";
+		if (this.props.accountName != ""){
+			suffix_file_name = "-" + this.props.accountName;
+		}
+
+		FileSaver.saveAs(blob, `TronWallet${suffix_file_name}.txt`);
+	}
+
+	handleAcceptConfModal(e){
+		e.persist();
+
+		if (!this.isBackingLock){
+			this.isBackingLock = true;
+
+			let button_id = "#" + this.state.modalId + "_accept";
+			$(button_id).addClass("loading");
+
+			let showError = (message)=>{
+				if (message == undefined || message == null || message == ""){
+					message = "Backup failed!";
+				}
+				$(button_id).removeClass("loading right labeled");
+				$(button_id).addClass("red");
+				$(button_id).text(message);
+				$(button_id).transition("shake");
+				setTimeout(()=>{
+					$(button_id).removeClass("red");
+					$(button_id).addClass("right labeled");
+					$(button_id).text("Backup");
+					$(button_id).prepend("<i class='checkmark icon'/>");
+					this.isBackingLock = false;
+				},2000);
 			}
-		})
-		.catch((error)=>{
-			console.log(error);
-		})
+
+			let showSuccess = ()=>{
+				$(button_id).removeClass("loading right labeled");
+				$(button_id).addClass("green");
+				$(button_id).text("Backup successful!");
+				$(button_id).transition("pulse");
+				setTimeout(()=>{
+					$(button_id).removeClass("green");
+					$(button_id).addClass("right labeled");
+					$(button_id).text("Backup");
+					$(button_id).prepend("<i class='checkmark icon'/>");
+					this.isBackingLock = false;
+				},2000);
+			}
+				
+			let pcheck = true;
+			if (this.props.pdirty){
+				if (this.state.passInputText == ""){
+					pcheck = false;
+				}
+			}
+
+			if (this.state.authInputText != "" && pcheck){
+				let is_good = true;
+				if (this.props.mobileAuthCode != ""){
+					let token_status = speakeasy.totp.verify({
+						secret: this.props.mobileAuthCode,
+						encoding: "base32",
+						token: this.state.authInputText
+					})
+					if (!token_status){
+						is_good = false;
+					}
+				}
+
+				if (is_good){
+					let pass = "******";
+					if (this.props.pdirty){
+						pass = this.state.passInputText
+					}
+					let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "GET","backupWallet",{
+						password: pass
+					});
+
+					axios.get(url)
+					.then((res)=>{
+						let data = res.data;
+						data = BlowfishSingleton.decryptToJSON(data);
+
+						if ("result" in data && data.result == config.constants.SUCCESS){
+							showSuccess();
+							setTimeout(()=>{
+								this.saveBackupFile(res.data);
+								$("#" + this.state.modalId).modal("hide");
+							},1200);
+						}else{
+							if ("reason" in data){
+								showError(data.reason);
+							}else{
+								showError();
+							}
+						}
+					})
+					.catch((error)=>{
+						showError("Request failed :(");
+					});
+
+
+				}else{
+					showError("Auth code is incorrect!");
+				}
+			}else{
+				showError("Empty input!");
+			}
+		}
 		
 	}
 
@@ -84,14 +186,31 @@ export default class BackupKeys extends React.Component {
 	}
 
 	confModal(){
-		$("#"+this.state.modalId).modal({
-			blurring: true,
-			centered: true,
-			inverted: true,
-			transition: "scale",
-			allowMultiple: true,
-		})
-		.modal("show");
+		this.setState({getConfModal: true},()=>{
+			$("#"+this.state.modalId).modal({
+				blurring: true,
+				centered: true,
+				inverted: true,
+				transition: "scale",
+				allowMultiple: true,
+				onApprove: ()=>{
+					return false;
+				},
+				onHidden: ()=>{
+					this.onPasscodeChangeHandler("");
+					this.onAuthCodeChangeHandler("");
+					this.setState({getConfModal: false});
+				},
+				onShow:()=>{
+					$("#backup_modal").addClass("blur");
+				},
+				onHidden:()=>{
+					$("#backup_modal").removeClass("blur");
+				}
+			})
+			.modal("show");
+		});
+		
 	}
 
 	render(){
@@ -113,6 +232,40 @@ export default class BackupKeys extends React.Component {
 			}
 		}
 
+		let getPassConf = ()=>{
+			if (this.props.pdirty){
+				return(
+					<div>
+						<div className="text_align_center content">
+							<div className="ui header cold_wallet_send_card_header">
+								Enter your wallet password below
+							</div>
+						</div>
+						<div className="center_button my-3">
+							<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
+								onChange={this.onPasscodeChangeHandler}/>
+						</div>
+					</div>
+				);
+			}
+		}
+
+		let getConfModal = ()=>{
+			if (this.state.getConfModal){
+				return(
+					<div>
+						<ConfModal headerText="Do you want to begin backup?"
+							message="Your backup will be saved to your computer in a 128 bit encrypted file"
+							actions={["deny", "accept"]} actionsText={["Cancel", "Backup"]} id={this.state.modalId}
+							handleAcceptConfModal={this.handleAcceptConfModal}>
+
+							{getPassConf()}
+							{getMobileAuthConf()}
+						</ConfModal>
+					</div>
+				);
+			}
+		}
 		return(
 			<div className="ui fullscreen modal fullscreen_modal" id="backup_modal">
 				<div className="ui blurring segment fullscreen_modal_segment">
@@ -137,7 +290,13 @@ export default class BackupKeys extends React.Component {
 							<br/>
 							<br/>
 							<div className="text_align_center">
-								Remember: Do not email or in any way send your keys to anyone. They are your secret!
+								<b>Remember:</b> Do not email or in any way send your keys to anyone. They are your secret!
+							</div>
+							<br/>
+							<br/>
+							<div className="force_meta text_align_center">
+								Your backup will store encrypted private key, public address, password and 
+								account name into the file.
 							</div>
 						</div>
 					</div>
@@ -147,22 +306,7 @@ export default class BackupKeys extends React.Component {
 						</button>
 					</div>
 				</div>
-				<ConfModal headerText="Do you want to begin backup?"
-					message="Your backup will be saved to your computer in a 128 bit encrypted file"
-					actions={["deny", "accept"]} id={this.state.modalId}
-					handleAcceptConfModal={this.handleAcceptConfModal}>
-
-					<div className="text_align_center content">
-						<div className="ui header cold_wallet_send_card_header">
-							Enter your wallet password below
-						</div>
-					</div>
-					<div className="center_button my-3">
-						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onPasscodeChangeHandler}/>
-					</div>
-					{getMobileAuthConf()}
-				</ConfModal>
+				{getConfModal()}
 
 			</div>
 		);
@@ -171,5 +315,7 @@ export default class BackupKeys extends React.Component {
 
 BackupKeys.defaultProps = {
 	handleDockClick: (function(){}),
-	mobileAuthCode: false
+	mobileAuthCode: "",
+	pdirty: false,
+	accountName: ""
 }

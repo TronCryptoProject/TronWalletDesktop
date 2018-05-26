@@ -223,7 +223,8 @@ export default class ColdOfflineMainView extends React.Component {
 
 						let prop_data = {
 							accountName: data.accountName,
-							pubAddress: data.pubAddress
+							pubAddress: data.pubAddress,
+							pdirty: ("pdirty" in data && data.pdirty)
 						};
 						this.setState({importMainData: prop_data});
 

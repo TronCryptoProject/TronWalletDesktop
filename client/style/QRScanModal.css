@@ -30,3 +30,8 @@
 .qr_check_icon{
 	color: #5fc355 !important;
 }
+
+.center_error_message{
+	display: flex !important;
+    align-items: center !important;
+}
