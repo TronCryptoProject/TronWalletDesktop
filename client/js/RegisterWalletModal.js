@@ -23,7 +23,7 @@ access to your machine. DO NOT SEND THIS FILE TO ANYONE.*/
 	"Passcode": ${this.props.passcode == "" ? '""' : passcode}
 }`;
 		let blob = new Blob([cred_dict],{type:"application/json"});
-		FileSaver.saveAs(blob, 'TronWallet.json');
+		FileSaver.saveAs(blob, `TronWallet-${this.props.pubAddress}.json`);
 		$("#registerwalletmodal").modal("show");
 	}
 

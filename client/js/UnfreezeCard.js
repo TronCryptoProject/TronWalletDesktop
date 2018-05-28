@@ -103,7 +103,7 @@ export default class UnfreezeCard extends React.Component{
 
 				<div className="row">
 					<button className="ui orange button"
-						onClick={(e)=>{this.handleUnfreezeClick(e)}}>
+						onClick={(e)=>{this.handleUnfreezeClick(e)}} id="unfreeze_balance_btn">
 						<span className="text">Unfreeze</span>
 					</button>
 				</div>

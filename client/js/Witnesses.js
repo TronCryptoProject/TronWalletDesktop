@@ -5,6 +5,9 @@ import Equal from "deep-equal";
 import Spinner from "./Spinner.js";
 import SharesOdometer from "./SharesOdometer.js";
 import BlockModal from "./BlockModal.js";
+import {BlowfishSingleton} from "Utils.js";
+import TxQrCodeModal from "./TxQrCodeModal.js";
+const shell = require('electron').shell;
 
 export default class Witnesses extends React.Component{
 	constructor(props){
@@ -15,8 +18,8 @@ export default class Witnesses extends React.Component{
 			shares: props.shares,
 			witnessData: [],
 			persistWitnessData: [],
-			voteHistory: this.props.voteHistory,
-			persistVoteHistory: this.props.voteHistory,
+			voteHistory: props.voteHistory,
+			persistVoteHistory: props.voteHistory,
 			isLoading: false,
 			selectedBlockNum: -1
 		};
@@ -33,6 +36,10 @@ export default class Witnesses extends React.Component{
 		this.handleVoteChange = this.handleVoteChange.bind(this);
 		this.adjustVotes = this.adjustVotes.bind(this);
 		this.handleBlockNumClick = this.handleBlockNumClick.bind(this);
+		this.handleWitnessURLClick = this.handleWitnessURLClick.bind(this);
+		this.parseVoteHistory = this.parseVoteHistory.bind(this);
+		this.showError = this.showError.bind(this);
+		this.showSuccess = this.showSuccess.bind(this);
 
 		this.witness_user_votes = {};
 		this.total_votes = 0;
@@ -40,19 +47,6 @@ export default class Witnesses extends React.Component{
 	}
 
 	componentDidMount(){
-		let v = [
-			{
-			  voteAddress: "27hTbUJePwyAeeAycCMhA6zVXcQi7eBNAYF",
-			  voteCount: 100
-			},
-			{
-			  voteAddress: "27fcHxDR7BxYnjjpDqn2mNrdUvkYUAVYyHf",
-			  voteCount: 10
-			}
-		];
-		this.setState({voteHistory:v,
-		persistVoteHistory: v});
-
 		$("#block_modal").modal({
 			blurring: true,
 			centered: true,
@@ -72,6 +66,8 @@ export default class Witnesses extends React.Component{
 	componentWillReceiveProps(nextProps){
 		let tmp_dict = {};
 		let modal_toggle = false;
+		let vote_dirty = false;
+
 		if(this.props.modalOpened != nextProps.modalOpened){
 			tmp_dict.modalOpened = nextProps.modalOpened;
 			if (nextProps.modalOpened){
@@ -85,7 +81,8 @@ export default class Witnesses extends React.Component{
 		}
 
 		if (!Equal(this.props.voteHistory, nextProps.voteHistory)){
-			tmp_dict.voteHistory = nextProps.voteHistory;
+			vote_dirty = true;
+			tmp_dict.persistVoteHistory = nextProps.voteHistory;
 		}
 
 		tmp_dict = Object.assign(this.state, tmp_dict);
@@ -98,11 +95,122 @@ export default class Witnesses extends React.Component{
 				}, 500);
 				
 				this.fetchAllWitnessData();
+			}else if (vote_dirty){
+				let enhanced_vote_history = this.parseVoteHistory(this.state.persistVoteHistory);
+				this.setState({
+					voteHistory: enhanced_vote_history,
+					persistVoteHistory: enhanced_vote_history
+				})
 			}
 		});
 	}
 
-	handleSubmitVotes(){
+	showError(target, message){
+		if (message == undefined || message == null || message == ""){
+			message = "Vote failed!";
+		}
+		$(target).removeClass("loading right labeled");
+		$(target).addClass("red");
+		$(target).text(message);
+		$(target).transition("shake");
+		setTimeout(()=>{
+			$(target).removeClass("red");
+			$(target).addClass("right labeled");
+			$(target).text("Submit Votes");
+			$(target).prepend("<i class='paperplane icon'/>");
+			this.error_lock = false;
+		},2000);
+	}
+
+	showSuccess(target){
+		$(target).removeClass("loading right labeled");
+		$(target).addClass("green");
+		$(target).text("Vote Successful!");
+		$(target).transition("pulse");
+		setTimeout(()=>{
+			$(target).addClass("right labeled");
+			$(target).text("Submit Votes");
+			$(target).prepend("<i class='paperplane icon'/>");
+			this.error_lock = false;
+		},2000);
+	}
+
+
+	parseVoteHistory(new_vote_history){
+		let witness_names_list = [];
+				
+		let tmp_addresses = {};
+		for (let witness_dict of this.state.persistWitnessData){
+			tmp_addresses[witness_dict.pubAddress] = witness_dict;
+		}
+
+		for(let vote_dict of new_vote_history){
+			if (vote_dict.voteAddress in tmp_addresses){
+				let res_dict = JSON.parse(JSON.stringify(vote_dict));
+				res_dict.url = tmp_addresses[vote_dict.voteAddress].url;
+				witness_names_list.push(res_dict);
+			}else{
+				witness_names_list.push(vote_dict);
+			}
+		}
+		return witness_names_list;
+	}
+
+	handleSubmitVotes(e){
+		e.persist();
+		let vote_list = [];
+		for (let x in this.witness_user_votes){
+			vote_list.push(x);
+			vote_list.push(this.witness_user_votes[x].votes.toString());
+		}
+		
+		if (!this.error_lock){
+			this.error_lock = true;
+
+			$(e.target).addClass("loading");
+			let endpoint = "voteWitness";
+			if (this.props.view != config.views.HOTWALLET){
+				endpoint = "prepareVoteWitness";
+			}
+			console.log("VOTELIST: " + JSON.stringify(vote_list));
+			console.log("VOTESTRING: " + vote_list.join(","));
+			let url = BlowfishSingleton.createPostURL(this.props.view, "POST",endpoint,{
+				witnesses: vote_list.join(","),
+				pubAddress: this.props.pubAddress
+			});
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if(this.props.view == config.views.HOTWALLET){
+					if ("result" in data){
+						if (data.result == config.constants.SUCCESS){
+							this.showSuccess(e.target);
+						}else{
+							this.showError(e.target, data.reason);
+						}
+					}else{
+						this.showError(e.target);
+					}
+				}else{
+					//only prepare the transaction (watch only)
+					$("#signed_tx_qrcode_modal")
+					.modal({
+						allowMultiple: true,
+						closable: false,
+						onHide: ()=>{
+							showSuccess(e.target);
+						}
+					})
+					.modal("show");
+				}
+			})
+			.catch((error)=>{
+				this.showError(e.target);
+			});
+		}
 
 	}
 
@@ -142,8 +250,12 @@ export default class Witnesses extends React.Component{
 
 		if (search_value != ""){
 			let tmp_list = [];
+			console.log("PERSISTVOTE: "+ JSON.stringify(this.state.persistVoteHistory));
 			for(let witness of this.state.persistVoteHistory){
 				if (witness.voteAddress.toLowerCase().indexOf(search_value) >= 0){
+					tmp_list.push(witness);
+					
+				}else if (witness.url.toLowerCase().indexOf(search_value) >= 0){
 					tmp_list.push(witness);
 				}
 			}
@@ -173,14 +285,25 @@ export default class Witnesses extends React.Component{
 
 	fetchAllWitnessData(){
 		this.setState({isLoading: true});
-		axios.get(`${config.API_URL}/api/witnesses`)
+
+		let url = BlowfishSingleton.createPostURL(this.state.view, "GET","witnesses",{});
+
+		axios.get(url)
 		.then((res)=>{
-			let json_obj = res.data;
+			let data = res.data;
+			let json_obj = BlowfishSingleton.decryptToJSON(data);
+
 			if (json_obj != null && json_obj != undefined && "witnessList" in json_obj){
 				this.setState({
 					witnessData:json_obj.witnessList,
 					persistWitnessData: json_obj.witnessList,
 					isLoading: false
+				}, ()=>{
+					let enhanced_vote_history = this.parseVoteHistory(this.state.persistVoteHistory);
+					this.setState({
+						voteHistory: enhanced_vote_history,
+						persistVoteHistory: enhanced_vote_history
+					});
 				});
 			}
 		})
@@ -254,6 +377,11 @@ export default class Witnesses extends React.Component{
 		});
 	}
 
+	handleWitnessURLClick(e, url){
+		e.preventDefault();
+		shell.openExternal(url);
+	}
+
 	renderAllWitnessRows(){
 		let tr_list = [];
 		for(let witness_dict of this.state.witnessData){
@@ -264,7 +392,10 @@ export default class Witnesses extends React.Component{
 				<td key={key}>
 					<h4 className="ui header">
 						<div className="content all_witness_table_row_content">
-				            {witness_dict.url}
+				            <a href={witness_dict.url} target="_blank"
+				            	onClick={(e)=>{this.handleWitnessURLClick(e,witness_dict.url)}}>
+				            	{witness_dict.url}
+				            </a>
 				        	<div className="sub header ellipse_text">
 				        		{witness_dict.pubAddress}
 				        	</div>
@@ -346,7 +477,7 @@ export default class Witnesses extends React.Component{
 				</div>
 
 				<div className="p-2 center_button right floated">
-					<button className="ui right labeled icon green button" onClick={this.handleSubmitVotes}>
+					<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSubmitVotes(e)}}>
 						<i className="paperplane icon "/>
 						Submit Votes
 					</button>
@@ -378,18 +509,41 @@ export default class Witnesses extends React.Component{
 	renderVoteHistoryRows(){
 		let tr_list = [];
 
+
 		if (this.state.voteHistory.length != 0){
+			
 			for(let vote_history_dict of this.state.voteHistory){
 				let td_list = [];
 				let key = vote_history_dict.voteAddress;
+
 				//witness pub address
-				td_list.push(
-					<td key={key}>
-						<h4 className="ui sub header all_witness_table_row_content">
-							{vote_history_dict.voteAddress}
-						</h4>
-					</td>
-				);
+
+				if ("url" in vote_history_dict){
+					td_list.push(
+						<td key={key}>
+							<h4 className="ui header">
+								<div className="content all_witness_table_row_content">
+						            <a href={vote_history_dict.url} target="_blank"
+						            	onClick={(e)=>{this.handleWitnessURLClick(e,vote_history_dict.url)}}>
+						            	{vote_history_dict.url}
+						            </a>
+						        	<div className="sub header ellipse_text">
+						        		{vote_history_dict.voteAddress}
+						        	</div>
+						        </div>
+							</h4>
+						</td>
+					);
+				}else{
+					td_list.push(
+						<td key={key}>
+							<h4 className="ui sub header all_witness_table_row_content">
+								{vote_history_dict.voteAddress}
+							</h4>
+						</td>
+					);
+				}
+				
 
 				key += vote_history_dict.voteCount.toString();
 				//vote count
@@ -498,7 +652,7 @@ export default class Witnesses extends React.Component{
 				    					All Witnesses
 				  					</div>
 				  					<div className="item send_receive_card_item" data-tab="votehistory">
-				    					Vote History
+				    					{"Vote History (" + this.state.voteHistory.length + ")"}
 				  					</div>
 								</div>
 								<div className="ui bottom attached tab segment send_receive_card_segment active" data-tab="allwitnesses">
@@ -513,6 +667,9 @@ export default class Witnesses extends React.Component{
 					
 				</div>
 				<BlockModal blockNum={this.state.selectedBlockNum}/>
+				<TxQrCodeModal message={`Scan this QRCode in Cold Wallet to sign and then
+					broadcast here in Watch Only Wallet`}
+					filename={`TronPreparedWitnessTransaction.jpg`}/>
 			</div>
 			
 		);
@@ -523,5 +680,7 @@ Witnesses.defaultProps = {
 	handleDockClick: (function(){}),
 	modalOpened: false,
 	shares: 0,
-	voteHistory: []
+	voteHistory: [],
+	pubAddress: "",
+	view: config.views.HOTWALLET
 }

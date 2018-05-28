@@ -20,7 +20,7 @@ export default class FreezeReadMeModal extends React.Component{
 						want to vote for witnesses or execute any sort of contracts.
 						<br/>
 						Once a certain amount is frozen, you will not be able to send that amount
-						to anyone until you unfreeze after the time has expired. Your Entropy and 
+						to anyone until you unfreeze after the time has expired. Your bandwidth and 
 						Tron Power will automatically be updated upon time of freezing and unfreezing.
 					</div>
 
@@ -41,11 +41,11 @@ export default class FreezeReadMeModal extends React.Component{
 							balance
 						</div>
 						<div className="item">
-							Your Entropy is calculated by the following equation
-							<i>(constant * duration * amount_to_freeze)</i>
+							Your bandwidth is calculated by adding your daily free bandwidth limit
+							of 1000 bytes and dynamic bandwidth obtained by freezing TRX.
 						</div>
 						<div className="item">
-							Your Entropy will not be wiped once you unfreeze; it's accumulated
+							Your bandwidth will not be wiped once you unfreeze; it's accumulated
 						</div>
 						<div className="item">
 							Once balance is unfrozen, you previous votes will become void and you 
@@ -54,11 +54,11 @@ export default class FreezeReadMeModal extends React.Component{
 						</div>
 						<div className="item">
 							You can only send transactions once every 5 minutes if you don't have 
-							Entropy. You can gain Entropy by freezing your balance.
+							Entropy. You can gain bandwidth by freezing your balance.
 						</div>
 						<div className="item">
 							Contracts that take more than 5 minutes to execute from the last 
-							contract execution time will not consume Entropy
+							contract execution time will not consume bandwidth
 						</div>
 					</div> 
 

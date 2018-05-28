@@ -48,12 +48,12 @@ function createWindow () {
   }
   
   /*Start process*/
-  let spawn = require("child_process").spawn;
+  /*let spawn = require("child_process").spawn;
   var child = spawn("java", ["-jar","tronwallet.jar"],{
     detached: true,
     stdio: 'ignore'
   });
-  child.unref();
+  child.unref();*/
   /*End process*/
   
   // Emitted when the window is closed.

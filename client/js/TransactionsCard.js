@@ -9,13 +9,14 @@ export default class TransactionsCard extends React.Component{
 		super(props);
 		this.getTransactions = this.getTransactions.bind(this);
 		this.fetchTransactions = this.fetchTransactions.bind(this);
+
 		this.state = {
-			txsList: [],
+			txsList: props.txsList,
 			accInfo: props.accInfo,
-			view: props.view,
 			toUpdate: props.toUpdate
 		};
-		
+
+		this.txsInterval = null;
 	}
 
 	componentDidMount(){
@@ -27,12 +28,23 @@ export default class TransactionsCard extends React.Component{
 			});
 		},200);
 
-		this.fetchTransactions(this.props);
+		if (this.props.view == config.views.COLDWALLET){
+			this.txsInterval = setInterval(()=>{
+				this.fetchTransactions(this.props);
+			},4000);
+		}
+	}
+
+	componentWillUnmount(){
+		if(this.txsInterval){
+			clearInterval(this.txsInterval);
+		}
 	}
 
 	componentWillReceiveProps(nextProps){
-		let tmp_dict = {}
+		let tmp_dict = {};
 		let dirty = false;
+
 		if (!Equal(this.props.accInfo, nextProps.accInfo)){
 			tmp_dict.accInfo = nextProps.accInfo;
 			dirty = true;
@@ -43,17 +55,21 @@ export default class TransactionsCard extends React.Component{
 				dirty = true;
 			}
 		}
+
+		if (!Equal(this.props.txsList, nextProps.txsList)){
+			tmp_dict.txsList = nextProps.txsList;
+		}
+
 		tmp_dict = Object.assign(this.state, tmp_dict);
 		this.setState(tmp_dict, ()=>{
-			if (dirty){
+			if(dirty && this.props.view == config.views.COLDWALLET){
 				this.fetchTransactions(nextProps);
 			}
 		});
-
 	}
 
 	fetchTransactions(props){
-		let url = BlowfishSingleton.createPostURL(this.state.view, "GET","txs",{
+		let url = BlowfishSingleton.createPostURL(this.props.view, "GET","txs",{
 			pubAddress: this.props.accInfo.pubAddress
 		});
 
@@ -64,8 +80,6 @@ export default class TransactionsCard extends React.Component{
 
 			if (data.result == config.constants.SUCCESS){
 				this.setState({txsList: data.txs});
-			}else{
-				//TODO error handling
 			}
 		})
 		.catch((error)=>{
@@ -73,10 +87,12 @@ export default class TransactionsCard extends React.Component{
 		});
 	}
 
+
+
 	getTransactions(){
 		let txs_list = [];
 
-		if (this.state.txsList.length > 0){
+		if (this.state.txsList && this.state.txsList.length > 0){
 			for (let tx of this.state.txsList){
 				let acc_from = tx.from;
 				let acc_to = tx.to;
@@ -134,14 +150,16 @@ export default class TransactionsCard extends React.Component{
 	render(){
 		let title = "Recent Transactions";
 		let card_class = "txs_card";
-		if (this.state.view == config.views.COLDWALLET){
+		if (this.props.view == config.views.COLDWALLET){
 			title = "Recently Signed Transactions";
 			card_class = "sign_txs_card";
 		}
-		if (this.state.txsList.length > 0){
+		console.log("TXSLENGTH: " + this.state.txsList.length);
+		if (this.state.txsList && this.state.txsList.length > 0){
+			console.log("CHANGINGTITLE");
 			title += ` (${this.state.txsList.length})`;
 		}
-
+		console.log("TXSTILE: " + title);
 
 		return(
 			<div className={"ui fluid centered raised doubling card pb-3 " + card_class}
@@ -164,5 +182,6 @@ TransactionsCard.defaultProps = {
 		pubAddress: ""
 	},
 	view: config.views.HOTWALLET,
+	txsList: [],
 	toUpdate: false
 }

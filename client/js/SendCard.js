@@ -11,6 +11,9 @@ export default class SendCard extends React.Component{
 		this.renderPrepareTxCard = this.renderPrepareTxCard.bind(this);
 		this.handleSignClick = this.handleSignClick.bind(this);
 		this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+		this.handleAuthModalSuccess = this.handleAuthModalSuccess.bind(this);
+		this.showError = this.showError.bind(this);
+		this.showSuccess = this.showSuccess.bind(this);
 		this.state = {
 			qrcodeData: ""
 		};
@@ -21,6 +24,76 @@ export default class SendCard extends React.Component{
 		$("#coldwallet_send_sign_shape").shape();
 	}
 
+	componentWillReceiveProps(nextProps){
+		if (nextProps.mobileAuthValid != this.props.mobileAuthValid){
+			if (nextProps.mobileAuthValid){
+				this.handleAuthModalSuccess();
+			}
+		}
+	}
+
+	handleAuthModalSuccess(){
+		$("#mobile_auth_modal").modal("hide");
+		let address = $("#send_address_input").val().trim();
+		let value = $("#hotwallet_send_amout").val().trim();
+
+		this.props.sendTrxTransaction(address,value,(result)=>{
+			if ("result" in result){
+				if (result.result == config.constants.FAILED && "reason" in result){
+					this.showError(result.reason);
+				}else{
+					this.showSuccess();
+				}
+			}else{
+				this.showError();
+			}
+		});
+	}
+
+	showError(message){
+		if (message == undefined || message == null || message == ""){
+			if (this.props.id != config.views.HOTWALLET){
+				message = "Create transaction failed!";
+			}else{
+				message = "Send failed!";
+			}
+		}
+		$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
+		$("#send_submit_button").addClass("red");
+		$("#send_submit_button").text(message);
+		$("#send_submit_button").transition("shake");
+		setTimeout(()=>{
+			$("#send_submit_button").removeClass("red");
+			$("#send_submit_button").addClass("right labeled button_tron_blue");
+			if (this.props.id != config.views.HOTWALLET){
+				$("#send_submit_button").text("Create Transaction");
+			}else{
+				$("#send_submit_button").text("Send");
+			}
+			$("#send_submit_button").prepend("<i class='paperplane icon'/>");
+			this.isCreatingTx = false;
+		},2000);
+	}
+
+	showSuccess(){
+		$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
+		$("#send_submit_button").addClass("green");
+		$("#send_submit_button").text("Success!");
+		$("#send_submit_button").transition("pulse");
+		setTimeout(()=>{
+			$("#send_submit_button").removeClass("green");
+			$("#send_submit_button").addClass("right labeled button_tron_blue");
+			if (this.props.id != config.views.HOTWALLET){
+				$("#send_submit_button").text("Create Transaction");
+			}else{
+				$("#send_submit_button").text("Send");
+			}
+			$("#send_submit_button").prepend("<i class='paperplane icon'/>");
+			this.isCreatingTx = false;
+		},2000);
+	}
+
+
 	handleSendClick(e){
 		e.persist();
 		if (!this.isCreatingTx){
@@ -28,63 +101,17 @@ export default class SendCard extends React.Component{
 
 			$("#send_submit_button").addClass("loading");
 
-			let showError = (message)=>{
-				if (message == undefined || message == null || message == ""){
-					if (this.props.id != config.views.HOTWALLET){
-						message = "Create transaction failed!";
-					}else{
-						message = "Send failed!";
-					}
-				}
-				$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
-				$("#send_submit_button").addClass("red");
-				$("#send_submit_button").text(message);
-				$("#send_submit_button").transition("shake");
-				setTimeout(()=>{
-					$("#send_submit_button").removeClass("red");
-					$("#send_submit_button").addClass("right labeled button_tron_blue");
-					if (this.props.id != config.views.HOTWALLET){
-						$("#send_submit_button").text("Create Transaction");
-					}else{
-						$("#send_submit_button").text("Send");
-					}
-					$("#send_submit_button").prepend("<i class='paperplane icon'/>");
-					this.isCreatingTx = false;
-				},2000);
-			}
-
-			let showSuccess = ()=>{
-				$("#send_submit_button").removeClass("loading right labeled button_tron_blue");
-				$("#send_submit_button").addClass("green");
-				$("#send_submit_button").text("Success!");
-				$("#send_submit_button").transition("pulse");
-				setTimeout(()=>{
-					$("#send_submit_button").removeClass("green");
-					$("#send_submit_button").addClass("right labeled button_tron_blue");
-					if (this.props.id != config.views.HOTWALLET){
-						$("#send_submit_button").text("Create Transaction");
-					}else{
-						$("#send_submit_button").text("Send");
-					}
-					$("#send_submit_button").prepend("<i class='paperplane icon'/>");
-					this.isCreatingTx = false;
-				},2000);
-			}
-
 			let address = $("#send_address_input").val().trim();
 			let value = $("#hotwallet_send_amout").val().trim();
 
 			if (address != "" && value != ""){
-
 				if (this.props.id != config.views.HOTWALLET){
-					this.props.handleSendClick(address, value, this.props.id,(qrcode_data)=>{
-						let showErrorLocal = ()=>{
-							
-						}
+
+					this.props.handleSendClick(address, value, this.props.id,(result)=>{
 						let showQR = (qrdata)=>{
 							if (qrdata == null || qrdata == undefined || qrdata == ""){
 								qrdata = "";
-								qrcode_data = "client/images/blankqrcode.png";
+								result = "client/images/blankqrcode.png";
 								$("#sign_tx_button").addClass("disabled");
 								$("#cold_qr_img").removeClass("qrcode_image");
 								$("#cold_qr_img").addClass("error_qr_code");
@@ -93,37 +120,72 @@ export default class SendCard extends React.Component{
 							$("#send_submit_button").removeClass("loading");
 							this.isCreatingTx = false;
 
-							this.setState({qrcodeData: qrcode_data, qrRawData:qrdata}, ()=>{
+							this.setState({qrcodeData: result, qrRawData:qrdata}, ()=>{
 								$("#coldwallet_send_sign_shape").shape("flip over");
 							});
 						}
 
-						if (qrcode_data == ""){
+						if (result == ""){
 							showQR("");
 						}else{
-							QRCode.toDataURL(qrcode_data, (error, img_data)=>{
+							QRCode.toDataURL(result, (error, img_data)=>{
 								if (!error){
 									$("#sign_tx_button").removeClass("disabled");
 									$("#cold_qr_img").addClass("qrcode_image");
 									$("#cold_qr_img").removeClass("error_qr_code");
-									let tmp_data = qrcode_data;
-									qrcode_data = img_data;
+									let tmp_data = result;
+									result = img_data;
 									showQR(tmp_data);
 								}else{
 									showQR("");
 								}
 							});
 						}
-						
 					});
 				}else{
-					this.props.handleSendClick(address, value, this.props.id,()=>{
-
-					});
+					if (this.props.bandwidth == 0){
+						this.showError("Not enough bandwidth! Freeze TRX");
+						
+					}else if (this.props.mobileAuthCode != ""){
+						$("#mobile_auth_modal")
+						.modal({
+							allowMultiple: true,
+							closable: false,
+							onShow:()=>{
+								$("#hot_wallet_main").addClass("blur");
+							},
+							onHidden:()=>{
+								$("#hot_wallet_main").removeClass("blur");
+							},
+							onApprove: ()=>{
+								return false;
+							},
+							onDeny: ()=>{
+								$("#send_submit_button").removeClass("loading");
+								
+								$("#mobile_auth_modal_validate_btn").text("Validate");
+								$("#mobile_auth_modal_validate_btn").prepend("<i className='check icon'/>");
+								this.isCreatingTx = false;
+							}
+						})
+						.modal("show");
+					}else{
+						this.props.sendTrxTransaction(address, value, (result)=>{
+							if ("result" in result){
+								if (result.result == config.constants.FAILED && "reason" in result){
+									this.showError(result.reason);
+								}else{
+									this.showSuccess();
+								}
+							}else{
+								this.showError();
+							}
+						});
+					}
 				}
-				
+
 			}else{
-				showError("Input is empty!");
+				this.showError("Input is empty!");
 			}
 		}
 		
@@ -164,6 +226,21 @@ export default class SendCard extends React.Component{
 				);
 			}
 		}
+
+		let getSignAction = ()=>{
+			if (this.props.id == config.views.COLDWALLET){
+				return(
+					<div className="row">
+						<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSignClick(e)}}
+							id="sign_tx_button">
+							<i className="pencil alternate icon"/>
+							Sign Transaction
+						</button>
+					</div>
+				);
+			}
+		}
+
 		return(
 			<div className="ui one column centered padded grid">
 				<div className="three column row">
@@ -186,13 +263,7 @@ export default class SendCard extends React.Component{
 						<img src={this.state.qrcodeData} id="cold_qr_img" width="120" height="120"/>
 					</div>
 				</div>
-				<div className="row">
-					<button className="ui right labeled icon green button" onClick={(e)=>{this.handleSignClick(e)}}
-						id="sign_tx_button">
-						<i className="pencil alternate icon"/>
-						Sign Transaction
-					</button>
-				</div>
+				{getSignAction()}
 			</div>
 		);
 	}
@@ -224,7 +295,20 @@ export default class SendCard extends React.Component{
 				return "Send";
 			}
 		}
-
+		let getBottomTextMessage = ()=>{
+			if (this.props.id == config.views.HOTWALLET){
+				return(
+					<div className="row">
+						<div className="content">
+							<div className="meta">
+								You can only send transactions once every 5 mins without bandwidth. 
+								Freeze TRX to get more bandwidth!
+							</div>
+						</div>
+					</div>
+				);
+			}
+		}
 		return(
 			<div className="ui one column centered padded grid" id="hot_wallet_send_segment">
 				{getCardDescription()}
@@ -282,6 +366,7 @@ export default class SendCard extends React.Component{
 						{getSubmitButtonText()}
 					</button>
 				</div>
+				{getBottomTextMessage()}
 			</div>
 		);
 	}
@@ -307,5 +392,9 @@ SendCard.defaultProps = {
 	handleQRScanClick: (function(){}),
 	handleSendClick: (function(){}),
 	handlePrepareClick: (function(){}),
-	id: ""
+	sendTrxTransaction: (function(){}),
+	id: "",
+	mobileAuthCode: "",
+	mobileAuthValid: false,
+	bandwidth: 0
 }

@@ -20,10 +20,10 @@ export default class ExpireOdometer extends React.Component{
 	}
 
 	componentDidMount(){
-		console.log("MOUTED TIME: " + this.props.expirationTime);
 		this.setState({timeLeft: this.parseDate(this.props.expirationTime)});
 		this.updateExpireOdometer();
 		this.startTimer();
+		$("#frozen_expire_div").transition("slide right in");
 	}
 
 	componentWillUnmount(){
@@ -32,7 +32,6 @@ export default class ExpireOdometer extends React.Component{
 
 	componentWillReceiveProps(nextProps){
 		if (nextProps.expirationTime != this.state.expirationTime){
-			console.log("changing DATE");
 			let time_left = this.parseDate(nextProps.expirationTime);
 			this.setState({
 				expirationTime: nextProps.expirationTime,
@@ -45,13 +44,11 @@ export default class ExpireOdometer extends React.Component{
 	}
 
 	parseDate(date_str){
-		console.log("str: " + date_str);
 		let date = new Date(date_str);
-		console.log(date.getTime());
 		let date_secs = Math.ceil(date.getTime() / 1000);
 		let curr_date = Math.ceil(Date.now() / 1000);
 		let time_left = date_secs - curr_date;
-		console.log("time_left: " + time_left);
+
 		let hrs = Math.ceil(time_left / 3600);
 		let mins = Math.ceil((time_left%3600)/60);
 		let secs = Math.ceil(time_left%60);
@@ -185,5 +182,5 @@ export default class ExpireOdometer extends React.Component{
 }
 
 ExpireOdometer.defaultProps = {
-	expirationTime: "" //ex: "Thu May 17 00:02:15 PDT 2018"
+	expirationTime: "" //ex: "Thu May 17 00:02:15 PDT 2018",
 }

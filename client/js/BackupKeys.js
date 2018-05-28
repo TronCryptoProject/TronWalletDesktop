@@ -71,8 +71,8 @@ export default class BackupKeys extends React.Component {
 	saveBackupFile(encrypted_data){
 		let blob = new Blob([encrypted_data],{type: "text/plain;charset=utf-8"});
 		let suffix_file_name = "";
-		if (this.props.accountName != ""){
-			suffix_file_name = "-" + this.props.accountName;
+		if (this.props.pubAddress != ""){
+			suffix_file_name = "-" + this.props.pubAddress;
 		}
 
 		FileSaver.saveAs(blob, `TronWallet${suffix_file_name}.txt`);
@@ -143,11 +143,23 @@ export default class BackupKeys extends React.Component {
 					if (this.props.pdirty){
 						pass = this.state.passInputText
 					}
-					let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "GET","backupWallet",{
+					let url_dict = {
 						password: pass
-					});
+					};
+					let url = "";
+					let req = null;
+					if (this.props.view != config.views.COLDWALLET){
+						url_dict.pubAddress = this.props.pubAddress;
+						url = BlowfishSingleton.createPostURL(this.props.view, "POST","backupWallet",
+							url_dict);
+						req = axios.post;
+					}else{
+						url = BlowfishSingleton.createPostURL(this.props.view, "GET","backupWallet",
+							url_dict);
+						req = axios.get;
+					}
 
-					axios.get(url)
+					req(url)
 					.then((res)=>{
 						let data = res.data;
 						data = BlowfishSingleton.decryptToJSON(data);
@@ -215,9 +227,13 @@ export default class BackupKeys extends React.Component {
 
 	render(){
 		let getMobileAuthConf = ()=>{
+			let padding = "pb-3 ";
+			if (this.props.pdirty){
+				padding += "pt-5";
+			}
 			if (this.props.mobileAuthCode){
 				return(
-					<div className="pt-5 pb-3">
+					<div className={padding}>
 						<div className="text_align_center content">
 							<div className="ui header cold_wallet_send_card_header">
 								Enter Mobile Auth code below
@@ -317,5 +333,6 @@ BackupKeys.defaultProps = {
 	handleDockClick: (function(){}),
 	mobileAuthCode: "",
 	pdirty: false,
-	accountName: ""
+	pubAddress: "",
+	view: config.views.HOTWALLET
 }

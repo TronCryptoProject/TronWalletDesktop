@@ -164,10 +164,16 @@ export default class ColdOfflineMainView extends React.Component {
 			$(button_id).addClass("loading");
 
 			if (this.state.importInputText != ""){
-				let url = BlowfishSingleton.createPostURL(this.props.view, "POST","validatePass",{
+				let url_dict = {
 					password: this.state.importInputText,
 					store: "true"
-				});
+				};
+				if (this.props.view != config.views.COLDWALLET){
+					url_dict.pubAddress = this.state.importMainData.pubAddress
+				}
+
+				let url = BlowfishSingleton.createPostURL(this.props.view, "POST","validatePass",url_dict);
+				
 
 				axios.post(url)
 				.then((res)=>{
@@ -473,6 +479,13 @@ export default class ColdOfflineMainView extends React.Component {
 	}
 
 	renderHeader(){
+		let getViewTitle = ()=>{
+			if (this.props.view == config.views.COLDWALLET){
+				return "COLD OFFLINE";
+			}else{
+				return "HOT WALLET";
+			}
+		}
 		return(
 			<div className="three column row">
 				<div className="one wide column">
@@ -490,7 +503,7 @@ export default class ColdOfflineMainView extends React.Component {
 							</div>
 							<div className="column">
 								<div className= "ui label header_label_div">
-									<div className="cold_offline_header_title">COLD OFFLINE</div>
+									<div className="cold_offline_header_title">{getViewTitle()}</div>
 								</div>
 							</div>
 						</div>

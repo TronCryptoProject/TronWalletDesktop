@@ -13,7 +13,7 @@ export default class Nodes extends React.Component {
 		this.state = {
 			nodeList: [],
 			modalOpened: false,
-			currNode: this.props.currNode,
+			currNode: props.currNode,
 			selectListItem: "",
 			confModalParams: {},
 			modalId: "nodes_conf_modal"
@@ -27,10 +27,14 @@ export default class Nodes extends React.Component {
 		this.controlledFetch = this.controlledFetch.bind(this);
 		
 		this.fetchlock = false;
+		this.nodeInterval = null;
 	}
 
 	componentWillUnmount(){
 		this.props.unsubscribe();
+		if(this.nodeInterval){
+			clearInterval(this.nodeInterval);
+		}
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -52,18 +56,18 @@ export default class Nodes extends React.Component {
 			this.getNodeData(nextProps.nodeData);
 		}else{
 			//same so continue fetching
-			this.controlledFetch();
+			this.controlledFetch(nextProps.nodeData);
 		}
 		this.setState(tmp_dict);
 	}
 
-	controlledFetch(){
+	controlledFetch(nodeData){
 		if (!this.fetchlock && this.state. modalOpened){
 			this.fetchlock = true;
-			setTimeout(()=>{
+			this.nodeInterval = setInterval(()=>{
 				this.fetchlock = false;
 				if (this.state. modalOpened){
-					this.props.getNodeData();
+					this.props.getNodeData(nodeData);
 				}
 			},10000);
 		}
@@ -74,6 +78,9 @@ export default class Nodes extends React.Component {
 		params_dict.headerClass = (isSuccess) ? "color_green": "color_red";
 		this.setState({confModalParams: params_dict},()=>{
 			this.handleConfModalOpen();
+			if (isSuccess){
+				this.setState({currNode: this.state.selectListItem});
+			}
 		});
 	}
 
@@ -105,9 +112,9 @@ export default class Nodes extends React.Component {
 			if (in_data){
 				if("nodes" in in_data){
 					read_data = in_data;
-					for (let r_node_dict of node_list){
-						if (!(r_node_dict.host in in_data.nodes)){
-							nodes_fetch_list.push(r_node_dict);
+					for (let r_node of node_list){
+						if (!(r_node in in_data.nodes)){
+							nodes_fetch_list.push(r_node);
 						}
 					}
 				}else{
@@ -127,7 +134,25 @@ export default class Nodes extends React.Component {
 		}
 
 		let allDoneFetch = (data_dict)=>{
+			let transformToDict = (tmp_list)=>{
+				let res_dict = {};
+				for (let item_host of tmp_list){
+					res_dict[item_host] = "";
+				}
+				return res_dict;
+			}
+			let node_dict = transformToDict(node_list);
+
 			let all_nodes = Object.assign({}, data_dict, read_data.nodes);
+
+			let tmp_nodes = $.extend(true, {}, all_nodes);
+			for(let node_host in tmp_nodes){
+				if (!(node_host in node_dict)){
+					console.log("deleting: " + node_host);
+					delete all_nodes[node_host];
+				}
+			}
+
 			read_data.nodes = all_nodes;
 			jetpack.write(config.walletConfigFile, read_data, { atomic: true });
 			this.getMapLineLayers(read_data.nodes);
@@ -135,18 +160,17 @@ export default class Nodes extends React.Component {
 
 		let promise_dict = {};
 		if (nodes_fetch_list.length != 0){
-			for (let r_node_dict of nodes_fetch_list){	
-				fetchIpInfo(r_node_dict.host)
+			for (let r_node of nodes_fetch_list){	
+				fetchIpInfo(r_node.split(":")[0])
 				.then((res)=>{
 					let json_obj = res.data;
 					let lat = json_obj.geobyteslatitude;
 					let long = json_obj.geobyteslongitude;
 					let location = json_obj.geobytesfqcn;
-					promise_dict[r_node_dict.host] = {
+					promise_dict[r_node] = {
 						lat: lat,
 						long: long,
-						location: location,
-						port: r_node_dict.port
+						location: location
 					};
 					if (Object.keys(promise_dict).length == nodes_fetch_list.length){
 						allDoneFetch(promise_dict);
@@ -177,10 +201,13 @@ export default class Nodes extends React.Component {
 				continue;
 			}
 			try{
+				let node_arr = node.split(":");
+				let host = node_arr[0];
+				let port = node_arr[1];
 				let data = {
 					coordinates: [parseFloat(ipinfo.long),parseFloat(ipinfo.lat)],
-					host: node,
-					port: ipinfo.port
+					host: host,
+					port: port
 				};
 				data_list.push(data);
 			}catch(error){
@@ -189,10 +216,16 @@ export default class Nodes extends React.Component {
 			
 		}
 
+		data_list.sort(function(a, b){
+		    if(a.host < b.host) return -1;
+		    if(a.host > b.host) return 1;
+		    return 0;
+		});
+
 		this.setState({nodeList: data_list},()=>{
-			setTimeout(()=>{
+			//setTimeout(()=>{
 				this.props.getNodeData();
-			},10000);
+			//},10000);
 		});
 	}
 

@@ -2,12 +2,10 @@ import React from "react";
 import config from "../config/config.js";
 import axios from "axios";
 import ConfModal from "./ConfModal.js";
-import domtoimage from 'dom-to-image';
-import FileSaver from "file-saver";
 import Equal from "deep-equal";
 import ReactCodeInput from "react-code-input";
 import {BlowfishSingleton} from "Utils.js";
-import QRCode from "qrcode";
+import TxQrCodeModal from "./TxQrCodeModal.js";
 
 export default class TransactionViewerModal extends React.Component{
 	constructor(props){
@@ -17,84 +15,17 @@ export default class TransactionViewerModal extends React.Component{
 		};
 		this.isSigning = false;
 		this.handleSignTransaction = this.handleSignTransaction.bind(this);
-		this.handleQRImageSave = this.handleQRImageSave.bind(this);
-		this.renderQRCodeCanvas = this.renderQRCodeCanvas.bind(this);
 	}
 
-	componentDidMount(){
-		this.renderQRCodeCanvas();
-	}
 
 	componentWillReceiveProps(nextProps){
 		let tmp_dict = {};
 		if (!Equal(this.props.txData, nextProps.txData)){
 			tmp_dict.txData = nextProps.txData;
 		}
-		this.setState(tmp_dict, ()=>{
-			if (!Equal(tmp_dict,{})){
-				this.renderQRCodeCanvas();
-			}
-		});
+		this.setState(tmp_dict);
 	}
 
-	renderQRCodeCanvas(){
-		let canvas = $("#signed_tx_qr_canvas")[0];
-		let ctx = canvas.getContext("2d");
-
-		let getRoundedImage = (x,y,w,h,r) =>{
-		    ctx.beginPath();
-		    ctx.moveTo(x + r, y);
-		    ctx.lineTo(x+w-r, y);
-		    ctx.quadraticCurveTo(x + w,y, x + w,y + r);
-		    ctx.lineTo(x +w, y + h-r);
-		    ctx.quadraticCurveTo(x + w, y + h,x + w -r, y +h);
-		    ctx.lineTo(x +r, y + h);
-		    ctx.quadraticCurveTo(x, y + h, x, y +h - r);
-		    ctx.lineTo(x,y+ r);
-		    ctx.quadraticCurveTo(x, y,x+r,y);
-		    ctx.closePath();
-    	}
-
-		let createRect = (image, canvas,x, y, width, height, border_rad)=>{
-    		ctx.save();
-			getRoundedImage(x, y, canvas.width, canvas.height, border_rad);
-			ctx.clip();
-		    ctx.drawImage(image, x, y,canvas.width,canvas.height);
-		    ctx.restore();
-    	}
-
-    	if (this.state.txData.data != undefined){
-    		QRCode.toDataURL(this.state.txData.data)
-			.then(url =>{
-				let image = new Image();
-				image.src = url;
-				image.onload = function(){
-					createRect(image, canvas, 0,0, this.width, this.height, 16);
-				}
-			})
-			.catch(err =>{
-				let image = new Image();
-				image.src = "client/images/blankqrcode.png";
-				image.onload = function(){
-					createRect(image, canvas, 0,0, this.width, this.height, 16);
-				}
-			});
-    	}else{
-    		let image = new Image();
-			image.src = "client/images/blankqrcode.png";
-			image.onload = function(){
-				createRect(image, canvas, 0,0, this.width, this.height, 16);
-			}
-    	}
-		
-	}
-
-	handleQRImageSave(){
-		domtoimage.toBlob(document.getElementById("signed_tx_qr_canvas"))
-	    .then((blob)=> {
-	        FileSaver.saveAs(blob, `TronSignedTx-${this.state.txData.txhash}.jpg`);
-	    });
-	}
 
 	handleSignTransaction(e){
 		e.persist();
@@ -153,8 +84,6 @@ export default class TransactionViewerModal extends React.Component{
 
 						//automatically update new data
 						this.setState({txData: data}, ()=>{
-							this.renderQRCodeCanvas();
-
 							$("#signed_tx_qrcode_modal")
 							.modal({
 								allowMultiple: true,
@@ -323,34 +252,9 @@ export default class TransactionViewerModal extends React.Component{
 						</div>
 					</div>
 				</div>
-				<div className="ui modal tx_qr_modal conf_modal" id="signed_tx_qrcode_modal">
-					<div className="text_align_center header tx_qr_modal_header">
-						Signed Transaction QRCode
-					</div>
-					<div className="content tx_qr_modal_content">
-						<div className="text_align_center description">
-							{getQRConfModalMessage()}
-						</div>
-					</div>
-					<div className="content p-3 pb-4 width_100 mx-auto tx_qr_modal_content">
-						<div className="mx-auto width_fit_content">
-							<canvas id="signed_tx_qr_canvas" className="mb-3" width="300"
-								height="300"/>
-						</div>
-						<div className="row center_button">
-							<button className="ui right labeled icon blue button m-0" onClick={this.handleQRImageSave}>
-								<i className="save icon"/>
-								Save QRCode
-							</button>
-						</div>
-					</div>
-					<div className="actions tx_qr_modal_actions center_button">
-						<div className="ui green positive right labeled icon button">
-							Ok
-							<i className="checkmark icon"></i>
-						</div>
-					</div>
-				</div>
+				<TxQrCodeModal message={getQRConfModalMessage()}
+					filename={`TronSignedTx-${this.state.txData.txhash}.jpg`}
+					qrdata={this.state.txData.data}/>
 			</div>
 		);
 	}

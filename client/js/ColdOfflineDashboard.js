@@ -236,76 +236,37 @@ export default class ColdOfflineDashboard extends React.Component {
 	}
 
 	handleSendClick(address, amount, view, callback){
-		
-		if (view == config.views.COLDWALLET){
-			let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
-				toAddress: address,
-				amount: amount
-			});
+		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
+			toAddress: address,
+			amount: amount
+		});
 
-			axios.post(url)
-			.then((res)=>{
-				let data = res.data;
-				data = BlowfishSingleton.decryptToJSON(data);
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
 
-				if ("result" in data && data.result == config.constants.SUCCESS){
-					this.addContact(address, "", (contacts)=>{
-						$("#send_search_div").search({
-							source: contacts
-						});
+			if ("result" in data && data.result == config.constants.SUCCESS){
+				this.addContact(address, "", (contacts)=>{
+					$("#send_search_div").search({
+						source: contacts
 					});
-					if (callback){
-						callback(data.data);
-					}
-				}else{
-					//TODO error handling
-					if (callback){
-						callback("");
-					}
+				});
+				if (callback){
+					callback(data.data);
 				}
-			})
-			.catch((error)=>{
-				console.log(error);
+			}else{
 				if (callback){
 					callback("");
 				}
-			});
-		}else{ //hot wallet
-			/*let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "POST","prepareTx",{
-				toAddress: address,
-				amount: amount
-			});
-
-			axios.post(url)
-			.then((res)=>{
-				let data = res.data;
-				data = BlowfishSingleton.decryptToJSON(data);
-
-				if ("result" in data && data.result == config.constants.SUCCESS){
-					this.addContact(address, "", (contacts)=>{
-						$("#send_search_div").search({
-							source: contacts
-						});
-					});
-					if (callback){
-						callback(data.data);
-					}
-				}else{
-					//TODO error handling
-					if (callback){
-						callback("");
-					}
-				}
-			})
-			.catch((error)=>{
-				console.log(error);
-				if (callback){
-					callback("");
-				}
-			});*/
-		}
-
-		
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+			if (callback){
+				callback("");
+			}
+		});
 		
 	}
 
@@ -506,7 +467,7 @@ export default class ColdOfflineDashboard extends React.Component {
 					<DockMenu handleDockClick={this.handleDockClick} view={config.views.COLDWALLET}/>
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
 						mobileAuthCode={this.props.mobileAuthCode} pdirty={this.state.accInfo.pdirty}
-						accountName={this.state.accInfo.accountName}/>
+						accountName={this.state.accInfo.accountName} view={config.views.COLDWALLET}/>
 				</div>
 				<TransactionViewerModal txData={this.state.currTxData}
 					mobileAuthCode={this.props.mobileAuthCode}

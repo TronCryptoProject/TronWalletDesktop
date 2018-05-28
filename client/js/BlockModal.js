@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 import config from "../config/config.js";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class BlockModal extends React.Component{
 	constructor(props){
@@ -24,11 +25,17 @@ export default class BlockModal extends React.Component{
 
 	fetchBlockData(){
 		let blockNum = (this.state.blockNum != 0)? this.state.blockNum: -1;
-		axios.get(`${config.API_URL}/api/block/${blockNum}`)
+		
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "GET","block",{
+			blockNum: blockNum.toString()
+		});
+
+		axios.get(url)
 		.then((res)=>{
-			let json_obj = res.data;
+			let data = res.data;
+			let json_obj = BlowfishSingleton.decryptToJSON(data);
+
 			if (json_obj.result == config.constants.SUCCESS){
-				console.log("got block data: " + JSON.stringify(json_obj));
 				this.setState({blockData: json_obj});
 			}else if ("reason" in json_obj){
 				console.log("block fetch failed: " + json_obj.reason);

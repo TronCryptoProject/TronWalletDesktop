@@ -22,6 +22,8 @@ import SharesOdometer from "./SharesOdometer.js";
 import ExpireOdometer from "./ExpireOdometer.js";
 import Freeze from "./Freeze.js";
 import MobileAuthModal from "./MobileAuthModal.js";
+import {BlowfishSingleton} from "Utils.js";
+import axios from "axios";
 
 export default class HotWalletDashboard extends React.Component {
 	constructor(props){
@@ -29,15 +31,22 @@ export default class HotWalletDashboard extends React.Component {
 		this.state = {
 			startCamera: false,
 			contacts: [],
-			dockModalOpened: false,
+			nodesModalOpened: false,
+			witnessesModalOpened: false,
+			freezeModalOpened: false,
+			backupModalOpened: false,
 			isLoggedIn: props.isLoggedIn,
 			nodeData: [],
+			mobileAuthValid: false,
+			txsList: [],
 
 			accInfo:{
 				accountName : props.accInfo.accountName,
 				pubAddress: props.accInfo.pubAddress,
 				pdirty: props.accInfo.pdirty
 			},
+			voteHistory: [],
+
 			blockNum: 0,
 			trxPrice: 0,
 			dataNodeFirstHalf: 0.0,
@@ -46,7 +55,7 @@ export default class HotWalletDashboard extends React.Component {
 			usdBalance: 0,
 			frozenBalance: 0,
 			bandwidth: 0,
-			shares: 10000,
+			shares: 0,
 			expirationTime: ""
 		};
 
@@ -65,7 +74,8 @@ export default class HotWalletDashboard extends React.Component {
 		this.initAllModals = this.initAllModals.bind(this);
 		this.sendMenuItemClick = this.sendMenuItemClick.bind(this);
 		this.receiveMenuItemClick = this.receiveMenuItemClick.bind(this);
-		this.handleSendClick = this.handleSendClick.bind(this);
+		this.handleMobileAuthSuccess = this.handleMobileAuthSuccess.bind(this);
+		this.sendTrxTransaction = this.sendTrxTransaction.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -81,7 +91,10 @@ export default class HotWalletDashboard extends React.Component {
 		this.trxPriceSubscriber = null;
 		this.blockNumSubscriber = null;
 		this.nodeSubscriber = null;
-	
+		this.accountInfoSubscriber = null;
+		this.txsSubscriber = null;
+		this.accountInfoInterval = null;
+		this.txsInterval = null;
 	}
 
 	componentDidMount(){
@@ -157,12 +170,27 @@ export default class HotWalletDashboard extends React.Component {
 	}
 
 	handleDockClick(toOpen, modal_id){
+		let getStateKey = ()=>{
+			let key = "";
+			if (modal_id == "#nodes_modal"){
+				key = "nodesModalOpened"
+			}else if(modal_id == "#witnesses_modal"){
+				key = "witnessesModalOpened"
+			}else if(modal_id == "#freeze_modal"){
+				key = "freezeModalOpened"
+			}
+			else if(modal_id == "#backup_modal"){
+				key = "backupModalOpened"
+			}
+			return key;
+		}
+
 		if(toOpen){
-			this.setState({dockModalOpened: true},()=>{
+			this.setState({[getStateKey()]: true},()=>{
 				$(modal_id).modal("show");
 			});
 		}else{
-			this.setState({dockModalOpened: false},()=>{
+			this.setState({[getStateKey()]: false},()=>{
 				$(modal_id).modal("hide");
 			})
 		}
@@ -242,27 +270,48 @@ export default class HotWalletDashboard extends React.Component {
 		})
 	}
 
-	handleSendClick(address, amount){
-		this.addContact(address, "", (contacts)=>{
-			$("#send_search_div").search({
-				source: contacts
-			});
+	handleMobileAuthSuccess(){
+		this.setState({mobileAuthValid: true}, ()=>{
+			this.setState({mobileAuthValid: false});
+		});
+	}
+
+	sendTrxTransaction(address, amount, callback){
+		let endpoint = (this.props.view == config.views.HOTWALLET) ? "sendCoin" : "prepareTx";
+
+		let url = BlowfishSingleton.createPostURL(this.props.view, "POST",endpoint,{
+			toAddress: address,
+			amount: amount,
+			pubAddress: this.state.accInfo.pubAddress
 		});
 
-		$("#mobile_auth_modal")
-		.modal({
-			allowMultiple: true,
-			onShow:()=>{
-				$("#hot_wallet_main").addClass("blur");
-			},
-			onHidden:()=>{
-				$("#hot_wallet_main").removeClass("blur");
-			},
-			onApprove:()=>{
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
 
+			if ("result" in data){
+				if (data.result == config.constants.SUCCESS){
+					this.addContact(address, "", (contacts)=>{
+						$("#send_search_div").search({
+							source: contacts
+						});
+					});
+				}
+				if (callback){
+					callback(data);
+				}
+			}else{
+				if (callback){
+					callback({});
+				}
 			}
 		})
-		.modal("show");
+		.catch((error)=>{
+			if (callback){
+				callback({});
+			}
+		});
 	}
 
 	parseDataNode(node){
@@ -280,7 +329,11 @@ export default class HotWalletDashboard extends React.Component {
 	getSendCardProps(){
 		return {
 			handleQRScanClick: this.handleQRScanClick,
-			handleSendClick: this.handleSendClick
+			mobileAuthCode: this.props.mobileAuthCode,
+			sendTrxTransaction: this.sendTrxTransaction,
+			id: this.props.view,
+			mobileAuthValid: this.state.mobileAuthValid,
+			bandwidth: this.state.bandwidth
 		};
 	}
 
@@ -292,31 +345,72 @@ export default class HotWalletDashboard extends React.Component {
 
 	getTxCardProps(){
 		return{
-			accInfo: this.state.accInfo
+			accInfo: this.state.accInfo,
+			view: this.props.view,
+			txsList: this.state.txsList
 		};
 	}
 
 	fetchData(){
+		//send all encrypted data over socket
 		let socket = new SockJS(`${config.API_URL}/walletws`);
 		this.stomp = Stomp.over(socket);
 		this.stomp.debug = null;
 
 		this.stomp.connect({},(frame)=>{
 			console.log("connected");
-			this.trxPriceSubscriber = this.stomp.subscribe("/persist/trxPrice",(data)=>{
+
+			this.txsSubscriber = this.stomp.subscribe("/persist/txs",(data)=>{
 				let body = data.body.trim();
+				console.log("TXSBODY: " + body);
 				if (body != ""){
-					let res_json = JSON.parse(data.body.trim());
+					let res_json = BlowfishSingleton.decryptToJSON(body);
+					console.log("TXSINFO:" + JSON.stringify(res_json));
+
 					if (res_json.result == config.constants.SUCCESS){
+						this.setState({txsList: res_json.txs});
+						
+					}
+				}
+			});
+
+			this.accountInfoSubscriber = this.stomp.subscribe("/persist/accountInfo",(data)=>{
+				let body = data.body.trim();
+				console.log("ACCBODY: " + body);
+				if (body != ""){
+					let res_json = BlowfishSingleton.decryptToJSON(body);
+					console.log("ACCOUNTINFO:" + JSON.stringify(res_json));
+
+					if (res_json.result == config.constants.SUCCESS){
+						let trx_balance = res_json.balance;
+						let frozen_balance = 0;
+						let expiration_time = "";
+						let shares_avail = 0;
+						let vote_history = [];
+						let bandwidth = 0;
+
+						if (res_json.bandwidth != undefined && res_json.bandwidth != null){
+							bandwidth = res_json.bandwidth;
+						}
+
+						if (res_json.frozenBalance != undefined && res_json.frozenBalance.length > 0){
+							let f_dict = res_json.frozenBalance[0];
+							frozen_balance = f_dict.frozenBalance;
+							expiration_time = f_dict.expirationTime;
+							shares_avail = frozen_balance;
+						}
+
+						if (res_json.votes != undefined && res_json.votes.length > 0){
+							vote_history = res_json.votes;
+						}
+
 						this.setState({
-							trxPrice: res_json.trxPrice.toFixed(6)
-						},()=>{
-							setTimeout(()=>{
-								if (this.stomp){
-									this.stomp.send("/persist/trxPrice");
-								}
-								
-							},1500);
+							trxBalance: trx_balance,
+							frozenBalance: frozen_balance,
+							expirationTime: expiration_time,
+							shares: shares_avail,
+							voteHistory: vote_history,
+							bandwidth: bandwidth
 						});
 					}
 				}
@@ -325,7 +419,7 @@ export default class HotWalletDashboard extends React.Component {
 			this.blockNumSubscriber = this.stomp.subscribe("/persist/block",(data)=>{
 				let body = data.body.trim();
 				if (body != ""){
-					let res_json = JSON.parse(data.body.trim());
+					let res_json = BlowfishSingleton.decryptToJSON(body);
 					if (res_json.result == config.constants.SUCCESS){
 						let node_list = this.parseDataNode(res_json.fullnode);
 						this.setState({
@@ -350,10 +444,42 @@ export default class HotWalletDashboard extends React.Component {
 				}
 			});
 
+			this.trxPriceSubscriber = this.stomp.subscribe("/persist/trxPrice",(data)=>{
+				let body = data.body.trim();
+				if (body != ""){
+					let res_json = BlowfishSingleton.decryptToJSON(body);
+
+					if (res_json.result == config.constants.SUCCESS){
+						this.setState({
+							trxPrice: res_json.trxPrice.toFixed(6)
+						},()=>{
+							setTimeout(()=>{
+								if (this.stomp){
+									this.stomp.send("/persist/trxPrice");
+								}			
+							},1500);
+						});
+					}
+				}
+			});
+
 
 			if (this.stomp){
-				this.stomp.send("/persist/block");
-				this.stomp.send("/persist/trxPrice");
+				this.accountInfoInterval = setInterval(()=>{
+					let info_dict = {
+						pubAddress: this.state.accInfo.pubAddress,
+						isWatch: (this.props.view != config.views.HOTWALLET).toString()
+					};
+					this.stomp.send("/persist/accountInfo",{},
+						BlowfishSingleton.encrypt(JSON.stringify(info_dict))
+					);
+				},1000);
+
+				this.txsInterval = setInterval(()=>{
+					this.stomp.send("/persist/txs",{},
+						BlowfishSingleton.encrypt(this.state.accInfo.pubAddress)
+					);
+				},4000);
 			}
 			
 		});
@@ -372,9 +498,38 @@ export default class HotWalletDashboard extends React.Component {
 		if(this.nodeSubscriber){
 			this.nodeSubscriber.unsubscribe();
 		}
+		if (this.accountInfoSubscriber){
+			this.accountInfoSubscriber.unsubscribe();
+		}
+		if (this.txsSubscriber){
+			this.txsSubscriber.unsubscribe();
+		}
+		if (this.txsInterval){
+			clearInterval(this.txsInterval);
+		}
+		if(this.accountInfoInterval){
+			clearInterval(this.accountInfoInterval);
+		}
 		this.stomp.disconnect(()=>{
 			console.log("stomp disconnected");
-			this.props.permissionLogOut();
+			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST","logout",{
+				pubAddress: this.state.accInfo.pubAddress,
+				isWatch: (this.props.view != config.views.HOTWALLET).toString()
+			});
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if (data.result == config.constants.SUCCESS){
+					this.props.permissionLogOut();
+				}
+			})
+			.catch((error)=>{
+				console.log(error);
+			});
+
 		});
 	}
 
@@ -386,17 +541,17 @@ export default class HotWalletDashboard extends React.Component {
 		this.nodeSubscriber = this.stomp.subscribe("/persist/nodes",(data)=>{
 			let body = data.body.trim();
 			if (body != ""){
-				let res_json = JSON.parse(data.body.trim());
+				let res_json = BlowfishSingleton.decryptToJSON(body);
 				if (res_json.result == config.constants.SUCCESS){
-					let node_list = [];
-					let node_set = new Set([]);
-					for (let node of res_json.nodes){
-						if (!node_set.has(node.host)){
-							node_set.add(node.host);
-							node_list.push(node);
+					let flattenDict = (tmp_list)=>{
+						let res_list = [];
+						for (let inner_dict of tmp_list){
+							res_list.push(inner_dict.host + ":" + inner_dict.port);
 						}
+						return res_list;
 					}
-					this.setState({nodeData:node_list});
+
+					this.setState({nodeData:flattenDict(res_json.nodes)});
 				}
 			}
 		});
@@ -409,12 +564,12 @@ export default class HotWalletDashboard extends React.Component {
 	}
 
 	sendMenuItemClick(){
-		$("#hot_wallet_receive_segment").transition("scale out");
-		$("#hot_wallet_send_segment").transition("scale in");
+		/*$("#hot_wallet_receive_segment").transition("fade out");
+		$("#hot_wallet_send_segment").transition("fade in");*/
 	}
 	receiveMenuItemClick(){
-		$("#hot_wallet_send_segment").transition("scale out");
-		$("#hot_wallet_receive_segment").transition("scale in");
+		/*$("#hot_wallet_send_segment").transition("fade out");
+		$("#hot_wallet_receive_segment").transition("fade in");*/
 	}
 
 	renderHeader(){
@@ -467,7 +622,7 @@ export default class HotWalletDashboard extends React.Component {
 		let getFrozenBalanceData = ()=>{
 			if (this.state.frozenBalance > 0){
 				return(
-					<div className="two column row py-0">
+					<div className="two column row py-0" id="frozen_expire_div">
 						<div className="bottom aligned column px-2 pb-3 width_fit_content left floated mr-auto">
 							<FrozenBalanceOdometer frozenBalance={this.state.frozenBalance}/>
 						</div>
@@ -567,13 +722,14 @@ export default class HotWalletDashboard extends React.Component {
 			bandwidth: this.state.bandwidth,
 			shares: this.state.shares,
 			expirationTime: this.state.expirationTime,
-			trxBalance: this.state.trxBalance
+			trxBalance: this.state.trxBalance,
+			pubAddress: this.state.accInfo.pubAddress
 		};
 
 		return(
 			<div>
-				<div className="draggable hot_wallet_main_background" id="hot_wallet_main">
-					<div className="ui grid px-4">
+				<div className="hot_wallet_main_background" id="hot_wallet_main">
+					<div className="ui grid px-4 draggable">
 						{this.renderHeader()}
 						{this.renderSubHeader()}
 					</div>
@@ -595,19 +751,23 @@ export default class HotWalletDashboard extends React.Component {
 						</div>
 					</div>
 					<DockMenu handleDockClick={this.handleDockClick}/>
-					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
+					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.nodesModalOpened}
 						currNode={node_str} nodeData={this.state.nodeData}
 						subscribe={this.subscribeNodeData} unsubscribe={this.unsubscribeNodeData}
 						getNodeData={this.getNodeData}/>
-					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
-						pdirty={this.state.accInfo.pdirty} accountName={this.state.accInfo.accountName}/>
-					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
-						shares={this.state.shares}/>
-					<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.dockModalOpened}
-						data={freeze_modal_data}/>
+					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.backupModalOpened}
+						pdirty={this.state.accInfo.pdirty} 
+						pubAddress={this.state.accInfo.pubAddress}
+						mobileAuthCode={this.props.mobileAuthCode} view={config.views.HOTWALLET}/>
+					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.witnessesModalOpened}
+						shares={this.state.shares} view={this.props.view} pubAddress={this.state.accInfo.pubAddress}
+						voteHistory={this.state.voteHistory}/>
+					<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.freezeModalOpened}
+						data={freeze_modal_data} view={this.props.view}/>
 				</div>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
-				<MobileAuthModal />
+				<MobileAuthModal mobileAuthCode={this.props.mobileAuthCode}
+					handleOnSuccess={this.handleMobileAuthSuccess}/>
 			</div>
 		);
 	}
@@ -621,5 +781,7 @@ HotWalletDashboard.defaultProps={
 		pdirty: false
 	},
 	handleDataNode: (function(){}),
-	permissionLogOut: (function(){})
+	permissionLogOut: (function(){}),
+	mobileAuthCode: "",
+	view: config.views.HOTWALLET
 }

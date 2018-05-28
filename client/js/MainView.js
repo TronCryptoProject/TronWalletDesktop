@@ -7,6 +7,7 @@ import StatusBar from "./StatusBar.js";
 import ColdOfflineMainView from "./ColdOfflineMainView.js";
 import WatchOnlyMainView from "./WatchOnlyMainView.js";
 import ColdOfflineDashboard from "./ColdOfflineDashboard.js";
+import HotWalletDashboard from "./HotWalletDashboard.js";
 import jetpack from "fs-jetpack";
 
 export default class MainView extends React.Component {
@@ -100,7 +101,7 @@ export default class MainView extends React.Component {
 
 	handleColdOfflineClick(e){
 		if (this.state.networkStatus == this.ONLINE){
-			/*$("#network_modal").modal({
+			$("#network_modal").modal({
 				blurring: true,
 				centered: false,
 				transition: "scale",
@@ -122,12 +123,9 @@ export default class MainView extends React.Component {
 					}
 				}
 			})
-			.modal("show");*/
-			//remove the following line and uncomment the above line to get the dialog back; that's all
-			this.setState({currView: config.views.COLDWALLET, isLoggedIn: true});
+			.modal("show");
 		}else{
-			/*remove this line*/
-		this.setState({currView: config.views.COLDWALLET, isLoggedIn: true});
+			this.setState({currView: config.views.COLDWALLET});
 		}
 		
 	}
@@ -153,11 +151,11 @@ export default class MainView extends React.Component {
 		}else if (view == config.views.WATCHONLY){
 			gotoview = config.views.WATCHDASH;
 		}
-		this.setState({currView: gotoview, dashboardData: data});
+		this.setState({currView: gotoview, dashboardData: data, isLoggedIn: true});
 	}
 
 	handleHotWalletClick(){
-		this.setState({currView: config.views.HOTWALLET, isLoggedIn: true});
+		this.setState({currView: config.views.HOTWALLET});
 	}
 
 	handleStatusBar(view){
@@ -264,7 +262,7 @@ export default class MainView extends React.Component {
 				<HotWalletDashboard showStatusBar={this.handleStatusBar}
 					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
 					permissionLogOut={this.permissionLogOut} mobileAuthCode={this.state.mobileAuthCode}
-					accInfo={this.state.dashboardData}/>
+					accInfo={this.state.dashboardData} view={config.views.HOTWALLET}/>
 			);
 
 		}else if (this.state.currView == config.views.WATCHONLY){
@@ -273,7 +271,12 @@ export default class MainView extends React.Component {
 					mobileAuthCode={this.state.mobileAuthCode}/>
 			);
 		}else if (this.state.currView == config.views.WATCHDASH){
-
+			view_component = (
+				<HotWalletDashboard showStatusBar={this.handleStatusBar}
+					handleDataNode={this.handleDataNode} isLoggedIn={this.state.isLoggedIn}
+					permissionLogOut={this.permissionLogOut} mobileAuthCode={this.state.mobileAuthCode}
+					accInfo={this.state.dashboardData} view={config.views.WATCHONLY}/>
+			);
 		}
 
 		let status_data = {

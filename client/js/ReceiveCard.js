@@ -103,7 +103,7 @@ export default class ReceiveCard extends React.Component{
 
 	render(){
 		return(
-			<div className="ui one column centered padded grid" id="hot_wallet_receive_segment">
+			<div className="ui one column centered padded grid" id="hot_wallet_receive_card">
 				<div className="row">
 					<div className="ui small header">
 						Amount to Receive
@@ -111,7 +111,7 @@ export default class ReceiveCard extends React.Component{
 				</div>
 				<div className="row p-0">
 					<div className="ui right labeled input send_receive_card_input_div">
-						<input type="text" className="send_receive_card_input placeholder_left_align" placeholder="0"
+						<input type="number" min="0" className="send_receive_card_input placeholder_left_align" placeholder="0"
 							onChange={(e)=>{this.handleReceiveCardTrxChange(e)}}/>
 						<div className="ui label receive_right_btn_border">
 							TRX

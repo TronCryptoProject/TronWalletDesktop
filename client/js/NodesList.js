@@ -2,6 +2,7 @@ import React from "react";
 import Equal from "deep-equal";
 import axios from "axios";
 import config from "../config/config.js";
+import {BlowfishSingleton} from "Utils.js";
 
 export default class NodesList extends React.Component{
 	constructor(props){
@@ -61,12 +62,31 @@ export default class NodesList extends React.Component{
 	handleConnectNodeBtn(){
 		let message = "";
 		if (!Equal(this.state.listSelectedItem,{})){
-			axios.post(`${config.API_URL}/api/connectNode`,{
-				node: `${this.state.listSelectedItem.host}:${this.state.listSelectedItem.port}`
-			})
+			//view doesn't matter here
+			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, 
+				"POST","connectNode",{
+					node: `${this.state.listSelectedItem.host}:${this.state.listSelectedItem.port}`
+				});
+
+			axios.post(url)
 			.then((res)=>{
-				message = "Node is connected.";
-				this.setMessage(message,true);
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if (data.result == config.constants.SUCCESS){
+					message = `Node is connected! This, however, does not mean that it will 
+					return data. A new most synced node will be automatically selected if this
+					selected node fails to return data.`;
+					this.setMessage(message,true);
+				}else{
+					if ("reason" in data){
+						this.setMessage(data.reason,false);
+					}else{
+						message = "Error in connecting";
+						this.setMessage(message,false);
+					}
+				}
+
 			})
 			.catch((error)=>{
 				message = "Error in connecting";
@@ -88,7 +108,7 @@ export default class NodesList extends React.Component{
 			}
 
 			item_list.push(
-				<div className="text_align_right item" key={node_dict.host}
+				<div className="text_align_right item" key={node_dict.host + ":" + node_dict.port}
 					onMouseEnter={(e)=>{this.onMouseEnterItem(e,node_dict)}}
 					onMouseLeave={(e)=>{this.onMouseLeaveItem(e,node_dict)}}
 					onClick={(e)=>{this.handleItemClick(e,node_dict)}}>

@@ -25,8 +25,10 @@ export class EncryptedRequest{
 		let decrypted_data = blowfish.decrypt(data, this.key, {cipherMode: 0, outputType: 1});
 		console.log("decryptToJSON: " + decrypted_data);
 		try{
+			console.log("DECRYPT STRING: " + decrypted_data);
 			decrypted_data = JSON.parse(decrypted_data);
 		}catch(e){
+			console.log("DECRYPT ERROR: " + JSON.stringify(e));
 			return {};
 		}
 		return decrypted_data;

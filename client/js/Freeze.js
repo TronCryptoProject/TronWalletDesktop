@@ -8,7 +8,10 @@ import FreezeCard from "./FreezeCard.js";
 import UnfreezeCard from "./UnfreezeCard.js";
 import FreezeReadMeModal from "./FreezeReadMeModal.js";
 import FrozenComparisonCard from "./FrozenComparisonCard.js";
-
+import {BlowfishSingleton} from "Utils.js";
+import axios from "axios";
+import config from "../config/config.js";
+import TxQrCodeModal from "./TxQrCodeModal.js";
 
 export default class Freeze extends React.Component{
 	constructor(props){
@@ -16,6 +19,9 @@ export default class Freeze extends React.Component{
 		this.state = {
 			modalOpened: props.modalOpened,
 			data: props.data,
+			freezeQrdata: "",
+
+			txQRCodeModalFilename: "Tron.jpg",
 
 			newFrozenBalanceValue: props.data.frozenBalance,
 			newSharesValue: props.data.shares,
@@ -27,7 +33,6 @@ export default class Freeze extends React.Component{
 		};
 
 		this.handleCloseButtonClick = this.handleCloseButtonClick.bind(this);
-		this.getExpireOdometer = this.getExpireOdometer.bind(this);
 		this.renderFrozenTabMenu = this.renderFrozenTabMenu.bind(this);
 		this.handleFreezeClick = this.handleFreezeClick.bind(this);
 		this.handleUnfreezeClick = this.handleUnfreezeClick.bind(this);
@@ -35,6 +40,10 @@ export default class Freeze extends React.Component{
 		this.handleFreezeAmountInputChange = this.handleFreezeAmountInputChange.bind(this);
 		this.freezeMenuClick = this.freezeMenuClick.bind(this);
 		this.unfreezeMenuClick = this.unfreezeMenuClick.bind(this);
+		this.showSuccess = this.showSuccess.bind(this);
+		this.showError = this.showError.bind(this);
+
+		this.isFreezing = false;
 	}
 
 	componentDidMount(){
@@ -47,31 +56,190 @@ export default class Freeze extends React.Component{
 
 	componentWillReceiveProps(nextProps){
 		let tmp_dict = {}
+		let dirty = false;
 		if(this.props.modalOpened != nextProps.modalOpened){
 			tmp_dict.modalOpened = nextProps.modalOpened;
 		}
 
 		if(!Equal(nextProps.data, this.state.data)){
 			tmp_dict.data = nextProps.data;
+			dirty = true;
 		}
 
 		tmp_dict = Object.assign(this.state, tmp_dict);
 
 		this.setState(tmp_dict,()=>{
-			let freeze_amt_val = $("#freeze_amt_input").val().trim();
-			this.handleFreezeAmountInputChange(freeze_amt_val == "" ? -1: parseInt(freeze_amt_val));
+			if (dirty){
+				let freeze_amt_val = $("#freeze_amt_input").val().trim();
+				this.handleFreezeAmountInputChange(freeze_amt_val == "" ? -1: parseInt(freeze_amt_val));
+			}
 		});
 	}
 
-	handleFreezeClick(amount){
+	showError(button_id, message){
+		if (message == undefined || message == null || message == ""){
+			if (button_id == "#freeze_balance_btn"){
+				message = "Freeze failed!";
+			}else{
+				message = "Unfreeze failed!";
+			}
+		}
+		$(button_id).removeClass("loading right labeled button_tron_blue");
+		$(button_id).addClass("red");
+		$(button_id).text(message);
+		$(button_id).transition("shake");
+		setTimeout(()=>{
+			$(button_id).removeClass("red");
+			if (button_id == "#freeze_balance_btn"){
+				$(button_id).addClass("right labeled button_tron_blue");
+				$(button_id).text("Freeze Balance");
+				$(button_id).prepend("<i class='snowflake icon'/>");
+			}else{
+				$(button_id).addClass("orange");
+				$(button_id).text("Unfreeze");
+			}
+			this.isFreezing = false;
+		},2000);
+	}
 
+	showSuccess(button_id){
+		$(button_id).removeClass("loading right labeled button_tron_blue");
+		$(button_id).addClass("green");
+		$(button_id).text("Success!");
+		$(button_id).transition("pulse");
+		setTimeout(()=>{
+			$(button_id).removeClass("green");
+
+			if (button_id == "#freeze_balance_btn"){
+				$(button_id).addClass("right labeled button_tron_blue");
+				$(button_id).text("Freeze Balance");
+				$(button_id).prepend("<i class='snowflake icon'/>");
+			}else{
+				$(button_id).addClass("orange");
+				$(button_id).text("Unfreeze");
+			}
+			
+			this.isFreezing = false;
+		},2000);
+	}
+
+	handleFreezeClick(amount){
+		let button_id = "#freeze_balance_btn";
+
+		if (!this.isFreezing){
+			this.isFreezing = true;
+			$(button_id).addClass("loading");
+
+			let endpoint = "freezeBalance";
+			if (this.props.view != config.views.HOTWALLET){
+				endpoint = "prepareFreezeBalance"
+			}
+
+			
+			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST",endpoint,{
+				duration: "3",
+				amount: amount.toString(),
+				pubAddress: this.state.data.pubAddress
+			});
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+		
+				if ("result" in data){
+					if (data.result == config.constants.SUCCESS){
+						if (this.props.view == config.views.HOTWALLET){
+							this.showSuccess(button_id);
+						}else{
+							this.setState({
+								txQRCodeModalFilename: `TronPreparedFreezeTransaction.jpg`,
+								freezeQrdata: data.data
+							},()=>{
+								$("#signed_tx_qrcode_modal")
+								.modal({
+									allowMultiple: true,
+									closable: false,
+									onHide: ()=>{
+										showSuccess(button_id);
+									}
+								})
+								.modal("show");
+							});
+						}
+
+					}else{
+						this.showError(button_id, data.reason)
+					}
+					
+				}else{
+					this.showError(button_id);
+				}
+
+			})
+			.catch((error)=>{
+				this.showError(button_id);
+			});
+		}
+		
 	}
 
 	handleUnfreezeClick(){
+		let button_id = "#unfreeze_balance_btn";
 
+		if (!this.isFreezing){
+			this.isFreezing = true;
+			$(button_id).addClass("loading");
+			let endpoint = "unfreezeBalance";
+
+			if (this.props.view != config.views.HOTWALLET){
+				endpoint = "prepareUnfreezeBalance";
+			}
+			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST",endpoint,{
+				pubAddress: this.state.data.pubAddress
+			});
+
+			axios.post(url)
+			.then((res)=>{
+				let data = res.data;
+				data = BlowfishSingleton.decryptToJSON(data);
+
+				if ("result" in data){
+					if (data.result == config.constants.SUCCESS){
+						if (this.props.view == config.views.HOTWALLET){
+							this.showSuccess(button_id);
+						}else{
+							this.setState({
+								txQRCodeModalFilename: `TronPreparedUnfreezeTransaction.jpg`,
+								freezeQrdata: data.data
+							},()=>{
+								$("#signed_tx_qrcode_modal")
+								.modal({
+									allowMultiple: true,
+									closable: false,
+									onHide: ()=>{
+										showSuccess(button_id);
+									}
+								})
+								.modal("show");
+							});
+						}
+						
+					}else{
+						this.showError(button_id, data.reason)
+					}
+					
+				}else{
+					this.showError(button_id);
+				}
+			})
+			.catch((error)=>{
+				this.showError(button_id);
+			});
+		}
 	}
 
-	handleFreezeAmountInputChange(newAmount){
+	handleFreezeAmountInputChange(newAmount,callback){
 		//value was added to input
 		if (newAmount != -1){
 			let calculated_bandwidth = this.state.data.bandwidth + (3 * newAmount);
@@ -103,16 +271,20 @@ export default class Freeze extends React.Component{
 				$("#freeze_bandwidth_value").transition("swing down out");
 				$("#freeze_trx_balance_value").transition("swing down out");
 			}
-			
 
 			//reset
 			this.setState({
 				newFrozenBalanceValue: this.state.data.frozenBalance,
 				newSharesValue: this.state.data.shares,
 				newBandwidthValue: this.state.data.bandwidth,
+				newTrxBalance: this.state.data.trxBalance,
 				frozenBalanceDirty: false,
 				sharesDirty: false,
 				bandwidthDirty: false
+			},()=>{
+				if (callback){
+					callback();
+				}
 			});
 		}
 	}
@@ -133,21 +305,13 @@ export default class Freeze extends React.Component{
 	}
 
 	handleCloseButtonClick(){
-		this.props.handleDockClick(false, "#freeze_modal");
+		$("#freeze_amt_input").val("");
+		this.handleFreezeAmountInputChange(-1,()=>{
+			this.props.handleDockClick(false, "#freeze_modal");
+		});
+		
 	}
 
-	getExpireOdometer(){
-		if (this.state.data.frozenBalance != 0){
-			return (
-				<div className="ui mini statistic width_fit_content">
-					<ExpireOdometer expirationTime={this.state.data.expirationTime}/>
-					<div className="label statistic_balances">
-						Expiration Time Left
-					</div>
-				</div>
-			);
-		}
-	}
 
 	freezeMenuClick(){
 		$("#hot_wallet_unfreeze_segment").transition("scale out");
@@ -175,11 +339,12 @@ export default class Freeze extends React.Component{
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment active m-0" data-tab="freeze">
 						<FreezeCard handleFreezeClick={this.handleFreezeClick} 
-							handleFreezeAmountInputChange={this.handleFreezeAmountInputChange}/>
+							handleFreezeAmountInputChange={this.handleFreezeAmountInputChange}
+							trxBalance={this.state.data.trxBalance}/>
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment" data-tab="unfreeze">
 						<UnfreezeCard handleUnfreezeClick={this.handleUnfreezeClick}
-							frozenBalance={this.state.frozenBalance}/>
+							frozenBalance={this.state.data.frozenBalance}/>
 					</div>
 				</div>
 			</div>
@@ -221,7 +386,7 @@ export default class Freeze extends React.Component{
 						<div className="ui stackable centered page equal width grid p-0">
 							<div className="middle center aligned column">
 								<FrozenComparisonCard title="Active Balance" value={this.state.newTrxBalance}
-									rawValue={this.props.data.trxBalance}
+									rawValue={this.state.newTrxBalance}
 									id="freeze_trx_balance_value"/>
 							</div>
 							<div className="middle center aligned column">
@@ -230,16 +395,16 @@ export default class Freeze extends React.Component{
 									id="freeze_frozen_balance_value"/>
 							</div>
 							<div className="middle center aligned column">
-								<FrozenComparisonCard title="Entropy" value={this.state.newBandwidthValue}
+								<FrozenComparisonCard title="Bandwidth" value={this.state.newBandwidthValue}
 									rawValue={this.state.data.bandwidth}
 									id={"freeze_bandwidth_value"}/>
 							</div>
 							<div className="middle center aligned column">
-								<FrozenComparisonCard title="TronPower" value={this.state.newSharesValue}
+								<FrozenComparisonCard title="Tron Power" value={this.state.newSharesValue}
 									rawValue={this.state.data.shares}
 									id={"freeze_shares_value"}/>
 							</div>
-							{this.getExpireOdometer()}
+							
 						</div>
 					</div>
 
@@ -249,18 +414,22 @@ export default class Freeze extends React.Component{
 
 					<div className="content p-4">
 						<div className="proxima_semibold width_80 text_align_center mx-auto width_80">
-							Calculate and compare below what your future Entropy & Tron Power would be once you freeze 
-							a specific amount. Enter a value in the amount input field. 
+							Calculate and compare below what your approximate near future bandwidth & Tron Power
+							would be once you freeze a specific amount. Enter a value in the amount input field. 
 						</div>
 					</div>
 					<div className="extra freeze_description px-5 pb-5 mb-5">
-						Tron utilizes Entropy in order to limit invalid, high frequency transactions. Freezing
-						your balance generates Entropy, allowing you to send more than 1 transaction every 5 minutes
+						Tron utilizes bandwidth in order to limit invalid, high frequency transactions. Freezing
+						your balance generates bandwidth, allowing you to send more than 1 transaction every 5 minutes
 						and gives you Tron Power to vote for witnesses. Unfreezing will transfer funds back into your
 						active account.
 					</div>
 				</div>
 				<FreezeReadMeModal/>
+				<TxQrCodeModal message={`Scan this QRCode in Cold Wallet to sign and then
+					broadcast here in Watch Only Wallet`}
+					filename={this.state.txQRCodeModalFilename}
+					qrdata={this.state.freezeQrdata}/>
 			</div>
 		);
 	}
@@ -269,5 +438,6 @@ export default class Freeze extends React.Component{
 Freeze.defaulProps={
 	modalOpened: false,
 	handleDockClick: (function(){}),
-	data: {}
+	data: {},
+	view: config.views.HOTWALLET
 }

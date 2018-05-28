@@ -113,8 +113,8 @@ export default class FreezeCard extends React.Component{
 					</div>
 				</div>
 				<div className="row my-3">
-					<div className="ui labeled icon blue button"
-						onClick={(e)=>{this.handleFreezeClick(e)}}>
+					<div className="ui labeled icon button_tron_blue button"
+						onClick={(e)=>{this.handleFreezeClick(e)}} id="freeze_balance_btn">
 					  	<span className="text">Freeze Balance</span>
 					  	<i className="snowflake icon"></i>
 					</div>
