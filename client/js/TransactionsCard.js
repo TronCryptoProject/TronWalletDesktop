@@ -154,12 +154,10 @@ export default class TransactionsCard extends React.Component{
 			title = "Recently Signed Transactions";
 			card_class = "sign_txs_card";
 		}
-		console.log("TXSLENGTH: " + this.state.txsList.length);
+		
 		if (this.state.txsList && this.state.txsList.length > 0){
-			console.log("CHANGINGTITLE");
 			title += ` (${this.state.txsList.length})`;
 		}
-		console.log("TXSTILE: " + title);
 
 		return(
 			<div className={"ui fluid centered raised doubling card pb-3 " + card_class}

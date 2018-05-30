@@ -291,7 +291,9 @@ export default class GoogleAuth extends React.Component{
 									<p>
 										Enable mobile authentication for better security of your wallet.
 										You will be asked to verify transactions through mobile before
-										broadcasting them. 
+										broadcasting them whether your wallet is online or offline. No one
+										will be able to send fraudulent transactions or drain your wallet
+										even if your private key is stolen as long as mobile auth is enabled.
 									</p>
 								</div>
 								<div className="one wide column"/>

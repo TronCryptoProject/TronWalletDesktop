@@ -8,6 +8,7 @@ export default class DockMenu extends React.Component {
 		this.getItem = this.getItem.bind(this);
 		this.item_map = {
 			[config.views.HOTWALLET]:["nodes","witnesses","freeze","backup"],
+			[config.views.WATCHONLY]:["nodes","witnesses","freeze"],
 			[config.views.COLDWALLET]:["backup"] 
 		};
 	}

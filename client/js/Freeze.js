@@ -161,7 +161,11 @@ export default class Freeze extends React.Component{
 									allowMultiple: true,
 									closable: false,
 									onHide: ()=>{
-										showSuccess(button_id);
+										if ("data" in data){
+											this.showSuccess(button_id, "Contract created!");
+										}else{
+											this.showError(button_id, "Contract failed!");
+										}
 									}
 								})
 								.modal("show");
@@ -218,7 +222,11 @@ export default class Freeze extends React.Component{
 									allowMultiple: true,
 									closable: false,
 									onHide: ()=>{
-										showSuccess(button_id);
+										if ("data" in data){
+											this.showSuccess(button_id, "Contract created!");
+										}else{
+											this.showError(button_id, "Contract failed!");
+										}
 									}
 								})
 								.modal("show");

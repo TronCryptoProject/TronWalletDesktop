@@ -49,7 +49,8 @@ export default class Nodes extends React.Component {
 				this.props.unsubscribe();
 			}
 		}
-		if (this.props.currNode != nextProps.currNode){
+		if (this.state.currNode != nextProps.currNode){
+			console.log("NEXT PROPS CURRNODE: " + nextProps.currNode);
 			tmp_dict.currNode = nextProps.currNode;
 		}
 		if (!Equal(nextProps.nodeData, this.props.nodeData) && nextProps.modalOpened){
@@ -62,13 +63,12 @@ export default class Nodes extends React.Component {
 	}
 
 	controlledFetch(nodeData){
-		if (!this.fetchlock && this.state. modalOpened){
+		if (!this.fetchlock && this.state.modalOpened){
 			this.fetchlock = true;
-			this.nodeInterval = setInterval(()=>{
+			console.log("CONTROLLED FETCH");
+			this.props.getNodeData(nodeData);
+			setTimeout(()=>{
 				this.fetchlock = false;
-				if (this.state. modalOpened){
-					this.props.getNodeData(nodeData);
-				}
 			},10000);
 		}
 	}
@@ -104,6 +104,7 @@ export default class Nodes extends React.Component {
 	}
 
 	getNodeData(node_list){
+		console.log("GETTING NODE DATA");
 		let read_data = {nodes:{}};
 		let nodes_fetch_list = [];
 
@@ -222,11 +223,7 @@ export default class Nodes extends React.Component {
 		    return 0;
 		});
 
-		this.setState({nodeList: data_list},()=>{
-			//setTimeout(()=>{
-				this.props.getNodeData();
-			//},10000);
-		});
+		this.setState({nodeList: data_list});
 	}
 
 	render(){

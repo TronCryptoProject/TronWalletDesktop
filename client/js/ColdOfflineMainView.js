@@ -594,7 +594,7 @@ export default class ColdOfflineMainView extends React.Component {
 
 				<div className="center aligned content border-top-0">
 					<div className="ui header">Account Name</div>
-					<div className="ui large transparent input">
+					<div className="ui large transparent input width_100">
 						<input type="text" className="account_name_input" placeholder="JakeWallet"
 							id="register_accname_input"/>
 					</div>

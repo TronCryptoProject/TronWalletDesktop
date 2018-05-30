@@ -101,7 +101,7 @@ export default class MainView extends React.Component {
 
 	handleColdOfflineClick(e){
 		if (this.state.networkStatus == this.ONLINE){
-			$("#network_modal").modal({
+			/*$("#network_modal").modal({
 				blurring: true,
 				centered: false,
 				transition: "scale",
@@ -123,7 +123,8 @@ export default class MainView extends React.Component {
 					}
 				}
 			})
-			.modal("show");
+			.modal("show");*/
+			this.setState({currView: config.views.COLDWALLET});
 		}else{
 			this.setState({currView: config.views.COLDWALLET});
 		}
@@ -268,7 +269,8 @@ export default class MainView extends React.Component {
 		}else if (this.state.currView == config.views.WATCHONLY){
 			view_component = (
 				<WatchOnlyMainView handleBackButtonClick={this.handleBackButtonClick}
-					mobileAuthCode={this.state.mobileAuthCode}/>
+					mobileAuthCode={this.state.mobileAuthCode}
+					handleWalletGatewaySuccess={this.handleWalletGatewaySuccess}/>
 			);
 		}else if (this.state.currView == config.views.WATCHDASH){
 			view_component = (

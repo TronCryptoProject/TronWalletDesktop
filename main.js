@@ -43,9 +43,9 @@ function createWindow () {
   }))
 
   // Open the DevTools.
-  if (isDev){
+  //if (isDev){
      mainWindow.webContents.openDevTools()
-  }
+  //}
   
   /*Start process*/
   /*let spawn = require("child_process").spawn;

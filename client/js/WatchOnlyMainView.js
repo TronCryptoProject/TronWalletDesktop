@@ -4,6 +4,9 @@ import jetpack from "fs-jetpack";
 import ReactCodeInput from "react-code-input";
 import QRCode from "qrcode";
 import QRScanModal from "./QRScanModal.js";
+import speakeasy from "speakeasy";
+import {BlowfishSingleton} from "Utils.js";
+import axios from "axios";
 
 export default class WatchOnlyMainView extends React.Component {
 	constructor(props){
@@ -11,7 +14,8 @@ export default class WatchOnlyMainView extends React.Component {
 		this.state = {
 			startCamera: false,
 			listSelectedItem: "",
-			qrscanAddress: ""
+			qrscanAddress: "",
+			token: ""
 		};
 		this.last_menu_click = config.coldOfflineMenuItems.IMPORT;
 
@@ -26,6 +30,13 @@ export default class WatchOnlyMainView extends React.Component {
 		this.accListItemSelect = this.accListItemSelect.bind(this);
 		this.handleQRCallback = this.handleQRCallback.bind(this);
 		this.handleRestoreBtnClick = this.handleRestoreBtnClick.bind(this);
+		this.onPubAddressChange = this.onPubAddressChange.bind(this);
+		this.saveContact = this.saveContact.bind(this);
+		this.requestRestoreWallet = this.requestRestoreWallet.bind(this);
+		this.showError = this.showError.bind(this);
+		this.showSuccess = this.showSuccess.bind(this);
+
+		this.restorelock = false;
 	}
 
 	componentDidMount(){
@@ -52,6 +63,7 @@ export default class WatchOnlyMainView extends React.Component {
 			//data is pub address
 			pub_address = data;
 		}
+		$("#restore_accname_input").val(pub_address);
 		this.setState({
 			listSelectedItem: pub_address,
 			qrscanAddress: pub_address
@@ -59,7 +71,113 @@ export default class WatchOnlyMainView extends React.Component {
 
 	}
 
-	handleRestoreBtnClick(){
+	showSuccess(data){
+		let button_id = "#restore_btn";
+
+		$(button_id).removeClass("loading cold_offline_import_btn");
+		$(button_id).addClass("leaf_green");
+		$(button_id).text("SUCCESS!");
+		setTimeout(()=>{
+			$(button_id).removeClass("leaf_green");
+			$(button_id).addClass("cold_offline_import_btn");
+			$(button_id).text("RESTORE");
+			this.restorelock = false;
+			let prop_data = {
+				accountName: data.accountName,
+				pubAddress: data.pubAddress
+			};
+			this.props.handleWalletGatewaySuccess(config.views.WATCHONLY,prop_data);
+		},1000);
+	}
+
+	showError(message){
+		if (message == undefined || message == ""){
+			message = "FAILED!";
+		}
+
+		let button_id = "#restore_btn";
+
+		$(button_id).removeClass("loading cold_offline_import_btn");
+		$(button_id).addClass("soft_red");
+		$(button_id).text(message);
+		setTimeout(()=>{
+			$(button_id).removeClass("soft_red");
+			$(button_id).addClass("cold_offline_import_btn");
+			$(button_id).text("RESTORE");
+			this.restorelock = false;
+		},2000);
+	}
+
+	handleRestoreBtnClick(e){
+		e.persist();
+		if (!this.restorelock){
+			this.restorelock = true;
+			$(e.target).addClass("loading");
+
+			if (this.props.mobileAuthCode != ""){
+				let is_good = true;
+				let token_status = speakeasy.totp.verify({
+					secret: this.props.mobileAuthCode,
+					encoding: "base32",
+					token: this.state.token
+				})
+				if (!token_status){
+					is_good = false;
+				}
+				if (is_good){
+					this.requestRestoreWallet();
+				}else{
+					this.showError("Incorrect auth code");
+				}
+			}else{
+				this.requestRestoreWallet();
+			}
+		}
+		
+	}
+
+	requestRestoreWallet(){
+		let url = BlowfishSingleton.createPostURL(config.views.WATCHONLY, "POST","restoreWallet",{
+			pubAddress: this.state.listSelectedItem
+		});
+
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if ("result" in data && data.result == config.constants.SUCCESS){
+				this.saveContact();
+				this.showSuccess(data);
+				
+			}else{
+				this.showError("Failed to restore!");
+			}
+		})
+		.catch((error)=>{
+			this.showError("Request failed :(");
+		});
+	}
+
+	onCodeChangeHandler(val){
+		if (val.length >= 6){
+			val = val.substring(0,6);
+			this.setState({token: val});
+		}else{
+			this.setState({token: ""});
+		}
+	}
+
+	onPubAddressChange(e){
+		let val = $(e.target).val().trim();
+
+		this.setState({
+			listSelectedItem: val,
+			qrscanAddress: val
+		});
+	}
+
+	saveContact(){
 		if (jetpack.exists(config.walletConfigFile) == "file"){
 			let read_data = jetpack.read(config.walletConfigFile, "json");
 			if ("watchOnlyAccounts" in read_data){
@@ -80,10 +198,6 @@ export default class WatchOnlyMainView extends React.Component {
 			};
 			jetpack.write(config.walletConfigFile, data, { atomic: true });
 		}
-	}
-
-	onCodeChangeHandler(){
-
 	}
 
 	startQRScan(){
@@ -117,7 +231,7 @@ export default class WatchOnlyMainView extends React.Component {
 				Object.keys(read_data.watchOnlyAccounts).length == 0) &&
 				this.state.qrscanAddress == ""){
 			return(
-				<div className="item mt-3">
+				<div className="item">
 					<div className="content">
 						<div className="header">
 							No Accounts Found
@@ -257,38 +371,51 @@ export default class WatchOnlyMainView extends React.Component {
 				return <div className="description">{description}</div>;
 			}
 		}
-		
+		let getMobileAuthDiv = ()=>{
+			if (this.props.mobileAuthCode != ""){
+				return(
+					<div className="center aligned content border-0">
+						<div className="ui header">Mobile Auth Code</div>
+						<div className="py-3">
+							<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
+								onChange={this.onCodeChangeHandler}/>
+						</div>
+					</div>
+				);
+			}
+		}
 		return(
 			<div className="ui raised card height_fit_content
 											cold_offline_import_card" id="importcard">
 						
 				<div className="center aligned content">
-					
-					<div className="ui header vertical_center mt-3 mb-1">Accounts</div>
-					
-					<div className="circular ui icon animated compact right floated button qrcode_scan_btn"
-						onClick={this.startQRScan}>
-						<div className="center aligned hidden content">Scan</div>
-					  	<div className="visible content m-auto pl-2">
-					    	<i className="qrcode large icon m-auto"></i>
-					  	</div>
-					</div>
+
+						<div className="ui header vertical_center mt-3 mb-1">Accounts</div>
 						
-					
+						<div className="circular ui icon animated compact right floated button qrcode_scan_btn"
+							onClick={this.startQRScan}>
+							<div className="center aligned hidden content">Scan</div>
+						  	<div className="visible content m-auto pl-2">
+						    	<i className="qrcode large icon m-auto"></i>
+						  	</div>
+						</div>
+				</div>
+				<div className="center aligned content border-0">
+					<div className="ui large input width_80">
+						<input type="text" className="account_name_input restore_accname_input" placeholder="Public Address"
+							id="restore_accname_input" onChange={(e)=>{this.onPubAddressChange(e)}}/>
+					</div>
+				</div>
+				<div className="center aligned content border-0">
 					{getDescription()}
 					<div className="ui middle aligned selection animated list
 						cold_offline_import_list width_100">
 						{accounts}
 					</div>
-					
-					<div className="ui header">Wallet Passcode</div>
-					<div className="py-3">
-						<ReactCodeInput type="number" fields={6} {...this.getCodeInputConfig()}
-							onChange={this.onCodeChangeHandler}/>
-					</div>
 				</div>
+				{getMobileAuthDiv()}
 				<div className="ui bottom attached button cold_offline_import_btn"
-					onClick={this.handleRestoreBtnClick}>
+					onClick={(e)=>{this.handleRestoreBtnClick(e)}} id="restore_btn">
 			    	RESTORE
 			    </div>
 			</div>
@@ -350,5 +477,7 @@ export default class WatchOnlyMainView extends React.Component {
 }
 
 WatchOnlyMainView.defaultProps = {
-	handleBackButtonClick: (function(){})
+	handleBackButtonClick: (function(){}),
+	mobileAuthCode: "",
+	handleWalletGatewaySuccess:(function(){})
 }

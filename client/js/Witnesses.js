@@ -21,7 +21,8 @@ export default class Witnesses extends React.Component{
 			voteHistory: props.voteHistory,
 			persistVoteHistory: props.voteHistory,
 			isLoading: false,
-			selectedBlockNum: -1
+			selectedBlockNum: -1,
+			prepareWitnessTxData: ""
 		};
 
 		this.renderAllWitnesses = this.renderAllWitnesses.bind(this);
@@ -122,10 +123,13 @@ export default class Witnesses extends React.Component{
 		},2000);
 	}
 
-	showSuccess(target){
+	showSuccess(target, message){
+		if (message == undefined || message == null || message == ""){
+			message = "Vote Successful!";
+		}
 		$(target).removeClass("loading right labeled");
 		$(target).addClass("green");
-		$(target).text("Vote Successful!");
+		$(target).text(message);
 		$(target).transition("pulse");
 		setTimeout(()=>{
 			$(target).addClass("right labeled");
@@ -164,53 +168,65 @@ export default class Witnesses extends React.Component{
 			vote_list.push(this.witness_user_votes[x].votes.toString());
 		}
 		
-		if (!this.error_lock){
-			this.error_lock = true;
+		if (vote_list.length == 0){
+			this.showError(e.target, "You haven't voted!");
+		}else{
+			if (!this.error_lock){
+				this.error_lock = true;
 
-			$(e.target).addClass("loading");
-			let endpoint = "voteWitness";
-			if (this.props.view != config.views.HOTWALLET){
-				endpoint = "prepareVoteWitness";
-			}
-			console.log("VOTELIST: " + JSON.stringify(vote_list));
-			console.log("VOTESTRING: " + vote_list.join(","));
-			let url = BlowfishSingleton.createPostURL(this.props.view, "POST",endpoint,{
-				witnesses: vote_list.join(","),
-				pubAddress: this.props.pubAddress
-			});
+				$(e.target).addClass("loading");
+				let endpoint = "voteWitness";
+				if (this.props.view != config.views.HOTWALLET){
+					endpoint = "prepareVoteWitness";
+				}
+				console.log("VOTELIST: " + JSON.stringify(vote_list));
+				console.log("VOTESTRING: " + vote_list.join(","));
+				let url = BlowfishSingleton.createPostURL(this.props.view, "POST",endpoint,{
+					witnesses: vote_list.join(","),
+					pubAddress: this.props.pubAddress
+				});
 
-			axios.post(url)
-			.then((res)=>{
-				let data = res.data;
-				data = BlowfishSingleton.decryptToJSON(data);
+				axios.post(url)
+				.then((res)=>{
+					let data = res.data;
+					data = BlowfishSingleton.decryptToJSON(data);
 
-				if(this.props.view == config.views.HOTWALLET){
-					if ("result" in data){
-						if (data.result == config.constants.SUCCESS){
-							this.showSuccess(e.target);
+					if(this.props.view == config.views.HOTWALLET){
+						if ("result" in data){
+							if (data.result == config.constants.SUCCESS){
+								this.showSuccess(e.target);
+							}else{
+								this.showError(e.target, data.reason);
+							}
 						}else{
-							this.showError(e.target, data.reason);
+							this.showError(e.target);
 						}
 					}else{
-						this.showError(e.target);
+						//only prepare the transaction (watch only)
+						this.setState({prepareWitnessTxData: data.data},()=>{
+							$("#signed_tx_qrcode_modal")
+							.modal({
+								allowMultiple: true,
+								closable: false,
+								onHide: ()=>{
+									if ("data" in data){
+										this.showSuccess(e.target, "Contract created!");
+									}else{
+										this.showError(e.target, "Contract failed!");
+									}
+								}
+							})
+							.modal("show");
+						});
+							
 					}
-				}else{
-					//only prepare the transaction (watch only)
-					$("#signed_tx_qrcode_modal")
-					.modal({
-						allowMultiple: true,
-						closable: false,
-						onHide: ()=>{
-							showSuccess(e.target);
-						}
-					})
-					.modal("show");
-				}
-			})
-			.catch((error)=>{
-				this.showError(e.target);
-			});
+				})
+				.catch((error)=>{
+					this.showError(e.target);
+				});
+			}
 		}
+		
 
 	}
 
@@ -254,7 +270,7 @@ export default class Witnesses extends React.Component{
 			for(let witness of this.state.persistVoteHistory){
 				if (witness.voteAddress.toLowerCase().indexOf(search_value) >= 0){
 					tmp_list.push(witness);
-					
+
 				}else if (witness.url.toLowerCase().indexOf(search_value) >= 0){
 					tmp_list.push(witness);
 				}
@@ -558,12 +574,16 @@ export default class Witnesses extends React.Component{
 				);
 			}
 		}else{
+			let message = "You haven't voted yet";
+			if (this.state.voteHistory.length == 0 && this.state.persistVoteHistory.length != 0){
+				message = "No results found";
+			}
 			tr_list.push(
 				<tr key="key_empty_history">
 					<td colSpan="2">
 						<div className="center aligned content">
 							<div className="meta">
-								You haven't voted yet
+								{message}
 							</div>
 						</div>
 					</td>
@@ -639,7 +659,7 @@ export default class Witnesses extends React.Component{
 							<br/>
 							<br/>
 							<div className="text_align_center">
-								Voting results are tallied every 4 hours. Click on the block number to see block info.
+								Voting results are tallied every 6 hours. Click on the block number to see block info.
 							</div>
 						</div>
 					</div>
@@ -669,7 +689,8 @@ export default class Witnesses extends React.Component{
 				<BlockModal blockNum={this.state.selectedBlockNum}/>
 				<TxQrCodeModal message={`Scan this QRCode in Cold Wallet to sign and then
 					broadcast here in Watch Only Wallet`}
-					filename={`TronPreparedWitnessTransaction.jpg`}/>
+					filename={`TronPreparedWitnessTransaction.jpg`}
+					qrdata={this.state.prepareWitnessTxData}/>
 			</div>
 			
 		);

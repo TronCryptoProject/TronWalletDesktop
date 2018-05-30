@@ -5,213 +5,55 @@
     "27afovYMFwvCNXw1pSzzC9ati5w2ee975B7": "",
     "27WM8N3khAa3eqb4h4pSpCjbbWtbNBqe9bT": "",
     "27jcnjwH336pLx4xUsNmtGA6RM1PKZPStxc": "",
-    "27Vmiec7B7bsZYJ6MWrsw7vqrieW8NoNduT": ""
+    "27Vmiec7B7bsZYJ6MWrsw7vqrieW8NoNduT": "",
+    "27RQHgSqWW1zGudTesNAR8AmDW7DuFyuwLQ": "",
+    "27V88K3WWQNucXbtBZmvtuspKuT46TXdAs4": ""
   },
   "nodes": {
-    "164.52.50.78:27099": {
+    "111.196.83.197:18888": {
+      "lat": "39.900002",
+      "long": "116.413002",
+      "location": "Beijing, BJ, China"
+    },
+    "89.134.119.93:18888": {
+      "lat": "47.533001",
+      "long": "21.632999",
+      "location": "Debrecen, HB, Hungary"
+    },
+    "164.52.50.78:18888": {
       "lat": "40.748798",
       "long": "-73.984596",
       "location": "New York, NY, United States"
     },
-    "35.226.126.204:1151": {
-      "lat": "43.607300",
-      "long": "-84.781403",
-      "location": "Mount Pleasant, MI, United States"
+    "119.61.18.42:18808": {
+      "lat": "39.900002",
+      "long": "116.413002",
+      "location": "Beijing, BJ, China"
     },
-    "47.97.215.104:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
+    "35.193.211.2:18888": {
+      "lat": "40.748798",
+      "long": "-73.984596",
+      "location": "New York, NY, United States"
+    },
+    "39.105.66.80:18888": {
+      "lat": "",
+      "long": "",
+      "location": ""
+    },
+    "223.71.166.87:18808": {
+      "lat": "35.700001",
+      "long": "139.766998",
+      "location": "Tokyo, TY, Japan"
     },
     "34.217.9.219:18888": {
       "lat": "40.748798",
       "long": "-73.984596",
       "location": "New York, NY, United States"
     },
-    "35.188.1.99:18888": {
-      "lat": "28.110201",
-      "long": "-80.649803",
-      "location": "Melbourne, FL, United States"
-    },
-    "79.133.37.10:18888": {
-      "lat": "45.500000",
-      "long": "-73.583000",
-      "location": "Montreal, QC, Canada"
-    },
-    "35.224.112.202:18888": {
-      "lat": "42.276299",
-      "long": "-83.747101",
-      "location": "Ann Arbor, MI, United States"
-    },
-    "114.247.223.52:20916": {
-      "lat": "39.900002",
-      "long": "116.413002",
-      "location": "Beijing, BJ, China"
-    },
-    "51.38.114.87:18888": {
-      "lat": "",
-      "long": "",
-      "location": ""
-    },
-    "173.61.43.123:18888": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "179.43.86.90:47855": {
-      "lat": "-2.167000",
-      "long": "-79.900002",
-      "location": "Guayaquil, GU, Ecuador"
-    },
-    "35.193.7.13:18888": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "59.101.116.3:14750": {
-      "lat": "-33.882999",
-      "long": "151.216995",
-      "location": "Sydney, NS, Australia"
-    },
-    "47.98.58.42:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
-    },
-    "35.192.217.12:18888": {
-      "lat": "42.276299",
-      "long": "-83.747101",
-      "location": "Ann Arbor, MI, United States"
-    },
-    "104.154.113.151:18888": {
-      "lat": "47.756001",
-      "long": "-122.339996",
-      "location": "Shoreline, WA, United States"
-    },
-    "109.235.66.225:18888": {
-      "lat": "40.400002",
-      "long": "-3.683000",
-      "location": "Madrid, MD, Spain"
-    },
-    "206.189.115.105:1025": {
-      "lat": "-37.817001",
-      "long": "144.966995",
-      "location": "Melbourne, VI, Australia"
-    },
-    "35.192.136.167:18888": {
-      "lat": "42.276299",
-      "long": "-83.747101",
-      "location": "Ann Arbor, MI, United States"
-    },
-    "82.165.157.5:18888": {
-      "lat": "52.516998",
-      "long": "13.400000",
-      "location": "Berlin, BE, Germany"
-    },
-    "35.237.239.179:18888": {
-      "lat": "43.607300",
-      "long": "-84.781403",
-      "location": "Mount Pleasant, MI, United States"
-    },
-    "35.234.98.0:18888": {
-      "lat": "42.234299",
-      "long": "-83.604500",
-      "location": "Ypsilanti, MI, United States"
-    },
-    "47.52.243.22:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
-    },
-    "118.193.19.122:18888": {
-      "lat": "22.283001",
-      "long": "114.150002",
-      "location": "Hong Kong, HK, Hong Kong (SAR)"
-    },
-    "217.160.91.214:18888": {
-      "lat": "52.516998",
-      "long": "13.400000",
-      "location": "Berlin, BE, Germany"
-    },
-    "114.112.100.193:18888": {
-      "lat": "39.900002",
-      "long": "116.413002",
-      "location": "Beijing, BJ, China"
-    },
-    "39.106.178.126:18888": {
-      "lat": "39.759102",
-      "long": "-75.561600",
-      "location": "Wilmington, DE, United States"
-    },
     "35.192.85.2:18888": {
       "lat": "40.748798",
       "long": "-73.984596",
       "location": "New York, NY, United States"
-    },
-    "198.254.197.33:18888": {
-      "lat": "39.612900",
-      "long": "-79.941803",
-      "location": "Morgantown, WV, United States"
-    },
-    "119.61.18.42:18888": {
-      "lat": "39.900002",
-      "long": "116.413002",
-      "location": "Beijing, BJ, China"
-    },
-    "47.91.213.254:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
-    },
-    "47.254.42.144:18888": {
-      "lat": "",
-      "long": "",
-      "location": ""
-    },
-    "47.52.114.209:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
-    },
-    "47.52.229.70:18888": {
-      "lat": "43.667000",
-      "long": "-79.417000",
-      "location": "Toronto, ON, Canada"
-    },
-    "104.154.120.187:18888": {
-      "lat": "39.558899",
-      "long": "-110.911003",
-      "location": "Price, UT, United States"
-    },
-    "18.182.51.36:18888": {
-      "lat": "42.372898",
-      "long": "-71.106300",
-      "location": "Cambridge, MA, United States"
-    },
-    "211.249.70.110:58464": {
-      "lat": "37.567001",
-      "long": "127.000000",
-      "location": "Seoul, KG, Korea, South"
-    },
-    "94.130.165.82:18888": {
-      "lat": "25.299999",
-      "long": "51.150002",
-      "location": "Doha, DA, Qatar"
-    },
-    "13.210.29.172:18888": {
-      "lat": "51.216999",
-      "long": "6.767000",
-      "location": "Dusseldorf, NW, Germany"
-    },
-    "47.254.68.236:18888": {
-      "lat": "",
-      "long": "",
-      "location": ""
-    },
-    "183.89.209.125:18888": {
-      "lat": "15.150000",
-      "long": "120.583000",
-      "location": "Angeles City, PM, Philippines"
     },
     "35.202.145.110:18888": {
       "lat": "43.607300",
@@ -223,150 +65,15 @@
       "long": "-118.296997",
       "location": "San Pedro, CA, United States"
     },
-    "104.197.236.150:18888": {
-      "lat": "33.923599",
-      "long": "-118.199997",
-      "location": "Lynwood, CA, United States"
-    },
-    "104.196.153.108:18888": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "115.198.97.58:59977": {
-      "lat": "39.900002",
-      "long": "116.413002",
-      "location": "Beijing, BJ, China"
-    },
-    "148.251.176.195:18888": {
-      "lat": "52.516998",
-      "long": "13.400000",
-      "location": "Berlin, BE, Germany"
-    },
-    "164.52.50.78:12410": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "179.43.86.90:18888": {
-      "lat": "-2.167000",
-      "long": "-79.900002",
-      "location": "Guayaquil, GU, Ecuador"
-    },
-    "211.249.70.110:39253": {
-      "lat": "37.567001",
-      "long": "127.000000",
-      "location": "Seoul, KG, Korea, South"
-    },
-    "59.101.116.3:8029": {
-      "lat": "-33.882999",
-      "long": "151.216995",
-      "location": "Sydney, NS, Australia"
-    },
-    "164.52.50.78:15171": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "179.43.86.90:48004": {
-      "lat": "-2.167000",
-      "long": "-79.900002",
-      "location": "Guayaquil, GU, Ecuador"
-    },
-    "164.52.50.78:18463": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:5434": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:26955": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:26222": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:17270": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:18808": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:19087": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:61409": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:25916": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:19523": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:5875": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:61440": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:19932": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "164.52.50.78:26918": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
-    "35.237.115.106:18888": {
-      "lat": "40.748798",
-      "long": "-73.984596",
-      "location": "New York, NY, United States"
-    },
     "195.201.194.250:18888": {
       "lat": "55.750000",
       "long": "37.583000",
       "location": "Moscow, MC, Russia"
     },
-    "35.226.126.204:18888": {
-      "lat": "43.607300",
-      "long": "-84.781403",
-      "location": "Mount Pleasant, MI, United States"
-    },
     "18.208.116.213:18888": {
       "lat": "40.748798",
       "long": "-73.984596",
       "location": "New York, NY, United States"
-    },
-    "96.94.210.185:50061": {
-      "lat": "35.129200",
-      "long": "-89.989197",
-      "location": "Memphis, TN, United States"
     },
     "39.106.220.120:18888": {
       "lat": "39.759102",
@@ -478,11 +185,6 @@
       "long": "-73.984596",
       "location": "New York, NY, United States"
     },
-    "173.230.141.212:18888": {
-      "lat": "32.514999",
-      "long": "-96.815300",
-      "location": "Red Oak, TX, United States"
-    },
     "37.15.62.16:18888": {
       "lat": "41.382999",
       "long": "2.183000",
@@ -538,5 +240,9 @@
       "long": "2.183000",
       "location": "Barcelona, CT, Spain"
     }
+  },
+  "watchOnlyAccounts": {
+    "27V88K3WWQNucXbtBZmvtuspKuT46TXdAs4": "",
+    "27jcnjwH336pLx4xUsNmtGA6RM1PKZPStxc": ""
   }
 }

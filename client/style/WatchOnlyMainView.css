@@ -1,3 +1,8 @@
 .watch_only_header_title{
 	font-size: 3.5em !important;
 }
+.restore_accname_input{
+	border-radius: 1em !important;
+    background: #dbe1ec !important;
+    border: none !important;
+}

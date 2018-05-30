@@ -63,6 +63,21 @@ export default class SignCard extends React.Component{
 					$("#validate_tx_submit_button").text("Validate Transaction");
 					$("#validate_tx_submit_button").prepend("<i class='sitemap icon'/>");
 					this.isSigning = false;
+					$("#tx_viewer_modal")
+					.modal({
+						allowMultiple: true,
+						closable: false,
+						onShow:()=>{
+							$("#hot_wallet_main").addClass("blur");
+						},
+						onHidden:()=>{
+							$("#hot_wallet_main").removeClass("blur");
+						},
+						onApprove:()=>{
+							return false;
+						}
+					})
+					.modal("show");
 				},2000);
 			}
 
@@ -86,23 +101,6 @@ export default class SignCard extends React.Component{
 							showError("Transaction data fetch failed!");
 						}else{
 							showSuccess();
-							setTimeout(()=>{
-								$("#tx_viewer_modal")
-								.modal({
-									allowMultiple: true,
-									closable: false,
-									onShow:()=>{
-										$("#hot_wallet_main").addClass("blur");
-									},
-									onHidden:()=>{
-										$("#hot_wallet_main").removeClass("blur");
-									},
-									onApprove:()=>{
-										return false;
-									}
-								})
-								.modal("show");
-							}, 1000);
 						}
 						
 					});

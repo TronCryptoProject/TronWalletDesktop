@@ -45,6 +45,7 @@ export default class ColdOfflineDashboard extends React.Component {
 		this.handleDockClick = this.handleDockClick.bind(this);
 		this.getTxData = this.getTxData.bind(this);
 		this.handleUpdateTxs = this.handleUpdateTxs.bind(this);
+		this.handleTxDataLock = this.handleTxDataLock.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -225,6 +226,14 @@ export default class ColdOfflineDashboard extends React.Component {
 		})
 	}
 
+	handleTxDataLock(data, callback){
+		this.setState({currTxData: data}, ()=>{
+			if (callback){
+				callback();
+			}
+		});
+	}
+
 	//after prepare transaction
 	handlePrepareClick(qrcode_data){
 		$("#raw_tx_input").val(qrcode_data);
@@ -319,7 +328,8 @@ export default class ColdOfflineDashboard extends React.Component {
 			handleQRScanClick: this.handleQRScanClick,
 			handleSendClick: this.handleSendClick,
 			handlePrepareClick: this.handlePrepareClick,
-			id: config.views.COLDWALLET
+			id: config.views.COLDWALLET,
+			pubAddress: this.state.accInfo.pubAddress
 		};
 	}
 
@@ -470,8 +480,8 @@ export default class ColdOfflineDashboard extends React.Component {
 						accountName={this.state.accInfo.accountName} view={config.views.COLDWALLET}/>
 				</div>
 				<TransactionViewerModal txData={this.state.currTxData}
-					mobileAuthCode={this.props.mobileAuthCode}
-					handleUpdateTxs={this.handleUpdateTxs} view={config.views.COLDWALLET}/>
+					handleUpdateTxs={this.handleUpdateTxs} view={config.views.COLDWALLET}
+					handleTxDataLock={this.handleTxDataLock}/>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 			</div>
 		);

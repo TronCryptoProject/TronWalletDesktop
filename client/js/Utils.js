@@ -5,7 +5,12 @@ import config from "../config/config.js";
 
 export class EncryptedRequest{
 	constructor(){
-		this.kslist = fs.readFileSync("client/config/tronks.ks","utf8").split("\n");
+		try{
+			this.kslist = fs.readFileSync(`${process.resourcesPath}/app/client/config/tronks.ks`,"utf8").split("\n");
+		}catch(e){
+			this.kslist = fs.readFileSync(`client/config/tronks.ks`,"utf8").split("\n");
+		}
+		
 		this.key = atob(this.kslist[0]);
 
 		this.baseurl = `${config.COLD_API_URL}${atob(this.kslist[1])}/api/`;

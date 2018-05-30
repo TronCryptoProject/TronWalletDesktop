@@ -6,7 +6,9 @@ import QRCode from "qrcode";
 export default class TxQRCodeModal extends React.Component{
 	constructor(props){
 		super(props);
-		this.state = {};
+		this.state = {
+			qrdata: props.qrdata
+		};
 		this.handleQRImageSave = this.handleQRImageSave.bind(this);
 		this.renderQRCodeCanvas = this.renderQRCodeCanvas.bind(this);
 	}
@@ -16,8 +18,14 @@ export default class TxQRCodeModal extends React.Component{
 	}
 
 	componentWillReceiveProps(nextProps){
-		if(this.props.qrdata != nextProps.qrdata){
-			this.renderQRCodeCanvas();
+		console.log("STATE TX: " + this.state.qrdata);
+		console.log("NEXT PROPS TX: " + nextProps.qrdata);
+		console.log("PROPS RES: " + this.state.qrdata != nextProps.qrdata);
+		if(this.state.qrdata != nextProps.qrdata){
+			this.setState({qrdata: nextProps.qrdata},()=>{
+				console.log("CALLING RENDER");
+				this.renderQRCodeCanvas();
+			});
 		}
 	}
 
@@ -54,9 +62,12 @@ export default class TxQRCodeModal extends React.Component{
 		    ctx.restore();
     	}
 
-    	if (this.props.qrdata != undefined){
-    		QRCode.toDataURL(this.props.qrdata)
+    	if (this.state.qrdata != "" && this.state.qrdata != undefined){
+    		console.log("QRDATA: " + this.state.qrdata);
+
+    		QRCode.toDataURL(this.state.qrdata)
 			.then(url =>{
+				console.log("GOT QRURL: "+ url);
 				let image = new Image();
 				image.src = url;
 				image.onload = function(){
@@ -71,6 +82,7 @@ export default class TxQRCodeModal extends React.Component{
 				}
 			});
     	}else{
+    		console.log("QRDATA ELSE: " + this.state.qrdata);
     		let image = new Image();
 			image.src = "client/images/blankqrcode.png";
 			image.onload = function(){

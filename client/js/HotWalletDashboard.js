@@ -10,6 +10,7 @@ import BackupKeys from "./BackupKeys.js";
 import Witnesses from "./Witnesses.js";
 import SendCard from "./SendCard.js";
 import ReceiveCard from "./ReceiveCard.js";
+import BroadcastCard from "./BroadcastCard.js";
 import TransactionsCard from "./TransactionsCard.js";
 import BlockOdometer from "./BlockOdometer.js";
 import TrxPriceOdometer from "./TrxPriceOdometer.js";
@@ -24,6 +25,7 @@ import Freeze from "./Freeze.js";
 import MobileAuthModal from "./MobileAuthModal.js";
 import {BlowfishSingleton} from "Utils.js";
 import axios from "axios";
+import TransactionViewerModal from "./TransactionViewerModal.js";
 
 export default class HotWalletDashboard extends React.Component {
 	constructor(props){
@@ -76,6 +78,8 @@ export default class HotWalletDashboard extends React.Component {
 		this.receiveMenuItemClick = this.receiveMenuItemClick.bind(this);
 		this.handleMobileAuthSuccess = this.handleMobileAuthSuccess.bind(this);
 		this.sendTrxTransaction = this.sendTrxTransaction.bind(this);
+		this.getTxData = this.getTxData.bind(this);
+		this.handleTxDataLock = this.handleTxDataLock.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -87,6 +91,7 @@ export default class HotWalletDashboard extends React.Component {
 		this.getTxCardProps = this.getTxCardProps.bind(this);
 		this.getSendCardProps = this.getSendCardProps.bind(this);
 		this.getReceiveCardProps = this.getReceiveCardProps.bind(this);
+		this.getBroadcastCardProps = this.getBroadcastCardProps.bind(this);
 
 		this.trxPriceSubscriber = null;
 		this.blockNumSubscriber = null;
@@ -95,6 +100,8 @@ export default class HotWalletDashboard extends React.Component {
 		this.txsSubscriber = null;
 		this.accountInfoInterval = null;
 		this.txsInterval = null;
+
+		this.logoutcalled = false;
 	}
 
 	componentDidMount(){
@@ -130,6 +137,10 @@ export default class HotWalletDashboard extends React.Component {
 	}
 
 	componentWillUnmount(){
+		if (!this.logoutcalled){
+			this.handleLogOut();
+		}
+		
 		this.stomp = null;
 		this.setState({stomp: null});
 		this.props.showStatusBar("");
@@ -258,7 +269,8 @@ export default class HotWalletDashboard extends React.Component {
 			}catch(e){
 				$("#send_address_input").val(data);
 			}
-			
+		}else if ($("#hotwallet_broadcast_menu").hasClass("active")){
+			$("#raw_tx_input").val(data);
 		}
 	}
 
@@ -270,14 +282,23 @@ export default class HotWalletDashboard extends React.Component {
 		})
 	}
 
+	handleTxDataLock(data, callback){
+		this.setState({currTxData: data}, ()=>{
+			if(callback){
+				callback();
+			}
+		});
+	}
+
+
 	handleMobileAuthSuccess(){
 		this.setState({mobileAuthValid: true}, ()=>{
 			this.setState({mobileAuthValid: false});
 		});
 	}
 
-	sendTrxTransaction(address, amount, callback){
-		let endpoint = (this.props.view == config.views.HOTWALLET) ? "sendCoin" : "prepareTx";
+	sendTrxTransaction(address, amount, view, callback){
+		let endpoint = (view == config.views.HOTWALLET) ? "sendCoin" : "prepareTx";
 
 		let url = BlowfishSingleton.createPostURL(this.props.view, "POST",endpoint,{
 			toAddress: address,
@@ -297,19 +318,40 @@ export default class HotWalletDashboard extends React.Component {
 							source: contacts
 						});
 					});
+					if(callback){
+						if(view != config.views.HOTWALLET){
+							callback(data.data);
+						}else{
+							callback(data);
+						}
+					}
+				}else{
+					if(callback){
+						if(view != config.views.HOTWALLET){
+							callback("");
+						}else{
+							callback(data);
+						}
+					}
 				}
-				if (callback){
-					callback(data);
-				}
+
 			}else{
 				if (callback){
-					callback({});
+					if(view != config.views.HOTWALLET){
+						callback("");
+					}else{
+						callback({});
+					}
 				}
 			}
 		})
 		.catch((error)=>{
 			if (callback){
-				callback({});
+				if(view != config.views.HOTWALLET){
+					callback("");
+				}else{
+					callback({});
+				}
 			}
 		});
 	}
@@ -333,7 +375,16 @@ export default class HotWalletDashboard extends React.Component {
 			sendTrxTransaction: this.sendTrxTransaction,
 			id: this.props.view,
 			mobileAuthValid: this.state.mobileAuthValid,
-			bandwidth: this.state.bandwidth
+			bandwidth: this.state.bandwidth,
+			pubAddress: this.state.accInfo.pubAddress
+		};
+	}
+
+	getBroadcastCardProps(){
+		return{
+			handleQRScanClick: this.handleQRScanClick,
+			getTxData: this.getTxData,
+			mobileAuthCode: this.props.mobileAuthCode
 		};
 	}
 
@@ -357,6 +408,7 @@ export default class HotWalletDashboard extends React.Component {
 		this.stomp = Stomp.over(socket);
 		this.stomp.debug = null;
 
+		console.log("trying to connect to stomp: " + this.stomp);
 		this.stomp.connect({},(frame)=>{
 			console.log("connected");
 
@@ -369,7 +421,6 @@ export default class HotWalletDashboard extends React.Component {
 
 					if (res_json.result == config.constants.SUCCESS){
 						this.setState({txsList: res_json.txs});
-						
 					}
 				}
 			});
@@ -510,27 +561,71 @@ export default class HotWalletDashboard extends React.Component {
 		if(this.accountInfoInterval){
 			clearInterval(this.accountInfoInterval);
 		}
-		this.stomp.disconnect(()=>{
-			console.log("stomp disconnected");
-			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST","logout",{
-				pubAddress: this.state.accInfo.pubAddress,
-				isWatch: (this.props.view != config.views.HOTWALLET).toString()
-			});
+		
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST","logout",{
+			pubAddress: this.state.accInfo.pubAddress,
+			isWatch: (this.props.view != config.views.HOTWALLET).toString()
+		});
 
-			axios.post(url)
-			.then((res)=>{
-				let data = res.data;
-				data = BlowfishSingleton.decryptToJSON(data);
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
 
-				if (data.result == config.constants.SUCCESS){
+			if (data.result == config.constants.SUCCESS){
+				if (this.stomp){
+					this.stomp.disconnect(()=>{
+						this.logoutcalled = true;
+						this.props.permissionLogOut();
+
+						console.log("stomp disconnected");
+					});
+				}else{
 					this.props.permissionLogOut();
 				}
-			})
-			.catch((error)=>{
-				console.log(error);
-			});
-
+				
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
 		});
+
+	}
+
+	getTxData(hex_str, callback){
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "GET","signTxInfo",{
+			hextx: hex_str
+		});
+
+		axios.get(url)
+		.then((res)=>{
+			let data = res.data;
+			data = BlowfishSingleton.decryptToJSON(data);
+
+			if (data.result == config.constants.SUCCESS){
+				this.setState({currTxData: data},()=>{
+					if (callback){
+						callback(data);
+					}
+				});
+
+			}else{
+				this.setState({currTxData: {}},()=>{
+					if (callback){
+						callback({});
+					}
+				});
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+			this.setState({currTxData: {}},()=>{
+				if (callback){
+					callback({});
+				}
+			});
+		});
+		
 	}
 
 	getNodeData(){
@@ -573,6 +668,13 @@ export default class HotWalletDashboard extends React.Component {
 	}
 
 	renderHeader(){
+		let getTitle = ()=>{
+			if (this.props.view == config.views.HOTWALLET){
+				return "HOT WALLET";
+			}else{
+				return "WATCH ONLY";
+			}
+		}
 		return(
 			<div className="three column row pb-0">
 				<div className="four wide column pr-0 center aligned hot_top_header">
@@ -588,7 +690,7 @@ export default class HotWalletDashboard extends React.Component {
 							</div>
 							<div className="column">
 								<div className= "ui label header_label_div">
-									<div className="hot_wallet_header_title">HOT WALLET</div>
+									<div className="hot_wallet_header_title">{getTitle()}</div>
 								</div>
 							</div>
 						</div>
@@ -674,14 +776,43 @@ export default class HotWalletDashboard extends React.Component {
 
 
 	renderSendReceiveCard(){
+		let getBroadcastMenuItem = ()=>{
+			if (this.props.view == config.views.WATCHONLY){
+				return(
+					<div className="item send_receive_card_item" data-tab="broadcast"
+  						id="hotwallet_broadcast_menu">
+    					BROADCAST
+  					</div>
+				);
+			}
+		}
+
+		let getBroadcastCard = ()=>{
+			if(this.props.view == config.views.WATCHONLY){
+				return(
+					<div className="ui bottom attached tab segment send_receive_card_segment m-0"
+						data-tab="broadcast" id="hot_wallet_broadcast_segment">
+						<BroadcastCard {...this.getBroadcastCardProps()}/>
+					</div>
+				);
+			}
+		}
+		let menu_classname = "ui top attached tabular ";
+		if(this.props.view == config.views.WATCHONLY){
+			menu_classname += "three item menu";
+		}else{
+			menu_classname += "two item menu";
+		}
+
 		return(
 			<div className="ui card m-auto send_receive_card" id="send_receive_card">
 				<div className="content">
-					<div className="ui top attached tabular two item menu">
+					<div className={menu_classname}>
 						<div className="item send_receive_card_item active" data-tab="send"
 							onClick={this.sendMenuItemClick} id="hotwallet_send_menu">
 	    					SEND
 	  					</div>
+	  					{getBroadcastMenuItem()}
 	  					<div className="item send_receive_card_item" data-tab="receive"
 	  						onClick={this.receiveMenuItemClick} id="hotwallet_receive_menu">
 	    					RECEIVE
@@ -691,6 +822,7 @@ export default class HotWalletDashboard extends React.Component {
 						data-tab="send" id="hot_wallet_send_segment">
 						<SendCard {...this.getSendCardProps()}/>
 					</div>
+					{getBroadcastCard()}
 					<div className="ui bottom attached tab segment send_receive_card_segment"
 						data-tab="receive" id="hot_wallet_receive_segment">
 						<ReceiveCard {...this.getReceiveCardProps()}/>
@@ -750,7 +882,7 @@ export default class HotWalletDashboard extends React.Component {
 							</div>
 						</div>
 					</div>
-					<DockMenu handleDockClick={this.handleDockClick}/>
+					<DockMenu handleDockClick={this.handleDockClick} view={this.props.view}/>
 					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.nodesModalOpened}
 						currNode={node_str} nodeData={this.state.nodeData}
 						subscribe={this.subscribeNodeData} unsubscribe={this.unsubscribeNodeData}
@@ -768,6 +900,9 @@ export default class HotWalletDashboard extends React.Component {
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 				<MobileAuthModal mobileAuthCode={this.props.mobileAuthCode}
 					handleOnSuccess={this.handleMobileAuthSuccess}/>
+				<TransactionViewerModal txData={this.state.currTxData} view={this.props.view}
+					pubAddress={this.state.accInfo.pubAddress}
+					handleTxDataLock={this.handleTxDataLock}/>
 			</div>
 		);
 	}
