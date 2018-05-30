@@ -42,7 +42,7 @@ img, button{
 }
 
 .blue_gradient_background{
-	background: linear-gradient(10deg,#687cde 0,#91a3ce 40%,rgba(164, 193, 247, 0.33));
+	background: linear-gradient(10deg,rgba(57, 85, 187, 0.57),rgba(145, 163, 206, 0.4) 40%,rgba(139, 170, 228, 0.56));
 	padding: 3em;
 	position: fixed;
 	height: 100%;

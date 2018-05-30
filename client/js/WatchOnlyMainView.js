@@ -460,7 +460,7 @@ export default class WatchOnlyMainView extends React.Component {
 							{this.renderMenu()}
 						</div>
 					</div>
-					<div className="content text_align_center width_80 mt-5 mx-auto color_white
+					<div className="content text_align_center width_80 mt-5 mx-auto
 						p-4">
 						Use Watch Only wallet with your cold offline wallet to broadcast/view
 						transactions, balances, etc. Watch Only wallet is connected to the 

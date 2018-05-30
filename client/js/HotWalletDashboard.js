@@ -572,7 +572,7 @@ export default class HotWalletDashboard extends React.Component {
 			let data = res.data;
 			data = BlowfishSingleton.decryptToJSON(data);
 
-			if (data.result == config.constants.SUCCESS){
+			//if (data.result == config.constants.SUCCESS){
 				if (this.stomp){
 					this.stomp.disconnect(()=>{
 						this.logoutcalled = true;
@@ -584,7 +584,7 @@ export default class HotWalletDashboard extends React.Component {
 					this.props.permissionLogOut();
 				}
 				
-			}
+			//}
 		})
 		.catch((error)=>{
 			console.log(error);

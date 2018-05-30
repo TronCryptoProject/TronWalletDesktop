@@ -43,11 +43,11 @@ export default class StatusBar extends React.Component{
 		//is mobile auth set up 
 		let read_data = jetpack.read(config.walletConfigFile, "json");
 		if (read_data && ("mobileAuthCode" in read_data)){
-			let color = "mobileauth_icon_green_light";
-			if (this.state.hotWalletData.onlineFeaturesView == config.views.HOTWALLET
+			let color = "mobileauth_icon_green";
+			/*if (this.state.hotWalletData.onlineFeaturesView == config.views.HOTWALLET
 				|| this.state.hotWalletData.onlineFeaturesView == config.views.COLDWALLET){
 				color = "mobileauth_icon_green";
-			}
+			}*/
 
 			status_divs.push(
 				<i className={"mobile big icon status_icon_size status_icon " + color} key="status_mobileauth"

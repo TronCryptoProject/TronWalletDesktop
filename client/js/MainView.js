@@ -193,21 +193,21 @@ export default class MainView extends React.Component {
 						</div>
 						<div className="row">
 							<div className="ui buttons">
-								<div className="ui labeled icon olive inverted button button_left mainview_btn"
+								<div className="ui labeled icon sky_blue_color button button_left mainview_btn"
 									onClick={(e)=>{this.handleColdOfflineClick(e)}}
 									data-content="Network connection not allowed" 
 							  		data-position="bottom left" data-variation="mini" id="cold_wallet_btn">Cold Wallet
 									<i className="plane icon"></i>
 								</div>
 								<div className="or custom_or"></div>
-								<div className="ui olive inverted button button_middle mainview_btn"
+								<div className="ui sky_blue_color button button_middle mainview_btn"
 									onClick={(e)=>{this.handleWatchOnlyWalletClick(e)}}
 									data-content="Used with cold wallet to broadcast transactions. Requires
 									no private key" data-position="bottom center" data-variation="mini" id="watch_only_btn">
 									Watch Only Wallet
 								</div>
 								<div className="or custom_or"></div>
-								<div className="ui right labeled icon olive inverted button button_right mainview_btn"
+								<div className="ui right labeled icon sky_blue_color button button_right mainview_btn"
 									onClick={(e)=>{this.handleHotWalletClick(e)}}
 									data-content="Network connected -- Signs transactions automatically"
 			  						data-position="bottom right" data-variation="mini" id="hot_wallet_btn">Hot Wallet
