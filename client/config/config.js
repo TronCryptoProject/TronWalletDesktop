@@ -1,3 +1,7 @@
+var path = require("path");
+const remote = require("electron").remote;
+const app = remote.app;
+
 module.exports = {
 	"views": {
 		"MAINVIEW": "MAINVIEW",
@@ -9,7 +13,7 @@ module.exports = {
 		"HOTWALLET": "HOTWALLET",
 		"HOTDASH": "HOTDASH"
 	},
-	"walletConfigFile": "wallet.config.json",
+	"walletConfigFile": path.resolve(app.getPath("userData"),`./wallet.config.json`),
 	"coldOfflineMenuItems": {
 		"IMPORT": "IMPORT",
 		"REGISTER": "REGISTER",

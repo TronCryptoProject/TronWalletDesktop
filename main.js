@@ -1,12 +1,8 @@
-const electron = require('electron')
-// Module to control application life.
-const app = electron.app
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
-
+const {app, Menu, BrowserWindow} = electron = require('electron')
 const path = require('path')
 const url = require('url')
 const isDev = require('electron-is-dev');
+
 
 if (isDev){
   console.log("isdev: " + process.defaultApp);
@@ -43,26 +39,139 @@ function createWindow () {
   }))
 
   // Open the DevTools.
-  //if (isDev){
+  if (isDev){
      mainWindow.webContents.openDevTools()
-  //}
+  }
   
-  /*Start process*/
-  /*let spawn = require("child_process").spawn;
-  var child = spawn("java", ["-jar","tronwallet.jar"],{
-    detached: true,
-    stdio: 'ignore'
+  var net = require('net');
+
+  var isPortInUse = function(port, callback) {
+      var inst = net.createServer(function(socket) {
+        socket.write('Echo server\r\n');
+        socket.pipe(socket);
+      });
+
+      inst.listen(port,"127.0.0.1");
+      inst.on('error', function (e) {
+        callback(true);
+      });
+      inst.on('listening', function (e) {
+        inst.close();
+        callback(false);
+      });
+  };
+
+  var child = null;
+  isPortInUse(12849, function(returnValue) {
+      if (!returnValue){
+          /*Start process*/
+          let spawn = require("child_process").spawn;
+          let filename = `${process.resourcesPath}/app/tronwallet.jar`;
+          if (isDev){
+            filename = "./tronwallet.jar";
+          }
+          console.log("FILE:" + filename);
+
+
+          let userPath = app.getPath("userData");
+          console.log("userPath: " + userPath);
+          child = spawn("java", [`-DuserPath=${userPath}`, "-jar",filename]/*,{
+            detached: true,
+            stdio: 'ignore'
+          }*/);
+          //child.unref();
+          child.stdout.on('data', function(data) {
+              console.log(data.toString()); 
+          });
+
+          /*End process*/
+      }
   });
-  child.unref();*/
-  /*End process*/
+
+
+
   
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null
+    mainWindow = null;
+
+    if (child != null){
+      console.log("PID: " + child.pid);
+      try{
+         process.kill(child.pid, "SIGKILL");
+      }catch(e){
+         console.log(e);
+      }
+     
+    }
+    
   })
+
+
+  /*Menu items*/
+
+  var menu_items = [
+  {
+    label: "Tron Wallet",
+    submenu: [
+      {
+        label: "About Tron Wallet", 
+        selector: "orderFrontStandardAboutPanel:"
+      },
+      {
+        type: "separator"
+      },
+      {
+        label: "Quit",
+        accelerator: "Command+Q",
+        click: function(){
+          app.quit();
+        }
+      }
+    ]
+  },
+  {
+    label: "Edit",
+    submenu:[
+      {
+        label: "Undo",
+        accelerator: "CmdOrCtrl+Z",
+        selector: "undo:"
+      },
+      {
+        label: "Redo",
+        accelerator: "Shift+CmdOrCtrl+Z",
+        selector: "redo:"
+      },
+      { 
+        type: "separator" 
+      },
+      { 
+        label: "Cut", 
+        accelerator: "CmdOrCtrl+X", 
+        selector: "cut:"
+      },
+      { 
+        label: "Copy", 
+        accelerator: "CmdOrCtrl+C", 
+        selector: "copy:" 
+      },
+      { 
+        label: "Paste", 
+        accelerator: "CmdOrCtrl+V",
+        selector: "paste:"
+      },
+      { 
+        label: "Select All",
+        accelerator: "CmdOrCtrl+A",
+        selector: "selectAll:"
+      }
+    ]
+  }];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menu_items));
 }
 
 // This method will be called when Electron has finished

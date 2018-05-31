@@ -6,7 +6,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const config = {
   devtool: "source-map",
-  watch: true,
+  watch: false,
   watchOptions: {
   	ignored: [
   		 path.join(__dirname, "wallet.config.json")

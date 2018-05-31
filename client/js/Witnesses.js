@@ -204,7 +204,7 @@ export default class Witnesses extends React.Component{
 					}else{
 						//only prepare the transaction (watch only)
 						this.setState({prepareWitnessTxData: data.data},()=>{
-							$("#signed_tx_qrcode_modal")
+							$("#witness_tx_qr_modal")
 							.modal({
 								allowMultiple: true,
 								closable: false,
@@ -690,7 +690,8 @@ export default class Witnesses extends React.Component{
 				<TxQrCodeModal message={`Scan this QRCode in Cold Wallet to sign and then
 					broadcast here in Watch Only Wallet`}
 					filename={`TronPreparedWitnessTransaction.jpg`}
-					qrdata={this.state.prepareWitnessTxData}/>
+					qrdata={this.state.prepareWitnessTxData}
+					id="witness_tx_qr_modal"/>
 			</div>
 			
 		);

@@ -11,9 +11,10 @@ export default class TransactionViewerModal extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			txData: props.txData
+			txData: props.txData,
+			qrImgData: ""
 		};
-		this.isSigning = false;
+		//this.isSigning = false;
 		this.handleSignTransaction = this.handleSignTransaction.bind(this);
 		this.handleBroadcastTransaction = this.handleBroadcastTransaction.bind(this);
 		this.handleCancelClick = this.handleCancelClick.bind(this);
@@ -32,8 +33,11 @@ export default class TransactionViewerModal extends React.Component{
 	}
 
 	handleCancelClick(){
-		this.isSigning = false;
+		//this.isSigning = false;
 		let button_id = "#tx_modal_submit_button";
+		if (this.props.view == config.views.WATCHONLY){
+			button_id = "#broadcast_tx_modal_submit_button";
+		}
 		$(button_id).removeClass("red green loading");
 		$(button_id).addClass("right labeled button_tron_blue");
 		if (this.props.view == config.views.COLDWALLET){
@@ -51,8 +55,8 @@ export default class TransactionViewerModal extends React.Component{
 		e.persist();
 		let button_id = "#tx_modal_submit_button";
 
-		if (!this.isSigning){
-			this.isSigning = true;
+		//if (!this.isSigning){
+		//	this.isSigning = true;
 
 			$(button_id).addClass("loading");
 
@@ -69,7 +73,7 @@ export default class TransactionViewerModal extends React.Component{
 					$(button_id).addClass("right labeled");
 					$(button_id).text("Sign Transaction");
 					$(button_id).prepend("<i class='pencil alternate icon'/>");
-					this.isSigning = false;
+					//this.isSigning = false;
 				},2000);
 			}
 
@@ -82,7 +86,7 @@ export default class TransactionViewerModal extends React.Component{
 					$(button_id).addClass("right labeled button_tron_blue");
 					$(button_id).text("Sign Transaction");
 					$(button_id).prepend("<i class='pencil alternate icon'/>");
-					this.isSigning = false;
+					//this.isSigning = false;
 				},1000);
 			}
 
@@ -101,21 +105,29 @@ export default class TransactionViewerModal extends React.Component{
 
 					if (data.result == config.constants.SUCCESS){
 						console.log("Signed: " + JSON.stringify(data));
+						this.props.handleTxDataLock(data, ()=>{
+							this.setState({qrImgData: data.data},()=>{
+								let id = "";
+								if (this.props.view == config.views.COLDWALLET){
+									id =  "signed_tx_qrcode_modal";
+								}else{
+									id = "prepared_tx_qrcode_modal";
+								}
+								$("#" + id)
+								.modal({
+									allowMultiple: true,
+									closable: false,
+									onHide: ()=>{
+										showSuccess();
+									}
+								})
+								.modal("show");
+
+								//fetch new txs
+								this.props.handleUpdateTxs();
+							});
+						});
 						
-						$("#signed_tx_qrcode_modal")
-						.modal({
-							allowMultiple: true,
-							closable: false,
-							onHide: ()=>{
-								this.props.handleTxDataLock(data);
-								showSuccess();
-							}
-						})
-						.modal("show");
-
-						//fetch new txs
-						this.props.handleUpdateTxs();
-
 					}else{
 						showError("Failed to sign!");
 					}
@@ -125,32 +137,34 @@ export default class TransactionViewerModal extends React.Component{
 					showError("Request failed :(");
 				});
 			}
-		}
+		//}
 	}
 
 	handleBroadcastTransaction(e){
 		e.persist();
-		let button_id = "#tx_modal_submit_button";
+		let button_id = "#broadcast_tx_modal_submit_button";
 
-		if (!this.isSigning){
-			this.isSigning = true;
+		//if (!this.isSigning){
+		//	this.isSigning = true;
 
 			$(button_id).addClass("loading");
 
 			let showError = (message)=>{
+				let msg = message;
 				if (message == undefined || message == null || message == ""){
-					message = "Broadcast failed!";
+					msg = "Broadcast failed!";
 				}
+				console.log("button_id: " + button_id + " setting error");
 				$(button_id).removeClass("loading right labeled button_tron_blue");
 				$(button_id).addClass("red");
-				$(button_id).text(message);
+				$(button_id).text(msg);
 				$(button_id).transition("shake");
 				setTimeout(()=>{
 					$(button_id).removeClass("red");
 					$(button_id).addClass("right labeled button_tron_blue");
 					$(button_id).text("Broadcast Transaction");
 					$(button_id).prepend("<i class='bullhorn icon'/>");
-					this.isSigning = false;
+				//	this.isSigning = false;
 				},2000);
 			}
 
@@ -163,7 +177,7 @@ export default class TransactionViewerModal extends React.Component{
 					$(button_id).addClass("right labeled button_tron_blue");
 					$(button_id).text("Broadcast Transaction");
 					$(button_id).prepend("<i class='bullhorn icon'/>");
-					this.isSigning = false;
+				//	this.isSigning = false;
 				},2000);
 			}
 
@@ -188,11 +202,11 @@ export default class TransactionViewerModal extends React.Component{
 					}
 				})
 				.catch((error)=>{
-					console.log(error);
+					console.log("BROADCAST ERROR:" + error);
 					showError("Request failed :(");
 				});
 			}
-		}
+		//}
 	}
 
 
@@ -298,7 +312,7 @@ export default class TransactionViewerModal extends React.Component{
 			}else{
 				return(
 					<div className="ui button_tron_blue vertical icon right labeled button"
-						onClick={(e)=>{this.handleBroadcastTransaction(e)}} id="tx_modal_submit_button">
+						onClick={(e)=>{this.handleBroadcastTransaction(e)}} id="broadcast_tx_modal_submit_button">
 						Broadcast Transaction
 						<i className="bullhorn icon"/>
 					</div>
@@ -306,8 +320,16 @@ export default class TransactionViewerModal extends React.Component{
 			}
 		}
 
+		let getTxModalId = ()=>{
+			if (this.props.view == config.views.COLDWALLET){
+				return "signed_tx_qrcode_modal";
+			}else{
+				return "prepared_tx_qrcode_modal";
+			}
+		};
+
 		return(
-			<div className="ui modal rounded_corners" id="tx_viewer_modal">
+			<div className="ui modal rounded_corners" id={this.props.id}>
 				<div className="p-5">
 					<div className="ui center aligned large header witness_title_color">
 						<i className="list alternate icon"></i>
@@ -379,7 +401,8 @@ export default class TransactionViewerModal extends React.Component{
 				</div>
 				<TxQrCodeModal message={getQRConfModalMessage()}
 					filename={`TronSignedTx-${this.state.txData.txhash}.jpg`}
-					qrdata={this.state.txData.data}/>
+					qrdata={this.state.qrImgData}
+					id={getTxModalId()}/>
 			</div>
 		);
 	}
@@ -390,5 +413,6 @@ TransactionViewerModal.defaultProps = {
 	handleUpdateTxs: (function(){}),
 	view: config.views.COLDWALLET,
 	pubAddress: "",
-	handleTxDataLock: (function(){})
+	handleTxDataLock: (function(){}),
+	id: ""
 }

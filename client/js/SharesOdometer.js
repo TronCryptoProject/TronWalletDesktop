@@ -56,7 +56,7 @@ export default class SharesOdometer extends React.Component{
 			if (this.state.showDescription){
 				return (
 					<div className="label statistic_balances text_align_right">
-						Voting Shares
+						Tron Power
 					</div>
 				);
 			}

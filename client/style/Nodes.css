@@ -31,3 +31,6 @@
 .map_header_color{
     color: #407dab !important;
 }
+.ui.statistic>.value.nodeinfo_font_size{
+    font-size: 2.1em !important;
+}

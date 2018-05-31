@@ -65,7 +65,9 @@ export default class NodesList extends React.Component{
 			//view doesn't matter here
 			let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, 
 				"POST","connectNode",{
-					node: `${this.state.listSelectedItem.host}:${this.state.listSelectedItem.port}`
+					node: `${this.state.listSelectedItem.host}:${this.state.listSelectedItem.port}`,
+					isWatch: (this.props.view != config.views.HOTWALLET).toString(),
+					pubAddress: this.props.pubAddress
 				});
 
 			axios.post(url)
@@ -156,5 +158,7 @@ export default class NodesList extends React.Component{
 
 NodesList.defaultProps={
 	nodes:[],
-	handleConfModalParams: (function(){})
+	handleConfModalParams: (function(){}),
+	pubAddress: "",
+	view: config.views.HOTWALLET
 }

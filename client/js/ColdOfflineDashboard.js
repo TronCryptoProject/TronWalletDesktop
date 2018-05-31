@@ -280,10 +280,12 @@ export default class ColdOfflineDashboard extends React.Component {
 	}
 
 	getTxData(hex_str, callback){
+		console.log("CALLING TX DATA");
 		let url = BlowfishSingleton.createPostURL(config.views.COLDWALLET, "GET","signTxInfo",{
 			hextx: hex_str
 		});
 
+		console.log("CALLING TX DATA: URL => " + url);
 		axios.get(url)
 		.then((res)=>{
 			let data = res.data;
@@ -481,7 +483,7 @@ export default class ColdOfflineDashboard extends React.Component {
 				</div>
 				<TransactionViewerModal txData={this.state.currTxData}
 					handleUpdateTxs={this.handleUpdateTxs} view={config.views.COLDWALLET}
-					handleTxDataLock={this.handleTxDataLock}/>
+					handleTxDataLock={this.handleTxDataLock} id="tx_viewer_modal"/>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 			</div>
 		);

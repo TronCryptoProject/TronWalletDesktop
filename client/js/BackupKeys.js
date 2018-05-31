@@ -25,7 +25,7 @@ export default class BackupKeys extends React.Component {
 			getConfModal: false
 		}
 
-		this.isBackingLock = false;
+		//this.isBackingLock = false;
 	}
 
 	getCodeInputConfig(){
@@ -81,8 +81,8 @@ export default class BackupKeys extends React.Component {
 	handleAcceptConfModal(e){
 		e.persist();
 
-		if (!this.isBackingLock){
-			this.isBackingLock = true;
+		//if (!this.isBackingLock){
+		//	this.isBackingLock = true;
 
 			let button_id = "#" + this.state.modalId + "_accept";
 			$(button_id).addClass("loading");
@@ -100,7 +100,7 @@ export default class BackupKeys extends React.Component {
 					$(button_id).addClass("right labeled");
 					$(button_id).text("Backup");
 					$(button_id).prepend("<i class='checkmark icon'/>");
-					this.isBackingLock = false;
+					//this.isBackingLock = false;
 				},2000);
 			}
 
@@ -114,7 +114,7 @@ export default class BackupKeys extends React.Component {
 					$(button_id).addClass("right labeled");
 					$(button_id).text("Backup");
 					$(button_id).prepend("<i class='checkmark icon'/>");
-					this.isBackingLock = false;
+					//this.isBackingLock = false;
 				},2000);
 			}
 				
@@ -125,7 +125,14 @@ export default class BackupKeys extends React.Component {
 				}
 			}
 
-			if (this.state.authInputText != "" && pcheck){
+			let ismobileauth = true;
+			if (this.props.mobileAuthCode != ""){
+				if (this.state.authInputText == ""){
+					ismobileauth = false;
+				}
+			}
+
+			if (ismobileauth && pcheck){
 				let is_good = true;
 				if (this.props.mobileAuthCode != ""){
 					let token_status = speakeasy.totp.verify({
@@ -189,7 +196,7 @@ export default class BackupKeys extends React.Component {
 			}else{
 				showError("Empty input!");
 			}
-		}
+		//}
 		
 	}
 

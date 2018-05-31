@@ -102,10 +102,13 @@ export default class Freeze extends React.Component{
 		},2000);
 	}
 
-	showSuccess(button_id){
+	showSuccess(button_id, message){
+		if (message == undefined || message == null || message == ""){
+			message = "Success!";
+		}
 		$(button_id).removeClass("loading right labeled button_tron_blue");
 		$(button_id).addClass("green");
-		$(button_id).text("Success!");
+		$(button_id).text(message);
 		$(button_id).transition("pulse");
 		setTimeout(()=>{
 			$(button_id).removeClass("green");
@@ -156,7 +159,7 @@ export default class Freeze extends React.Component{
 								txQRCodeModalFilename: `TronPreparedFreezeTransaction.jpg`,
 								freezeQrdata: data.data
 							},()=>{
-								$("#signed_tx_qrcode_modal")
+								$("#freeze_tx_qr_modal")
 								.modal({
 									allowMultiple: true,
 									closable: false,
@@ -217,7 +220,7 @@ export default class Freeze extends React.Component{
 								txQRCodeModalFilename: `TronPreparedUnfreezeTransaction.jpg`,
 								freezeQrdata: data.data
 							},()=>{
-								$("#signed_tx_qrcode_modal")
+								$("#freeze_tx_qr_modal")
 								.modal({
 									allowMultiple: true,
 									closable: false,
@@ -437,7 +440,8 @@ export default class Freeze extends React.Component{
 				<TxQrCodeModal message={`Scan this QRCode in Cold Wallet to sign and then
 					broadcast here in Watch Only Wallet`}
 					filename={this.state.txQRCodeModalFilename}
-					qrdata={this.state.freezeQrdata}/>
+					qrdata={this.state.freezeQrdata}
+					id="freeze_tx_qr_modal"/>
 			</div>
 		);
 	}

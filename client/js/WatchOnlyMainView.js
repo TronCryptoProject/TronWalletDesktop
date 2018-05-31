@@ -151,7 +151,12 @@ export default class WatchOnlyMainView extends React.Component {
 				this.showSuccess(data);
 				
 			}else{
-				this.showError("Failed to restore!");
+				if ("reason" in data){
+					this.showError(data.reason);
+				}else{
+					this.showError("Failed to restore!");
+				}
+				
 			}
 		})
 		.catch((error)=>{

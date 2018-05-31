@@ -37,6 +37,9 @@
 	position: absolute !important;
 }
 
+.mainview_btn{
+	text-shadow: none !important;
+}
 .custom_or:before{
 	background-color: #e7ebff!important;
     color: #284ca5!important;

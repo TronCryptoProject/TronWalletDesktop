@@ -88,7 +88,7 @@ export default class BroadcastCard extends React.Component{
 						}else{
 							showSuccess();
 							setTimeout(()=>{
-								$("#tx_viewer_modal")
+								$("#tx_hot_viewer_modal")
 								.modal({
 									allowMultiple: true,
 									closable: false,

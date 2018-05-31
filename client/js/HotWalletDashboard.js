@@ -5,7 +5,6 @@ import QRScanModal from "./QRScanModal.js";
 import jetpack from "fs-jetpack";
 import DockMenu from "./DockMenu.js";
 import Nodes from "./Nodes.js";
-import Stomp from "stompjs";
 import BackupKeys from "./BackupKeys.js";
 import Witnesses from "./Witnesses.js";
 import SendCard from "./SendCard.js";
@@ -38,10 +37,12 @@ export default class HotWalletDashboard extends React.Component {
 			freezeModalOpened: false,
 			backupModalOpened: false,
 			isLoggedIn: props.isLoggedIn,
-			nodeData: [],
 			mobileAuthValid: false,
 			txsList: [],
-
+			accountNode: "0.0.0.0",
+			sendingTxNode: "0.0.0.0",
+			fetchTxNode: "0.0.0.0",
+			
 			accInfo:{
 				accountName : props.accInfo.accountName,
 				pubAddress: props.accInfo.pubAddress,
@@ -70,9 +71,6 @@ export default class HotWalletDashboard extends React.Component {
 		this.handleQRCallback = this.handleQRCallback.bind(this);
 		this.handleQRScanClick = this.handleQRScanClick.bind(this);
 		this.handleLogOut = this.handleLogOut.bind(this);
-		this.getNodeData = this.getNodeData.bind(this);
-		this.subscribeNodeData = this.subscribeNodeData.bind(this);
-		this.unsubscribeNodeData = this.unsubscribeNodeData.bind(this);
 		this.initAllModals = this.initAllModals.bind(this);
 		this.sendMenuItemClick = this.sendMenuItemClick.bind(this);
 		this.receiveMenuItemClick = this.receiveMenuItemClick.bind(this);
@@ -80,6 +78,7 @@ export default class HotWalletDashboard extends React.Component {
 		this.sendTrxTransaction = this.sendTrxTransaction.bind(this);
 		this.getTxData = this.getTxData.bind(this);
 		this.handleTxDataLock = this.handleTxDataLock.bind(this);
+		this.handleNodeConnect = this.handleNodeConnect.bind(this);
 
 		//rendering functions
 		this.renderHeader = this.renderHeader.bind(this);
@@ -93,15 +92,14 @@ export default class HotWalletDashboard extends React.Component {
 		this.getReceiveCardProps = this.getReceiveCardProps.bind(this);
 		this.getBroadcastCardProps = this.getBroadcastCardProps.bind(this);
 
-		this.trxPriceSubscriber = null;
-		this.blockNumSubscriber = null;
-		this.nodeSubscriber = null;
-		this.accountInfoSubscriber = null;
-		this.txsSubscriber = null;
-		this.accountInfoInterval = null;
-		this.txsInterval = null;
+		this.getTxs = this.getTxs.bind(this);
+		this.getAccountInfo = this.getAccountInfo.bind(this);
+		this.getTrxPrice = this.getTrxPrice.bind(this);
+		this.getBlockNum = this.getBlockNum.bind(this);
+
 
 		this.logoutcalled = false;
+		this.tofetch = true;
 	}
 
 	componentDidMount(){
@@ -117,7 +115,12 @@ export default class HotWalletDashboard extends React.Component {
 				hide: 0
 			}
 		});
-
+		$("#acc_balances_card").popup({
+			delay: {
+				show: 700,
+				hide: 0
+			}
+		});
 		$("#acc_balances_card").transition("hide");
 		$("#send_receive_card").transition("hide");
 		setTimeout(()=>{
@@ -140,9 +143,7 @@ export default class HotWalletDashboard extends React.Component {
 		if (!this.logoutcalled){
 			this.handleLogOut();
 		}
-		
-		this.stomp = null;
-		this.setState({stomp: null});
+		this.tofetch = false;
 		this.props.showStatusBar("");
 	}
 
@@ -290,6 +291,11 @@ export default class HotWalletDashboard extends React.Component {
 		});
 	}
 
+	handleNodeConnect(new_node){
+		this.setState({
+			sendingTxNode: new_node
+		});
+	}
 
 	handleMobileAuthSuccess(){
 		this.setState({mobileAuthValid: true}, ()=>{
@@ -402,165 +408,161 @@ export default class HotWalletDashboard extends React.Component {
 		};
 	}
 
-	fetchData(){
-		//send all encrypted data over socket
-		let socket = new SockJS(`${config.API_URL}/walletws`);
-		this.stomp = Stomp.over(socket);
-		this.stomp.debug = null;
-
-		console.log("trying to connect to stomp: " + this.stomp);
-		this.stomp.connect({},(frame)=>{
-			console.log("connected");
-
-			this.txsSubscriber = this.stomp.subscribe("/persist/txs",(data)=>{
-				let body = data.body.trim();
-				console.log("TXSBODY: " + body);
-				if (body != ""){
-					let res_json = BlowfishSingleton.decryptToJSON(body);
-					console.log("TXSINFO:" + JSON.stringify(res_json));
-
-					if (res_json.result == config.constants.SUCCESS){
-						this.setState({txsList: res_json.txs});
-					}
-				}
-			});
-
-			this.accountInfoSubscriber = this.stomp.subscribe("/persist/accountInfo",(data)=>{
-				let body = data.body.trim();
-				console.log("ACCBODY: " + body);
-				if (body != ""){
-					let res_json = BlowfishSingleton.decryptToJSON(body);
-					console.log("ACCOUNTINFO:" + JSON.stringify(res_json));
-
-					if (res_json.result == config.constants.SUCCESS){
-						let trx_balance = res_json.balance;
-						let frozen_balance = 0;
-						let expiration_time = "";
-						let shares_avail = 0;
-						let vote_history = [];
-						let bandwidth = 0;
-
-						if (res_json.bandwidth != undefined && res_json.bandwidth != null){
-							bandwidth = res_json.bandwidth;
-						}
-
-						if (res_json.frozenBalance != undefined && res_json.frozenBalance.length > 0){
-							let f_dict = res_json.frozenBalance[0];
-							frozen_balance = f_dict.frozenBalance;
-							expiration_time = f_dict.expirationTime;
-							shares_avail = frozen_balance;
-						}
-
-						if (res_json.votes != undefined && res_json.votes.length > 0){
-							vote_history = res_json.votes;
-						}
-
-						this.setState({
-							trxBalance: trx_balance,
-							frozenBalance: frozen_balance,
-							expirationTime: expiration_time,
-							shares: shares_avail,
-							voteHistory: vote_history,
-							bandwidth: bandwidth
-						});
-					}
-				}
-			});
-
-			this.blockNumSubscriber = this.stomp.subscribe("/persist/block",(data)=>{
-				let body = data.body.trim();
-				if (body != ""){
-					let res_json = BlowfishSingleton.decryptToJSON(body);
-					if (res_json.result == config.constants.SUCCESS){
-						let node_list = this.parseDataNode(res_json.fullnode);
-						this.setState({
-							blockNum: res_json.blockNum,
-							dataNodeFirstHalf: node_list[0],
-							dataNodeSecHalf: node_list[1]
-						},()=>{
-							let data_node_data = {
-								dataNodeFirstHalf: this.state.dataNodeFirstHalf,
-								dataNodeSecHalf: this.state.dataNodeSecHalf
-							}
-							this.props.handleDataNode(data_node_data);
-
-							setTimeout(()=>{
-								if (this.stomp){
-									this.stomp.send("/persist/block");
-								}
-								
-							},2500);
-						});
-					}
-				}
-			});
-
-			this.trxPriceSubscriber = this.stomp.subscribe("/persist/trxPrice",(data)=>{
-				let body = data.body.trim();
-				if (body != ""){
-					let res_json = BlowfishSingleton.decryptToJSON(body);
-
-					if (res_json.result == config.constants.SUCCESS){
-						this.setState({
-							trxPrice: res_json.trxPrice.toFixed(6)
-						},()=>{
-							setTimeout(()=>{
-								if (this.stomp){
-									this.stomp.send("/persist/trxPrice");
-								}			
-							},1500);
-						});
-					}
-				}
-			});
-
-
-			if (this.stomp){
-				this.accountInfoInterval = setInterval(()=>{
-					let info_dict = {
-						pubAddress: this.state.accInfo.pubAddress,
-						isWatch: (this.props.view != config.views.HOTWALLET).toString()
-					};
-					this.stomp.send("/persist/accountInfo",{},
-						BlowfishSingleton.encrypt(JSON.stringify(info_dict))
-					);
-				},1000);
-
-				this.txsInterval = setInterval(()=>{
-					this.stomp.send("/persist/txs",{},
-						BlowfishSingleton.encrypt(this.state.accInfo.pubAddress)
-					);
-				},4000);
-			}
-			
+	getTxs(){
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "GET","txs",{
+			pubAddress: this.state.accInfo.pubAddress
 		});
 
-		this.setState({stomp: this.stomp});
-	
+		axios.get(url)
+		.then((res)=>{
+			let data = res.data;
+			let res_json = BlowfishSingleton.decryptToJSON(data);
+			if (res_json.result == config.constants.SUCCESS){
+				this.setState({
+					txsList: res_json.txs,
+					fetchTxNode: res_json.fullnode
+				});
+				setTimeout(()=>{
+					if (this.tofetch){
+						this.getTxs();
+					}
+					
+				},3000);
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+		});
+	}
+
+	getAccountInfo(){
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST","accountInfo",{
+			pubAddress: this.state.accInfo.pubAddress,
+			isWatch: (this.props.view != config.views.HOTWALLET).toString()
+		});
+
+		console.log("account_balances_card url: " + url);
+		axios.post(url)
+		.then((res)=>{
+			let data = res.data;
+			let res_json = BlowfishSingleton.decryptToJSON(data);
+			console.log("ACCOUNT DECRYPT: " + JSON.stringify(res_json));
+			if (res_json.result == config.constants.SUCCESS){
+				let trx_balance = res_json.balance;
+				let frozen_balance = 0;
+				let expiration_time = "";
+				let shares_avail = 0;
+				let vote_history = [];
+				let bandwidth = 0;
+
+				if (res_json.bandwidth != undefined && res_json.bandwidth != null){
+					bandwidth = res_json.bandwidth;
+				}
+
+				if (res_json.frozenBalance != undefined && res_json.frozenBalance.length > 0){
+					let f_dict = res_json.frozenBalance[0];
+					frozen_balance = f_dict.frozenBalance;
+					expiration_time = f_dict.expirationTime;
+					shares_avail = frozen_balance;
+				}
+
+				if (res_json.votes != undefined && res_json.votes.length > 0){
+					vote_history = res_json.votes;
+				}
+
+				this.setState({
+					trxBalance: trx_balance,
+					frozenBalance: frozen_balance,
+					expirationTime: expiration_time,
+					shares: shares_avail,
+					voteHistory: vote_history,
+					bandwidth: bandwidth,
+					sendingTxNode: res_json.accountNode,
+					accountNode: res_json.fullnode
+				});
+				setTimeout(()=>{
+					if (this.tofetch){
+						this.getAccountInfo();
+					}
+					
+				},3000);
+			}
+				
+		})
+		.catch((error)=>{
+			console.log(error);
+		});
+	}
+
+	getTrxPrice(){
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "GET","trxPrice",{});
+
+		axios.get(url)
+		.then((res)=>{
+			let data = res.data;
+			let res_json = BlowfishSingleton.decryptToJSON(data);
+
+			if (res_json.result == config.constants.SUCCESS){
+				this.setState({
+					trxPrice: res_json.trxPrice.toFixed(6)
+				});
+				setTimeout(()=>{
+					if (this.tofetch){
+						this.getTrxPrice();
+					}
+					
+				},5000);
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+		});		
+	}
+
+	getBlockNum(){
+		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "GET","block",{});
+
+		axios.get(url)
+		.then((res)=>{
+			let data = res.data;
+			let res_json = BlowfishSingleton.decryptToJSON(data);
+
+			if (res_json.result == config.constants.SUCCESS){
+				let node_list = this.parseDataNode(res_json.fullnode);
+				this.setState({
+					blockNum: res_json.blockNum,
+					dataNodeFirstHalf: node_list[0],
+					dataNodeSecHalf: node_list[1]
+				},()=>{
+					let data_node_data = {
+						dataNodeFirstHalf: this.state.dataNodeFirstHalf,
+						dataNodeSecHalf: this.state.dataNodeSecHalf
+					}
+					this.props.handleDataNode(data_node_data);
+					setTimeout(()=>{
+						if (this.tofetch){
+							this.getBlockNum();
+						}
+						
+					},2500);
+				});
+			}
+		})
+		.catch((error)=>{
+			console.log(error);
+		});
+	}
+
+	fetchData(){
+		//send all encrypted data over socket
+		this.getTxs();
+		this.getAccountInfo();
+		this.getBlockNum();
+		this.getTrxPrice();
+		
 	}
 
 	handleLogOut(){
-		if (this.trxPriceSubscriber){
-			this.trxPriceSubscriber.unsubscribe();
-		}
-		if(this.blockNumSubscriber){
-			this.blockNumSubscriber.unsubscribe();
-		}
-		if(this.nodeSubscriber){
-			this.nodeSubscriber.unsubscribe();
-		}
-		if (this.accountInfoSubscriber){
-			this.accountInfoSubscriber.unsubscribe();
-		}
-		if (this.txsSubscriber){
-			this.txsSubscriber.unsubscribe();
-		}
-		if (this.txsInterval){
-			clearInterval(this.txsInterval);
-		}
-		if(this.accountInfoInterval){
-			clearInterval(this.accountInfoInterval);
-		}
 		
 		let url = BlowfishSingleton.createPostURL(config.views.HOTWALLET, "POST","logout",{
 			pubAddress: this.state.accInfo.pubAddress,
@@ -572,19 +574,9 @@ export default class HotWalletDashboard extends React.Component {
 			let data = res.data;
 			data = BlowfishSingleton.decryptToJSON(data);
 
-			//if (data.result == config.constants.SUCCESS){
-				if (this.stomp){
-					this.stomp.disconnect(()=>{
-						this.logoutcalled = true;
-						this.props.permissionLogOut();
-
-						console.log("stomp disconnected");
-					});
-				}else{
-					this.props.permissionLogOut();
-				}
-				
-			//}
+			this.logoutcalled = true;
+			this.tofetch = false;
+			this.props.permissionLogOut();
 		})
 		.catch((error)=>{
 			console.log(error);
@@ -626,36 +618,6 @@ export default class HotWalletDashboard extends React.Component {
 			});
 		});
 		
-	}
-
-	getNodeData(){
-		this.stomp.send("/persist/nodes");
-	}
-
-	subscribeNodeData(){
-		this.nodeSubscriber = this.stomp.subscribe("/persist/nodes",(data)=>{
-			let body = data.body.trim();
-			if (body != ""){
-				let res_json = BlowfishSingleton.decryptToJSON(body);
-				if (res_json.result == config.constants.SUCCESS){
-					let flattenDict = (tmp_list)=>{
-						let res_list = [];
-						for (let inner_dict of tmp_list){
-							res_list.push(inner_dict.host + ":" + inner_dict.port);
-						}
-						return res_list;
-					}
-
-					this.setState({nodeData:flattenDict(res_json.nodes)});
-				}
-			}
-		});
-	}
-
-	unsubscribeNodeData(){
-		if(this.nodeSubscriber){
-			this.nodeSubscriber.unsubscribe();
-		}
 	}
 
 	sendMenuItemClick(){
@@ -744,7 +706,9 @@ export default class HotWalletDashboard extends React.Component {
 		}
 
 		return(
-			<div className="ui fluid centered raised doubling card account_balances_card" id="acc_balances_card">
+			<div className="ui fluid centered raised doubling card account_balances_card" 
+				data-content="All data will be updated when it's confirmed by the nodes"
+			  	data-position="top center" data-variation="mini" id="acc_balances_card">
 				<div className="content">
 					<div className="ui centered stackable page grid p-0">
 						<div className="two column row pb-2">
@@ -834,20 +798,6 @@ export default class HotWalletDashboard extends React.Component {
 
 
 	render(){
-		let firstnode = this.state.dataNodeFirstHalf;
-		if (this.state.dataNodeFirstHalf == 0){
-			firstnode = firstnode.toFixed(1);
-		}else{
-			firstnode = firstnode.toString();
-		}
-
-		let secnode = this.state.dataNodeSecHalf;
-		if (this.state.dataNodeSecHalf == 0){
-			secnode = secnode.toFixed(1);
-		}else{
-			secnode = secnode.toString();
-		}
-		let node_str = `${firstnode}.${secnode}`;
 
 		let freeze_modal_data = {
 			frozenBalance: this.state.frozenBalance,
@@ -856,6 +806,12 @@ export default class HotWalletDashboard extends React.Component {
 			expirationTime: this.state.expirationTime,
 			trxBalance: this.state.trxBalance,
 			pubAddress: this.state.accInfo.pubAddress
+		};
+
+		let node_info = {
+			sendingTxNode: this.state.sendingTxNode,
+			fetchTxNode: this.state.fetchTxNode,
+			accountNode: this.state.accountNode
 		};
 
 		return(
@@ -884,9 +840,9 @@ export default class HotWalletDashboard extends React.Component {
 					</div>
 					<DockMenu handleDockClick={this.handleDockClick} view={this.props.view}/>
 					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.nodesModalOpened}
-						currNode={node_str} nodeData={this.state.nodeData}
-						subscribe={this.subscribeNodeData} unsubscribe={this.unsubscribeNodeData}
-						getNodeData={this.getNodeData}/>
+						currNode={this.state.sendingTxNode} handleNodeConnect={this.handleNodeConnect}
+						pubAddress={this.state.accInfo.pubAddress}
+						view={this.props.view} nodeInfo={node_info}/>
 					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.backupModalOpened}
 						pdirty={this.state.accInfo.pdirty} 
 						pubAddress={this.state.accInfo.pubAddress}
@@ -902,7 +858,7 @@ export default class HotWalletDashboard extends React.Component {
 					handleOnSuccess={this.handleMobileAuthSuccess}/>
 				<TransactionViewerModal txData={this.state.currTxData} view={this.props.view}
 					pubAddress={this.state.accInfo.pubAddress}
-					handleTxDataLock={this.handleTxDataLock}/>
+					handleTxDataLock={this.handleTxDataLock} id="tx_hot_viewer_modal"/>
 			</div>
 		);
 	}

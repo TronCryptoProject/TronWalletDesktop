@@ -8,7 +8,11 @@ export class EncryptedRequest{
 		try{
 			this.kslist = fs.readFileSync(`${process.resourcesPath}/app/client/config/tronks.ks`,"utf8").split("\n");
 		}catch(e){
-			this.kslist = fs.readFileSync(`client/config/tronks.ks`,"utf8").split("\n");
+			try{
+				this.kslist = fs.readFileSync(`${process.resourcesPath}/app.asar/client/config/tronks.ks`,"utf8").split("\n");
+			}catch(e){
+				this.kslist = fs.readFileSync(`client/config/tronks.ks`,"utf8").split("\n");
+			}
 		}
 		
 		this.key = atob(this.kslist[0]);

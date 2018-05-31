@@ -39,7 +39,7 @@ export default class SendCard extends React.Component{
 		let address = $("#send_address_input").val().trim();
 		let value = $("#hotwallet_send_amout").val().trim();
 
-		this.props.sendTrxTransaction(address,value,(result)=>{
+		this.props.sendTrxTransaction(address,value,this.props.id, (result)=>{
 			if ("result" in result){
 				if (result.result == config.constants.FAILED && "reason" in result){
 					this.showError(result.reason);
