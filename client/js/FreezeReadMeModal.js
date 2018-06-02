@@ -45,7 +45,7 @@ export default class FreezeReadMeModal extends React.Component{
 							of 1000 bytes and dynamic bandwidth obtained by freezing TRX.
 						</div>
 						<div className="item">
-							Your bandwidth will not be wiped once you unfreeze; it's accumulated
+							Your bandwidth will be wiped once you unfreeze
 						</div>
 						<div className="item">
 							Once balance is unfrozen, you previous votes will become void and you 
