@@ -30,11 +30,15 @@ export default class UnfreezeCard extends React.Component{
 	}
 
 	checkIfTimeExpired(date_str){
+		console.log("EXPIRE Date_str: " + date_str);
 		let date = new Date(date_str);
 		let curr_date = new Date();
 
 		let long_date = date.getTime();
 		let long_curr_date = curr_date.getTime();
+
+		console.log("last_date: " + long_date);
+		console.log("curr_date: " + long_curr_date);
 
 		if (long_curr_date - long_date > 0){
 			return true;

@@ -282,7 +282,7 @@ export default class ColdOfflineMainView extends React.Component {
 		if (!this.walletlock){
 			this.handleProcessState(e,true);
 
-			let acc_name = $("#register_accname_input").val();
+			let acc_name = $("#register_accname_input").val().trim();
 			let code = this.state.regInputText
 
 			if (acc_name != "" && code != ""){
@@ -328,6 +328,7 @@ export default class ColdOfflineMainView extends React.Component {
 				})
 				.catch((error)=>{
 					this.handleProcessState(e,false);
+					console.log("REGISTER FAILED: " + JSON.stringify(error));
 					this.showErrorMessage(target_id, "Request failed :(");
 				});
 			}else{
@@ -540,7 +541,7 @@ export default class ColdOfflineMainView extends React.Component {
 			<div className="ui raised card height_fit_content 
 											cold_offline_import_card" id="importcard">
 						
-				<div className="ui hidden error message width_100 naked_div" id="import_error_div">
+				<div className="ui hidden error message width_100 naked_div word_wrap" id="import_error_div">
 			    	<i className="close icon" onClick={(e)=>{this.closeErrorMessage("#import_error_div")}}></i>
 			      	<div className="header">Error</div>
 			      	<p>{this.state.errorMessage}</p>
@@ -586,7 +587,7 @@ export default class ColdOfflineMainView extends React.Component {
 		return(
 			<div className="ui raised card height_fit_content
 											cold_offline_import_card" id="registercard">
-				<div className="ui hidden error naked_div message width_100" id="reg_error_div">
+				<div className="ui hidden error naked_div message width_100 word_wrap" id="reg_error_div">
 			    	<i className="close icon" onClick={(e)=>{this.closeErrorMessage("#reg_error_div")}}></i>
 			      	<div className="header">Error</div>
 			      	<p>{this.state.errorMessage}</p>
@@ -733,7 +734,7 @@ export default class ColdOfflineMainView extends React.Component {
 	renderMainPaperWalletSide(){
 		return(
 			<div className="ui raised card cold_offline_import_card">
-				<div className="ui hidden error message naked_div width_100" id="paper_error_div">
+				<div className="ui hidden error message naked_div width_100 word_wrap" id="paper_error_div">
 			    	<i className="close icon" onClick={(e)=>{this.closeErrorMessage("#paper_error_div")}}></i>
 			      	<div className="header">Error</div>
 			      	<p>{this.state.errorMessage}</p>

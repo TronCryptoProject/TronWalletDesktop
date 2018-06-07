@@ -355,7 +355,8 @@ export default class Freeze extends React.Component{
 					</div>
 					<div className="ui bottom attached tab segment send_receive_card_segment" data-tab="unfreeze">
 						<UnfreezeCard handleUnfreezeClick={this.handleUnfreezeClick}
-							frozenBalance={this.state.data.frozenBalance}/>
+							frozenBalance={this.state.data.frozenBalance}
+							expirationTime={this.state.data.expirationTime}/>
 					</div>
 				</div>
 			</div>

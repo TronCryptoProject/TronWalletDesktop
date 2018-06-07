@@ -101,7 +101,7 @@ export default class MainView extends React.Component {
 
 	handleColdOfflineClick(e){
 		if (this.state.networkStatus == this.ONLINE){
-			/*$("#network_modal").modal({
+			$("#network_modal").modal({
 				blurring: true,
 				centered: false,
 				transition: "scale",
@@ -123,8 +123,7 @@ export default class MainView extends React.Component {
 					}
 				}
 			})
-			.modal("show");*/
-			this.setState({currView: config.views.COLDWALLET});
+			.modal("show");
 		}else{
 			this.setState({currView: config.views.COLDWALLET});
 		}

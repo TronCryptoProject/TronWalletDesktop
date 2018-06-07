@@ -30,6 +30,6 @@ module.exports = {
 		SUCCESS: "success",
 		FAILED: "failed"
 	},
-	"API_URL": "http://localhost:8088",
+	"API_URL": "http://35.185.182.33:8088",
 	"COLD_API_URL": "http://localhost:"
 }

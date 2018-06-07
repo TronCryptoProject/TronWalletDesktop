@@ -2,23 +2,26 @@ const {app, Menu, BrowserWindow} = electron = require('electron')
 const path = require('path')
 const url = require('url')
 const isDev = require('electron-is-dev');
+const logger = require("electron-log");
 
+logger.transports.console.level = 'info';
+logger.transports.file.level = 'info';
 
 if (isDev){
-  console.log("isdev: " + process.defaultApp);
+  logger.info("isdev: " + process.defaultApp);
   /*require('electron-reload')(__dirname,
     {
       electron: require('${__dirname}/../../node_modules/electron')
     }
   );*/
 }else{
-   console.log("no isdev");
+   logger.info("no isdev");
 }
 
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+var mainWindow
 
 function createWindow () {
   // Create the browser window.
@@ -65,23 +68,23 @@ function createWindow () {
   isPortInUse(12849, function(returnValue) {
       if (!returnValue){
           /*Start process*/
-          let spawn = require("child_process").spawn;
-          let filename = `${process.resourcesPath}/app/tronwallet.jar`;
+          var spawn = require("child_process").spawn;
+          var filename = `${process.resourcesPath}/app/tronwallet.jar`;
           if (isDev){
             filename = "./tronwallet.jar";
           }
-          console.log("FILE:" + filename);
+          logger.info("FILE:" + filename);
 
 
-          let userPath = app.getPath("userData");
-          console.log("userPath: " + userPath);
+          var userPath = app.getPath("userData");
+          logger.info("userPath: " + userPath);
           child = spawn("java", [`-DuserPath=${userPath}`, "-jar",filename]/*,{
             detached: true,
             stdio: 'ignore'
           }*/);
           //child.unref();
           child.stdout.on('data', function(data) {
-              console.log(data.toString()); 
+              logger.info(data.toString()); 
           });
 
           /*End process*/
@@ -99,11 +102,12 @@ function createWindow () {
     mainWindow = null;
 
     if (child != null){
-      console.log("PID: " + child.pid);
+      logger.info("PID: " + child.pid);
       try{
          process.kill(child.pid, "SIGKILL");
+         logger.info("successfully killed");
       }catch(e){
-         console.log(e);
+         logger.info(e);
       }
      
     }

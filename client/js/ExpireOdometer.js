@@ -44,10 +44,16 @@ export default class ExpireOdometer extends React.Component{
 	}
 
 	parseDate(date_str){
+		console.log("DATE_STR: " + date_str);
 		let date = new Date(date_str);
 		let date_secs = Math.ceil(date.getTime() / 1000);
 		let curr_date = Math.ceil(Date.now() / 1000);
 		let time_left = date_secs - curr_date;
+
+		if (time_left < 0){
+			time_left = 0;
+		}
+		console.log("TIME_LEFT: " + time_left);
 
 		let hrs = Math.ceil(time_left / 3600);
 		let mins = Math.ceil((time_left%3600)/60);

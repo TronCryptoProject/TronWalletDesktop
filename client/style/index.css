@@ -347,3 +347,8 @@ i.icon.paperplane:before {
 .tron_blue_color{
 	color: #5176b9 !important;
 }
+
+.word_wrap{
+	word-break: break-all !important;
+    word-wrap: break-word !important;
+}
