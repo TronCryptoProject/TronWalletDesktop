@@ -1,7 +1,7 @@
 {
   "name": "TronWallet",
   "productName": "Tron Wallet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tron Wallet for decentralized internet",
   "main": "main.js",
   "scripts": {
