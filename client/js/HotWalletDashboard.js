@@ -137,6 +137,8 @@ export default class HotWalletDashboard extends React.Component {
 
 		this.initAllModals();
 
+
+		console.log("freeze modal open state: " + this.state.freezeModalOpened);
 	}
 
 	componentWillUnmount(){
@@ -145,6 +147,7 @@ export default class HotWalletDashboard extends React.Component {
 		}
 		this.tofetch = false;
 		this.props.showStatusBar("");
+		$("body .ui.dimmer.modals").remove();
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -176,6 +179,10 @@ export default class HotWalletDashboard extends React.Component {
 				onShow: () =>{
 					$(id).parent().addClass("fullscreen_modal_background");
 					$(id).parent().addClass("overflow_hidden");
+				},
+				onHidden:()=>{
+					$(id).parent().removeClass("fullscreen_modal_background");
+					$(id).parent().removeClass("overflow_hidden");
 				}
 			});
 		}
@@ -198,12 +205,15 @@ export default class HotWalletDashboard extends React.Component {
 		}
 
 		if(toOpen){
+			console.log(getStateKey() + " setting to true");
 			this.setState({[getStateKey()]: true},()=>{
 				$(modal_id).modal("show");
 			});
 		}else{
+			console.log(getStateKey() + " setting to false");
 			this.setState({[getStateKey()]: false},()=>{
 				$(modal_id).modal("hide");
+				console.log("dock menu open state changed");
 			})
 		}
 	}
@@ -418,10 +428,13 @@ export default class HotWalletDashboard extends React.Component {
 			let data = res.data;
 			let res_json = BlowfishSingleton.decryptToJSON(data);
 			if (res_json.result == config.constants.SUCCESS){
-				this.setState({
-					txsList: res_json.txs,
-					fetchTxNode: res_json.fullnode
-				});
+				if (this.tofetch){
+					this.setState({
+						txsList: res_json.txs,
+						fetchTxNode: res_json.fullnode
+					});
+				}
+				
 				setTimeout(()=>{
 					if (this.tofetch){
 						this.getTxs();
@@ -470,16 +483,19 @@ export default class HotWalletDashboard extends React.Component {
 					vote_history = res_json.votes;
 				}
 
-				this.setState({
-					trxBalance: trx_balance,
-					frozenBalance: frozen_balance,
-					expirationTime: expiration_time,
-					shares: shares_avail,
-					voteHistory: vote_history,
-					bandwidth: bandwidth,
-					sendingTxNode: res_json.accountNode,
-					accountNode: res_json.fullnode
-				});
+				if (this.tofetch){
+					this.setState({
+						trxBalance: trx_balance,
+						frozenBalance: frozen_balance,
+						expirationTime: expiration_time,
+						shares: shares_avail,
+						voteHistory: vote_history,
+						bandwidth: bandwidth,
+						sendingTxNode: res_json.accountNode,
+						accountNode: res_json.fullnode
+					});
+				}
+				
 				setTimeout(()=>{
 					if (this.tofetch){
 						this.getAccountInfo();
@@ -503,9 +519,12 @@ export default class HotWalletDashboard extends React.Component {
 			let res_json = BlowfishSingleton.decryptToJSON(data);
 
 			if (res_json.result == config.constants.SUCCESS){
-				this.setState({
-					trxPrice: res_json.trxPrice.toFixed(6)
-				});
+				if (this.tofetch){
+					this.setState({
+						trxPrice: res_json.trxPrice.toFixed(6)
+					});
+				}
+				
 				setTimeout(()=>{
 					if (this.tofetch){
 						this.getTrxPrice();
@@ -529,23 +548,27 @@ export default class HotWalletDashboard extends React.Component {
 
 			if (res_json.result == config.constants.SUCCESS){
 				let node_list = this.parseDataNode(res_json.fullnode);
-				this.setState({
-					blockNum: res_json.blockNum,
-					dataNodeFirstHalf: node_list[0],
-					dataNodeSecHalf: node_list[1]
-				},()=>{
-					let data_node_data = {
-						dataNodeFirstHalf: this.state.dataNodeFirstHalf,
-						dataNodeSecHalf: this.state.dataNodeSecHalf
-					}
-					this.props.handleDataNode(data_node_data);
-					setTimeout(()=>{
-						if (this.tofetch){
-							this.getBlockNum();
+
+				if (this.tofetch){
+					this.setState({
+						blockNum: res_json.blockNum,
+						dataNodeFirstHalf: node_list[0],
+						dataNodeSecHalf: node_list[1]
+					},()=>{
+						let data_node_data = {
+							dataNodeFirstHalf: this.state.dataNodeFirstHalf,
+							dataNodeSecHalf: this.state.dataNodeSecHalf
 						}
-						
-					},2500);
-				});
+						this.props.handleDataNode(data_node_data);
+						setTimeout(()=>{
+							if (this.tofetch){
+								this.getBlockNum();
+							}
+							
+						},2500);
+					});
+				}
+				
 			}
 		})
 		.catch((error)=>{
@@ -839,19 +862,7 @@ export default class HotWalletDashboard extends React.Component {
 						</div>
 					</div>
 					<DockMenu handleDockClick={this.handleDockClick} view={this.props.view}/>
-					<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.nodesModalOpened}
-						currNode={this.state.sendingTxNode} handleNodeConnect={this.handleNodeConnect}
-						pubAddress={this.state.accInfo.pubAddress}
-						view={this.props.view} nodeInfo={node_info}/>
-					<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.backupModalOpened}
-						pdirty={this.state.accInfo.pdirty} 
-						pubAddress={this.state.accInfo.pubAddress}
-						mobileAuthCode={this.props.mobileAuthCode} view={config.views.HOTWALLET}/>
-					<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.witnessesModalOpened}
-						shares={this.state.shares} view={this.props.view} pubAddress={this.state.accInfo.pubAddress}
-						voteHistory={this.state.voteHistory}/>
-					<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.freezeModalOpened}
-						data={freeze_modal_data} view={this.props.view}/>
+					
 				</div>
 				<QRScanModal startCamera={this.state.startCamera} handleQRCallback={this.handleQRCallback}/>
 				<MobileAuthModal mobileAuthCode={this.props.mobileAuthCode}
@@ -859,6 +870,19 @@ export default class HotWalletDashboard extends React.Component {
 				<TransactionViewerModal txData={this.state.currTxData} view={this.props.view}
 					pubAddress={this.state.accInfo.pubAddress}
 					handleTxDataLock={this.handleTxDataLock} id="tx_hot_viewer_modal"/>
+				<Nodes handleDockClick={this.handleDockClick} modalOpened={this.state.nodesModalOpened}
+					currNode={this.state.sendingTxNode} handleNodeConnect={this.handleNodeConnect}
+					pubAddress={this.state.accInfo.pubAddress}
+					view={this.props.view} nodeInfo={node_info}/>
+				<BackupKeys handleDockClick={this.handleDockClick} modalOpened={this.state.backupModalOpened}
+					pdirty={this.state.accInfo.pdirty} 
+					pubAddress={this.state.accInfo.pubAddress}
+					mobileAuthCode={this.props.mobileAuthCode} view={config.views.HOTWALLET}/>
+				<Witnesses handleDockClick={this.handleDockClick} modalOpened={this.state.witnessesModalOpened}
+					shares={this.state.shares} view={this.props.view} pubAddress={this.state.accInfo.pubAddress}
+					voteHistory={this.state.voteHistory}/>
+				<Freeze handleDockClick={this.handleDockClick} modalOpened={this.state.freezeModalOpened}
+					data={freeze_modal_data} view={this.props.view}/>
 			</div>
 		);
 	}

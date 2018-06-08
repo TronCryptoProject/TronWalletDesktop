@@ -91,6 +91,7 @@ export default class ColdOfflineDashboard extends React.Component {
 
 	componentWillUnmount(){
 		this.props.showStatusBar("");
+		$("body .ui.dimmer.modals").remove();
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -123,6 +124,10 @@ export default class ColdOfflineDashboard extends React.Component {
 				onShow: () =>{
 					$(id).parent().addClass("fullscreen_modal_background");
 					$(id).parent().addClass("overflow_hidden");
+				},
+				onHidden:()=>{
+					$(id).parent().removeClass("fullscreen_modal_background");
+					$(id).parent().removeClass("overflow_hidden");
 				}
 			});
 		}

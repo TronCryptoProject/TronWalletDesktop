@@ -91,7 +91,7 @@ function createWindow () {
       }
   });
 
-
+  logger.info("VERSIONS: " + JSON.stringify(process.versions));
 
   
   // Emitted when the window is closed.

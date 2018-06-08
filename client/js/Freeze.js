@@ -32,6 +32,7 @@ export default class Freeze extends React.Component{
 			bandwidthDirty: false
 		};
 
+		console.log("registering freeze clicks");
 		this.handleCloseButtonClick = this.handleCloseButtonClick.bind(this);
 		this.renderFrozenTabMenu = this.renderFrozenTabMenu.bind(this);
 		this.handleFreezeClick = this.handleFreezeClick.bind(this);
@@ -52,6 +53,7 @@ export default class Freeze extends React.Component{
 			allowMultiple: true,
 			closable: true
 		});
+		console.log("freeze mounted");
 	}
 
 	componentWillReceiveProps(nextProps){
@@ -315,10 +317,13 @@ export default class Freeze extends React.Component{
 		.modal("show");
 	}
 
-	handleCloseButtonClick(){
+	handleCloseButtonClick(e){
+		console.log("freeze close requested");
 		$("#freeze_amt_input").val("");
 		this.handleFreezeAmountInputChange(-1,()=>{
+			console.log("freeze close called");
 			this.props.handleDockClick(false, "#freeze_modal");
+			console.log("freeze close finished");
 		});
 		
 	}
@@ -371,7 +376,7 @@ export default class Freeze extends React.Component{
 						<div className="ui centered grid">
 							<div className="three column row">
 								<div className="four wide column">
-									<button className="circular medium ui icon button" onClick={this.handleCloseButtonClick}>
+									<button className="circular medium ui icon button" onClick={(e)=>{this.handleCloseButtonClick(e)}}>
 										<i className="close icon"/>
 									</button>
 								</div>
