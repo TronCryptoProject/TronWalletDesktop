@@ -1,19 +1,19 @@
 # Tron Wallet for Mac/Windows
 
 ### Sending/Receiving TRX
-<img src="https://media.giphy.com/media/RfYQybkxpEhmnvmRBK/source.gif" width="700"/>
+<img src="ReadmeDocs/send.gif" width="700"/>
 
 ### Nodes on the Network 
-<img src="https://media.giphy.com/media/XG6lEUEVmT047nzTIy/giphy.gif" width="700">
+<img src="ReadmeDocs/nodes.gif" width="700">
 
 ### Witness voting (Proof of Stake)
-<img src="https://media.giphy.com/media/VCmvLcLrX3IrFRrDG4/giphy.gif" width="700">
+<img src="ReadmeDocs/witness.gif" width="700">
 
 ### Freezing TRX 
-<img src="https://media.giphy.com/media/L2rTB0DT8CAjqfrUtF/giphy.gif" width="700">
+<img src="ReadmeDocs/freeze.gif" width="700">
 
 ### Google Authentication
-<img src="https://media.giphy.com/media/l4w3NpF6SdzGeQTSrI/giphy.gif" width="700"/>
+<img src="ReadmeDocs/mobile_auth.gif" width="700"/>
 
 
 <br/><br/>
